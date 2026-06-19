@@ -40,3 +40,13 @@ SCRUB_ENTITIES = {"PERSON", "ORG", "GPE", "LOC", "FAC", "NORP"}
 EVENT_LOG_PATH = OUTPUTS / "event_log.parquet"
 RECORDS_PATH   = OUTPUTS / "records.jsonl"
 CHROMA_COLLECTION = "sme_ops"
+
+# ── Detection ────────────────────────────────────────────────────────────────
+# Marker stages for the three bottleneck patterns (matched case-insensitively).
+DELAY_STAGE         = "Booking Confirmation"   # delay: takes 8-14 days vs 1-2
+REPETITION_STAGE    = "Payment Re-entry"       # repetition: data keyed twice
+REWORK_STAGE        = "Quote Revision"         # rework: quote looped back
+DELAY_THRESHOLD_DAYS = 7                        # gap into DELAY_STAGE that counts as delayed
+
+# UI export
+UI_CASES_PATH = OUTPUTS / "ui_cases.json"

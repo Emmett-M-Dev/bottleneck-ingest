@@ -20,3 +20,6 @@ __pycache__/
 Thumbs.db
 .vscode/
 .idea/
+
+# Agent / tooling
+.claude/

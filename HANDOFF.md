@@ -94,15 +94,36 @@ Mock Google account `foyle.mock.sme@gmail.com` already created. Remaining:
 
 Expected: same output shape as `--source local`, sourced from the live Sheet.
 
-## After Phase 1 — the demo
-With `--source sheets` live, point the `hitl-interface` Streamlit dashboard at the mock
-Sheet for a live demo: real system reading Google Sheets → detecting bottlenecks →
-presenting recommendations for approval. Basis for the Option A / Option B conversation
-with Foyle.
+## Phase 2 — detection + dashboard wiring (DONE ✅)
+The live Sheet now flows all the way to the dashboard.
+
+- `detection/detect.py` — finds the three seeded bottlenecks in `event_log.parquet`:
+  - **delay** (BN001) Booking Confirmation gap ≥ 7 days — P=0.88 / R=0.97 vs ground truth
+  - **repetition** (BN002) presence of a Payment Re-entry step — P=1.00 / R=1.00
+  - **rework** (BN003) presence of a Quote Revision step — P=1.00 / R=1.00
+- `bridge/export_cases.py` — turns detected bottlenecks into `outputs/ui_cases.json`,
+  shaped exactly like the dashboard's `BottleneckCase`. Adds real metrics + scrubbed
+  evidence excerpts + ChromaDB retrieval (RAG) per case. This is the only thing that
+  crosses to `hitl-interface` — plain JSON, no heavy libs.
+- `hitl-interface/providers/file_provider.py` — `FileDataProvider` reads that JSON.
+  `app.py` prefers it, falls back to mock fixtures if the export hasn't been run.
+  Resolves the file via `$BOTTLENECK_CASES_PATH` → sibling `../bottleneck-ingest/outputs/ui_cases.json`.
+
+### Run the full demo
+```powershell
+# bottleneck-ingest
+.venv\Scripts\activate
+python ingest.py --source sheets        # live Sheet -> parquet + jsonl + Chroma
+python -m bridge.export_cases           # -> outputs/ui_cases.json (3 cases)
+
+# hitl-interface (separate repo / venv)
+streamlit run app.py                    # shows the 3 live cases, 🟢 Live banner
+```
 
 ## Out of scope (not built — by design)
-- Detection + RAG answer layers (consume `event_log.parquet` + Chroma; built later).
-- Wiring the pipeline into the Streamlit dashboard (parallel/next integration).
+- Executing approved fixes (the dashboard records decisions only).
+- LLM-generated fix prose (suggested fixes are authored templates per pattern; the
+  "no LLM API" constraint stands).
 
 ## Git
 Nothing committed yet — all untracked. Commit Phase 1 when ready.
