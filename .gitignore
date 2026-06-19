@@ -1,0 +1,22 @@
+# Credentials — never committed
+credentials/
+
+# Real client data — never committed
+data/real/
+
+# Pipeline outputs (regenerated)
+outputs/
+
+# Python
+*.pyc
+__pycache__/
+.env
+
+# Virtual environment
+.venv/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

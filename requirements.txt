@@ -1,0 +1,33 @@
+# Pinned to a known-good Windows / Python 3.11 stack.
+# The unpinned latest (2026) wheels of torch / onnxruntime failed to load their
+# native DLLs (WinError 1114) on this machine; this coherent late-2024 set loads
+# cleanly and keeps the whole project reproducible. CPU-only, no GPU required.
+numpy==1.26.4
+pandas==2.2.3
+# fastparquet, not pyarrow: `import pandas` eagerly loads pyarrow's Arrow C++ runtime,
+# which segfaults in-process with chroma/hnswlib + torch on Windows. fastparquet writes
+# the same .parquet without Arrow.
+fastparquet==2026.5.0
+openpyxl==3.1.5
+
+torch==2.2.2
+sentence-transformers==2.7.0
+transformers==4.41.2
+huggingface-hub==0.23.4
+
+spacy==3.7.5
+
+# chromadb 0.6.3 uses the stable C++ (hnswlib) core. chromadb 1.x ships a Rust core
+# that segfaults on this machine's native stack (Anaconda MKL/OpenMP); 0.6.x does not.
+# We always pass our own sentence-transformers embeddings, so the default ONNX
+# embedding function is never invoked — onnxruntime only needs to be importable.
+chromadb==0.6.3
+# Pinned old: the latest onnxruntime wheels fail to load their DLL here (WinError 1114);
+# 1.16.3 imports cleanly. Only required so chromadb's default EF constructs at import.
+onnxruntime==1.16.3
+
+google-api-python-client==2.137.0
+google-auth-httplib2==0.2.0
+google-auth-oauthlib==1.2.1
+
+pytest==8.3.4
