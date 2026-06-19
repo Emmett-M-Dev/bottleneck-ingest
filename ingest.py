@@ -92,6 +92,9 @@ def _write_event_log(records: list[NormalisedRecord]) -> int:
 
 
 def run(source: str) -> None:
+    from scrub.anonymise import reset_actor_registry
+    reset_actor_registry()  # deterministic actor placeholder numbering per run
+
     summaries: list[str] = []
     records: list[NormalisedRecord] = []
 

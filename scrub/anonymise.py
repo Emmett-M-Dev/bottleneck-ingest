@@ -107,3 +107,52 @@ def scrub_dict(record: dict) -> tuple[dict, list[dict]]:
     for key, value in record.items():
         out[key] = s.scrub(value) if isinstance(value, str) else value
     return out, s.replacements
+
+
+# ── Actor / staff-name field ────────────────────────────────────────────────
+# The `actor` column is a KNOWN PII slot (a staff member or team). Context-free
+# NER over a bare name is unreliable — spaCy silently misses some two-token names
+# (e.g. "Priya Patel") because there is no sentence context. So we never depend on
+# NER firing here: the whole field is masked wholesale. A process-wide registry
+# gives each distinct actor a STABLE placeholder, so the same person maps to the
+# same token across every row (needed for later per-actor analysis).
+_actor_seen: dict[str, str] = {}
+_actor_counts: dict[str, int] = {}
+
+
+def reset_actor_registry() -> None:
+    """Clear the actor registry. Call once at the start of an ingest run so
+    placeholder numbering is deterministic and not carried across runs/tests."""
+    _actor_seen.clear()
+    _actor_counts.clear()
+
+
+def _actor_label(name: str) -> str:
+    """Best-effort entity label for an actor value. If NER cleanly tags the whole
+    string with a scrubbable label (e.g. ORG for a team name) use it; otherwise
+    default to PERSON. Either way the value is masked — the label only affects the
+    placeholder prefix, never whether scrubbing happens."""
+    doc = _get_nlp()(name)
+    for ent in doc.ents:
+        if ent.label_ in SCRUB_ENTITIES and ent.text.strip() == name:
+            return ent.label_
+    return "PERSON"
+
+
+def scrub_actor(raw) -> tuple:
+    """Mask a staff/actor field wholesale. Returns (placeholder_or_original, reps).
+    Non-string / empty values pass through untouched."""
+    if not isinstance(raw, str) or not raw.strip():
+        return raw, []
+    name = raw.strip()
+
+    # An email or phone living in an actor field is caught by the general scrubber.
+    if EMAIL_RE.search(name) or PHONE_RE.search(name):
+        return scrub_text(name)
+
+    if name not in _actor_seen:
+        label = _actor_label(name)
+        _actor_counts[label] = _actor_counts.get(label, 0) + 1
+        _actor_seen[name] = f"[{label}_{_actor_counts[label]}]"
+    ph = _actor_seen[name]
+    return ph, [{"type": ph.strip("[]").rsplit("_", 1)[0], "placeholder": ph}]

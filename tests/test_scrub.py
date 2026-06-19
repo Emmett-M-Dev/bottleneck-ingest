@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from scrub.anonymise import scrub_text, scrub_dict
+from scrub.anonymise import reset_actor_registry, scrub_actor, scrub_text, scrub_dict
 
 SEED_NAME = "Sarah Jones"
 SEED_ORG = "Riverside Academy"
@@ -47,6 +47,34 @@ def test_stable_placeholder_same_original_same_token() -> None:
     # Same name -> same placeholder, used twice.
     first = scrubbed.split("spoke")[0].strip()
     assert scrubbed.count(first) == 2
+
+
+def test_actor_field_masked_even_when_ner_misses_bare_name() -> None:
+    # Regression: context-free NER silently missed some bare two-token names
+    # (e.g. "Priya Patel"), leaking them into actor + record text. The actor slot
+    # must be masked wholesale regardless of whether NER fires.
+    reset_actor_registry()
+    for name in ("Priya Patel", "Sarah Jones", "John Smith"):
+        masked, reps = scrub_actor(name)
+        assert name not in masked, f"leaked actor: {name}"
+        assert masked.startswith("[") and masked.endswith("]")
+        assert reps
+
+
+def test_actor_placeholder_stable_per_person_across_calls() -> None:
+    reset_actor_registry()
+    a1, _ = scrub_actor("Priya Patel")
+    b1, _ = scrub_actor("Sarah Jones")
+    a2, _ = scrub_actor("Priya Patel")
+    assert a1 == a2          # same person -> same token across rows
+    assert a1 != b1          # distinct people -> distinct tokens
+
+
+def test_actor_passthrough_for_empty_and_non_string() -> None:
+    reset_actor_registry()
+    assert scrub_actor(None) == (None, [])
+    assert scrub_actor("") == ("", [])
+    assert scrub_actor("   ")[0].strip() == ""
 
 
 def test_scrub_dict_scrubs_string_values_and_keeps_others() -> None:

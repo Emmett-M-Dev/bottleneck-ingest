@@ -21,7 +21,7 @@ import pandas as pd
 
 from mapping import map_row
 from models import Event, NormalisedRecord
-from scrub.anonymise import scrub_text
+from scrub.anonymise import scrub_actor, scrub_text
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ def normalise_structured(raw_rows: list[dict], source_type: str) -> list[Normali
         status = canon.get("status")
 
         actor_raw = canon.get("actor")
-        actor, actor_reps = scrub_text(actor_raw) if isinstance(actor_raw, str) else (actor_raw, [])
+        actor, actor_reps = scrub_actor(actor_raw)
 
         structured = {
             "case_id": case_id,
