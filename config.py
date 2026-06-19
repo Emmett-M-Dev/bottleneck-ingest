@@ -17,7 +17,7 @@ TOKEN_PATH     = ROOT / "credentials" / "token.json"
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 
 # Google Sheets — YOU fills this in after the mock environment is set up.
-SHEET_ID    = "PASTE_SPREADSHEET_ID_HERE"
+SHEET_ID    = "1I0W-8gVuge4fdqa9apldacDkQjbwmhJ6h-tqf-DiN78"
 SHEET_TAB   = "Sheet1"
 SHEET_RANGE = "A:Z"
 

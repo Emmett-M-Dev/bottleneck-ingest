@@ -15,7 +15,7 @@ on purpose: this project uses ChromaDB / spaCy / torch, which `hitl-interface` f
 - No LLM API calls. Embeddings are local (all-MiniLM-L6-v2).
 - All data synthetic. No PII reaches any output.
 
-## Status: Phase 1 local path COMPLETE & verified ✅
+## Status: Phase 1 COMPLETE & verified ✅ (local + live sheets)
 
 `python ingest.py --source local` runs clean (exit 0):
 ```
@@ -34,7 +34,7 @@ Verified against the brief's Definition of Done:
 - [x] `generate.py` shares zero imports with pipeline/readers/scrub/detection
 - [x] `credentials/` + `data/real/` gitignored
 - [x] 17/17 tests pass (`pytest`)
-- [ ] `--source sheets` → **blocked on Step 0 (YOU)**, see below
+- [x] `--source sheets` → live mock Google Sheet → same output shape (1001 events, token cached, silent reruns)
 
 ## What was built
 | Area | Files |
