@@ -1,0 +1,1002 @@
+Booking Ref,Stage,Date,Handled By,Status
+FOY-0001,Request Received ,2026-01-29 10:00,,complete
+FOY-0001,placement offer,01-Feb-2026,Roisin Friel,closed
+FOY-0001,Placement Re-allocation,"Feb 02, 2026",Niamh Kelly,completed
+FOY-0001,booking confirmed,2026-02-04,Declan Quinn,
+FOY-0001,Invoice Issued,07-Feb-2026,Sean Gallagher,done
+FOY-0001,Document Re-request,2026-02-08 10:00,Orla McLaughlin,completed
+FOY-0001,PRE-ARRIVAL LOGISTICS,2026-02-12,Niamh Kelly,complete
+FOY-0001,Arrival,21/02/2026,Ciaran Bradley,done
+FOY-0002,REQUEST RECEIVED,2026-01-28 17:30,Niamh Kelly,complete
+FOY-0002,Placement Offer,2026-01-31 17:30,Ciaran Bradley,complete
+FOY-0002,Placement Re-allocation,01/02/2026,Roisin Friel,ok
+FOY-0002,Booking Confirmed,2026-02-12,Paul Doherty,closed
+FOY-0002,invoice issued,"Feb 15, 2026",Niamh Kelly,done
+FOY-0002,Document Re-request,"Feb 16, 2026",Niamh Kelly,closed
+FOY-0002,  Pre-Arrival Logistics,"Feb 22, 2026",,closed
+FOY-0002,Arrival,26-Feb-2026,Niamh Kelly,ok
+FOY-0003,Request Received,"Jan 28, 2026",Declan Quinn,ok
+FOY-0003,  placement offer,29-Jan-2026,,done
+FOY-0003,  Booking Confirmed,2026-02-06 16:15,Sean Gallagher,closed
+FOY-0003,Invoice Issued,2026-02-08,Roisin Friel,ok
+FOY-0003,Pre-Arrival Logistics ,2026-02-10 16:15,Ciaran Bradley,done
+FOY-0003,Arrival,2026-02-16 16:15,Sean Gallagher,done
+FOY-0004,Request Received,2026-03-11 08:00,Declan Quinn,ok
+FOY-0004,Placement Offer,2026-03-12 08:00,Orla McLaughlin,closed
+FOY-0004,PLACEMENT RE-ALLOCATION,14-Mar-2026,Aine Murray,
+FOY-0004,Booking Confirmed,16-Mar-2026,Paul Doherty,done
+FOY-0004,Invoice Issued,18-Mar-2026,Aine Murray,ok
+FOY-0004,Pre-Arrival Logistics,"Mar 24, 2026",Sean Gallagher,complete
+FOY-0004,Arrival,2026-03-31,Declan Quinn,closed
+FOY-0005,Request Received,"Feb 14, 2026",Aine Murray,closed
+FOY-0005,placement offer,2026-02-17,Niamh Kelly,closed
+FOY-0005,PLACEMENT RE-ALLOCATION,2026-02-19 09:15,Orla McLaughlin,done
+FOY-0005,  Booking Confirmed,02/03/2026,Orla McLaughlin,ok
+FOY-0005,  Invoice Issued,06/03/2026,Aine Murray,closed
+FOY-0005,document re-request,2026-03-07,Ciaran Bradley,complete
+FOY-0005,Pre-Arrival Logistics,11-Mar-2026,Niamh Kelly,complete
+FOY-0005,  Arrival,"Mar 16, 2026",Roisin Friel,complete
+FOY-0006,Request Received,02/03/2026,,complete
+FOY-0006,Placement Offer,04-Mar-2026,Roisin Friel,closed
+FOY-0006,booking confirmed,"Mar 05, 2026",Aine Murray,ok
+FOY-0006,Invoice Issued ,08-Mar-2026,Sean Gallagher,
+FOY-0006,  Document Re-request,"Mar 08, 2026",Ciaran Bradley,done
+FOY-0006,Pre-Arrival Logistics,"Mar 12, 2026",Niamh Kelly,ok
+FOY-0006,Arrival,2026-03-17,Orla McLaughlin,ok
+FOY-0007,Request Received,2026-03-28,Orla McLaughlin,closed
+FOY-0007,Placement Offer,2026-03-29,Aine Murray,ok
+FOY-0007,Booking Confirmed,2026-03-30 11:45,Declan Quinn,complete
+FOY-0007,Invoice Issued,2026-03-31 11:45,Sean Gallagher,closed
+FOY-0007,Document Re-request,2026-03-31 11:45,Ciaran Bradley,ok
+FOY-0007,Pre-Arrival Logistics,06/04/2026,Declan Quinn,complete
+FOY-0007,Arrival,"Apr 13, 2026",,completed
+FOY-0008,Request Received ,2026-01-20 11:45,Ciaran Bradley,
+FOY-0008,Placement Offer,2026-01-22,Roisin Friel,completed
+FOY-0008,Placement Re-allocation,24-Jan-2026,Sean Gallagher,completed
+FOY-0008,Booking Confirmed,01/02/2026,Declan Quinn,closed
+FOY-0008,Invoice Issued ,2026-02-05 11:45,Niamh Kelly,
+FOY-0008,Pre-Arrival Logistics,2026-02-10 11:45,Orla McLaughlin,ok
+FOY-0008,Arrival ,"Feb 14, 2026",Sean Gallagher,done
+FOY-0009,  Request Received,2026-01-20 11:15,Orla McLaughlin,complete
+FOY-0009,Placement Offer,"Jan 23, 2026",Paul Doherty,completed
+FOY-0009,Placement Re-allocation ,25/01/2026,Paul Doherty,completed
+FOY-0009,Booking Confirmed ,26-Jan-2026,Roisin Friel,done
+FOY-0009,invoice issued,2026-01-29 11:15,Ciaran Bradley,ok
+FOY-0009,DOCUMENT RE-REQUEST,30-Jan-2026,Declan Quinn,closed
+FOY-0009,  Pre-Arrival Logistics,02/02/2026,Declan Quinn,ok
+FOY-0009,Arrival,"Feb 12, 2026",Ciaran Bradley,closed
+FOY-0010,Request Received,2026-01-11 11:45,Declan Quinn,done
+FOY-0010,Placement Offer,2026-01-13 11:45,Ciaran Bradley,closed
+FOY-0010,Booking Confirmed,26/01/2026,Ciaran Bradley,closed
+FOY-0010,INVOICE ISSUED,28-Jan-2026,Orla McLaughlin,complete
+FOY-0010,  DOCUMENT RE-REQUEST,"Jan 29, 2026",Aine Murray,closed
+FOY-0010,Pre-Arrival Logistics ,2026-02-01,Orla McLaughlin,ok
+FOY-0010,Arrival ,2026-02-04,Roisin Friel,closed
+FOY-0011,request received,08-Feb-2026,Sean Gallagher,ok
+FOY-0011,Placement Offer,10-Feb-2026,Aine Murray,done
+FOY-0011,Booking Confirmed ,19/02/2026,Niamh Kelly,
+FOY-0011,Invoice Issued ,"Feb 23, 2026",Orla McLaughlin,
+FOY-0011,Document Re-request,23/02/2026,Roisin Friel,complete
+FOY-0011,  Pre-Arrival Logistics,"Feb 27, 2026",Orla McLaughlin,ok
+FOY-0011,Arrival,2026-03-08,Aine Murray,completed
+FOY-0012,Request Received,2026-03-15,Niamh Kelly,ok
+FOY-0012,Placement Offer,2026-03-16,Declan Quinn,completed
+FOY-0012,Booking Confirmed,"Mar 24, 2026",Roisin Friel,
+FOY-0012,Invoice Issued,2026-03-25 17:00,Aine Murray,closed
+FOY-0012,DOCUMENT RE-REQUEST,2026-03-25 17:00,Aine Murray,closed
+FOY-0012,Pre-Arrival Logistics,29-Mar-2026,Sean Gallagher,completed
+FOY-0012,arrival,2026-04-07 17:00,Paul Doherty,complete
+FOY-0013,Request Received,03-Mar-2026,Niamh Kelly,completed
+FOY-0013,Placement Offer,2026-03-05,Orla McLaughlin,closed
+FOY-0013,Placement Re-allocation,"Mar 08, 2026",Ciaran Bradley,closed
+FOY-0013,Booking Confirmed,2026-03-10 15:15,Sean Gallagher,
+FOY-0013,Invoice Issued,14/03/2026,Declan Quinn,complete
+FOY-0013,  Pre-Arrival Logistics,2026-03-20,,complete
+FOY-0013,arrival,25-Mar-2026,Roisin Friel,completed
+FOY-0014,Request Received,"Mar 04, 2026",Sean Gallagher,ok
+FOY-0014,  Placement Offer,"Mar 07, 2026",,done
+FOY-0014,Booking Confirmed,09/03/2026,Niamh Kelly,closed
+FOY-0014,Invoice Issued,"Mar 11, 2026",Declan Quinn,done
+FOY-0014,Document Re-request,2026-03-12 16:00,Ciaran Bradley,completed
+FOY-0014,Pre-Arrival Logistics,2026-03-17 16:00,Declan Quinn,ok
+FOY-0014,Arrival,2026-03-24 16:00,,done
+FOY-0015,REQUEST RECEIVED,30/01/2026,Paul Doherty,done
+FOY-0015,placement offer,"Feb 01, 2026",Ciaran Bradley,complete
+FOY-0015,Booking Confirmed,"Feb 03, 2026",Declan Quinn,completed
+FOY-0015,Invoice Issued ,06/02/2026,Roisin Friel,closed
+FOY-0015,pre-arrival logistics,"Feb 11, 2026",Roisin Friel,completed
+FOY-0015,Arrival,"Feb 17, 2026",Sean Gallagher,ok
+FOY-0016,request received,2026-01-05 12:45,Declan Quinn,closed
+FOY-0016,Placement Offer,2026-01-08 12:45,Roisin Friel,
+FOY-0016,PLACEMENT RE-ALLOCATION,"Jan 10, 2026",Paul Doherty,completed
+FOY-0016,Booking Confirmed,2026-01-23,Declan Quinn,complete
+FOY-0016,invoice issued,24-Jan-2026,,closed
+FOY-0016,Pre-Arrival Logistics,27-Jan-2026,Aine Murray,complete
+FOY-0016,  Arrival,03/02/2026,Aine Murray,complete
+FOY-0017,Request Received,23-Feb-2026,Paul Doherty,complete
+FOY-0017,Placement Offer,"Feb 24, 2026",Declan Quinn,
+FOY-0017,Placement Re-allocation ,2026-02-26 16:00,Paul Doherty,completed
+FOY-0017,booking confirmed,"Mar 06, 2026",Roisin Friel,closed
+FOY-0017,invoice issued,10-Mar-2026,Sean Gallagher,complete
+FOY-0017,Document Re-request,"Mar 11, 2026",Orla McLaughlin,complete
+FOY-0017,pre-arrival logistics ,2026-03-16,Ciaran Bradley,
+FOY-0017,Arrival,2026-03-24 16:00,Aine Murray,closed
+FOY-0018,Request Received ,"Mar 03, 2026",Sean Gallagher,closed
+FOY-0018,Placement Offer ,"Mar 06, 2026",Aine Murray,completed
+FOY-0018,placement re-allocation,2026-03-08 11:00,Paul Doherty,done
+FOY-0018,BOOKING CONFIRMED,"Mar 20, 2026",Orla McLaughlin,closed
+FOY-0018,INVOICE ISSUED ,2026-03-21,Orla McLaughlin,ok
+FOY-0018,Pre-Arrival Logistics,"Mar 26, 2026",Roisin Friel,closed
+FOY-0018,arrival,2026-04-02,Sean Gallagher,complete
+FOY-0019,request received,05-Mar-2026,,done
+FOY-0019,Placement Offer,07-Mar-2026,Roisin Friel,ok
+FOY-0019,placement re-allocation,09-Mar-2026,Declan Quinn,completed
+FOY-0019,BOOKING CONFIRMED,2026-03-10 14:15,Orla McLaughlin,complete
+FOY-0019,invoice issued,12/03/2026,Ciaran Bradley,complete
+FOY-0019,Document Re-request,2026-03-12,Niamh Kelly,ok
+FOY-0019,Pre-Arrival Logistics,18-Mar-2026,Ciaran Bradley,completed
+FOY-0019,Arrival,22-Mar-2026,Aine Murray,done
+FOY-0020,Request Received,2026-01-10,Declan Quinn,closed
+FOY-0020,Placement Offer,2026-01-12 09:45,Paul Doherty,completed
+FOY-0020,Booking Confirmed,2026-01-20 09:45,Declan Quinn,closed
+FOY-0020,Invoice Issued,23-Jan-2026,Aine Murray,
+FOY-0020,Document Re-request,23-Jan-2026,Niamh Kelly,closed
+FOY-0020,Pre-Arrival Logistics,27/01/2026,Paul Doherty,ok
+FOY-0020,Arrival,04-Feb-2026,Paul Doherty,ok
+FOY-0021,REQUEST RECEIVED ,2026-02-13,Aine Murray,closed
+FOY-0021,PLACEMENT OFFER,15-Feb-2026,Niamh Kelly,done
+FOY-0021,Booking Confirmed,2026-02-28 15:15,Sean Gallagher,completed
+FOY-0021,Invoice Issued,04-Mar-2026,Declan Quinn,completed
+FOY-0021,Document Re-request,05/03/2026,,ok
+FOY-0021,Pre-Arrival Logistics,2026-03-11,Orla McLaughlin,complete
+FOY-0021,  Arrival,2026-03-16 15:15,Ciaran Bradley,
+FOY-0022,  Request Received,"Feb 17, 2026",Niamh Kelly,completed
+FOY-0022,Placement Offer,2026-02-19 11:00,Aine Murray,done
+FOY-0022,booking confirmed,2026-03-05 11:00,Paul Doherty,complete
+FOY-0022,INVOICE ISSUED,2026-03-06,Paul Doherty,ok
+FOY-0022,Document Re-request,"Mar 06, 2026",,completed
+FOY-0022,PRE-ARRIVAL LOGISTICS,"Mar 11, 2026",Paul Doherty,closed
+FOY-0022,Arrival,"Mar 14, 2026",Orla McLaughlin,completed
+FOY-0023,request received,16/03/2026,Declan Quinn,ok
+FOY-0023,placement offer,"Mar 17, 2026",,complete
+FOY-0023,Booking Confirmed,27-Mar-2026,Declan Quinn,complete
+FOY-0023,Invoice Issued,"Mar 28, 2026",Roisin Friel,ok
+FOY-0023,Pre-Arrival Logistics,"Apr 02, 2026",Orla McLaughlin,
+FOY-0023,Arrival ,"Apr 07, 2026",Orla McLaughlin,ok
+FOY-0024,Request Received,2026-02-15,Roisin Friel,complete
+FOY-0024,Placement Offer,16/02/2026,Paul Doherty,completed
+FOY-0024,booking confirmed,"Feb 28, 2026",Ciaran Bradley,done
+FOY-0024,Invoice Issued,2026-03-03,Aine Murray,ok
+FOY-0024,pre-arrival logistics,09/03/2026,Orla McLaughlin,ok
+FOY-0024,Arrival,2026-03-14 17:45,Paul Doherty,completed
+FOY-0025,Request Received,08/02/2026,Niamh Kelly,
+FOY-0025,Placement Offer,11/02/2026,,ok
+FOY-0025,Placement Re-allocation,14-Feb-2026,Paul Doherty,completed
+FOY-0025,Booking Confirmed,16-Feb-2026,Niamh Kelly,complete
+FOY-0025,Invoice Issued,17/02/2026,Ciaran Bradley,complete
+FOY-0025,Pre-Arrival Logistics,23-Feb-2026,Orla McLaughlin,completed
+FOY-0025,Arrival,27/02/2026,Niamh Kelly,closed
+FOY-0026,Request Received,2026-01-11,Declan Quinn,closed
+FOY-0026,Placement Offer,"Jan 13, 2026",,done
+FOY-0026,Booking Confirmed,"Jan 15, 2026",Ciaran Bradley,completed
+FOY-0026,Invoice Issued ,17/01/2026,Declan Quinn,ok
+FOY-0026,document re-request,2026-01-17 08:30,Sean Gallagher,complete
+FOY-0026,Pre-Arrival Logistics,23-Jan-2026,Declan Quinn,completed
+FOY-0026,Arrival,27/01/2026,,completed
+FOY-0027,Request Received,2026-03-10 08:00,,done
+FOY-0027,Placement Offer,2026-03-11 08:00,Orla McLaughlin,closed
+FOY-0027,  booking confirmed,"Mar 12, 2026",Ciaran Bradley,complete
+FOY-0027,  Invoice Issued,"Mar 16, 2026",Declan Quinn,complete
+FOY-0027,pre-arrival logistics,2026-03-22 08:00,Orla McLaughlin,closed
+FOY-0027,Arrival,"Apr 01, 2026",Ciaran Bradley,ok
+FOY-0028,Request Received,04-Jan-2026,Sean Gallagher,closed
+FOY-0028,Placement Offer,07/01/2026,,done
+FOY-0028,Booking Confirmed,2026-01-09 17:45,Declan Quinn,done
+FOY-0028,Invoice Issued,2026-01-11 17:45,Ciaran Bradley,ok
+FOY-0028,Pre-Arrival Logistics,"Jan 15, 2026",Declan Quinn,complete
+FOY-0028,ARRIVAL,"Jan 22, 2026",Sean Gallagher,ok
+FOY-0029,Request Received,2026-02-05 12:00,Ciaran Bradley,complete
+FOY-0029,  Placement Offer,"Feb 07, 2026",Declan Quinn,closed
+FOY-0029,Booking Confirmed,19-Feb-2026,Sean Gallagher,closed
+FOY-0029,invoice issued,2026-02-21,,closed
+FOY-0029,Pre-Arrival Logistics,2026-02-24 12:00,Sean Gallagher,completed
+FOY-0029,  Arrival,27-Feb-2026,Aine Murray,complete
+FOY-0030,Request Received,2026-02-20,Aine Murray,closed
+FOY-0030,Placement Offer,2026-02-22 15:15,Niamh Kelly,ok
+FOY-0030,Placement Re-allocation,23/02/2026,Aine Murray,completed
+FOY-0030,BOOKING CONFIRMED,2026-02-24 15:15,Ciaran Bradley,done
+FOY-0030,Invoice Issued ,2026-02-26 15:15,Sean Gallagher,completed
+FOY-0030,Pre-Arrival Logistics,"Mar 02, 2026",,done
+FOY-0030,Arrival,"Mar 07, 2026",Paul Doherty,completed
+FOY-0031,Request Received,28-Feb-2026,Sean Gallagher,closed
+FOY-0031,Placement Offer,01-Mar-2026,,closed
+FOY-0031,Booking Confirmed,10-Mar-2026,Declan Quinn,complete
+FOY-0031,invoice issued,2026-03-14 17:30,Niamh Kelly,ok
+FOY-0031,Pre-Arrival Logistics,2026-03-20 17:30,Orla McLaughlin,complete
+FOY-0031,Arrival,2026-03-23,Paul Doherty,
+FOY-0032,Request Received,2026-03-24 14:30,Roisin Friel,closed
+FOY-0032,placement offer,26/03/2026,Sean Gallagher,done
+FOY-0032,Booking Confirmed,06/04/2026,Sean Gallagher,complete
+FOY-0032,invoice issued,2026-04-07,Sean Gallagher,done
+FOY-0032,Pre-Arrival Logistics ,2026-04-12,Roisin Friel,closed
+FOY-0032,arrival,15-Apr-2026,Ciaran Bradley,completed
+FOY-0033,request received,22/02/2026,Roisin Friel,done
+FOY-0033,Placement Offer,2026-02-25 12:30,Roisin Friel,ok
+FOY-0033,BOOKING CONFIRMED,27/02/2026,Declan Quinn,closed
+FOY-0033,Invoice Issued,03/03/2026,Ciaran Bradley,ok
+FOY-0033,Pre-Arrival Logistics ,2026-03-05 12:30,Aine Murray,complete
+FOY-0033,Arrival,2026-03-11,Sean Gallagher,done
+FOY-0034,Request Received,2026-04-01 11:45,Declan Quinn,completed
+FOY-0034,Placement Offer ,2026-04-03 11:45,Ciaran Bradley,completed
+FOY-0034,Booking Confirmed,"Apr 04, 2026",Roisin Friel,complete
+FOY-0034,Invoice Issued,"Apr 08, 2026",Orla McLaughlin,ok
+FOY-0034,Pre-Arrival Logistics,13/04/2026,Declan Quinn,closed
+FOY-0034,Arrival ,2026-04-16,Aine Murray,
+FOY-0035,  Request Received,2026-01-08 17:45,,completed
+FOY-0035,placement offer,10/01/2026,Paul Doherty,closed
+FOY-0035,Booking Confirmed,2026-01-19 17:45,Paul Doherty,ok
+FOY-0035,Invoice Issued,2026-01-21,Aine Murray,ok
+FOY-0035,  document re-request,2026-01-22 17:45,Roisin Friel,completed
+FOY-0035,Pre-Arrival Logistics,24-Jan-2026,Declan Quinn,done
+FOY-0035,Arrival ,"Jan 31, 2026",Aine Murray,closed
+FOY-0036,Request Received,08-Feb-2026,Ciaran Bradley,complete
+FOY-0036,Placement Offer,2026-02-11,Paul Doherty,done
+FOY-0036,Booking Confirmed,2026-02-13 10:15,Declan Quinn,closed
+FOY-0036,INVOICE ISSUED,17-Feb-2026,Orla McLaughlin,done
+FOY-0036,Pre-Arrival Logistics,2026-02-20 10:15,Ciaran Bradley,
+FOY-0036,Arrival ,2026-02-27,Niamh Kelly,closed
+FOY-0037,  Request Received,2026-01-12,Sean Gallagher,complete
+FOY-0037,placement offer,2026-01-13,Niamh Kelly,ok
+FOY-0037,booking confirmed,2026-01-27 17:30,Sean Gallagher,complete
+FOY-0037,Invoice Issued,"Jan 31, 2026",Declan Quinn,closed
+FOY-0037,Document Re-request,01/02/2026,Roisin Friel,completed
+FOY-0037,Pre-Arrival Logistics,"Feb 06, 2026",Roisin Friel,closed
+FOY-0037,Arrival,2026-02-11 17:30,Sean Gallagher,completed
+FOY-0038,Request Received,2026-03-28 15:15,,closed
+FOY-0038,Placement Offer,2026-03-30 15:15,Aine Murray,completed
+FOY-0038,Booking Confirmed ,13/04/2026,Ciaran Bradley,
+FOY-0038,Invoice Issued,2026-04-17,Aine Murray,complete
+FOY-0038,Pre-Arrival Logistics,"Apr 23, 2026",Roisin Friel,closed
+FOY-0038,  Arrival ,2026-04-28 15:15,Paul Doherty,complete
+FOY-0039,Request Received,"Feb 14, 2026",Aine Murray,
+FOY-0039,Placement Offer,16/02/2026,Niamh Kelly,completed
+FOY-0039,BOOKING CONFIRMED,2026-02-27 15:00,,closed
+FOY-0039,Invoice Issued,03/03/2026,Orla McLaughlin,done
+FOY-0039,PRE-ARRIVAL LOGISTICS,"Mar 09, 2026",Declan Quinn,completed
+FOY-0039,Arrival,18-Mar-2026,Niamh Kelly,completed
+FOY-0040,REQUEST RECEIVED,2026-01-31 12:00,Niamh Kelly,ok
+FOY-0040,Placement Offer,03/02/2026,Niamh Kelly,complete
+FOY-0040,  Booking Confirmed,2026-02-17,Declan Quinn,ok
+FOY-0040,Invoice Issued,2026-02-21 12:00,Declan Quinn,
+FOY-0040,Pre-Arrival Logistics,24/02/2026,Declan Quinn,ok
+FOY-0040,Arrival,"Feb 28, 2026",Aine Murray,ok
+FOY-0041,Request Received,2026-02-01 12:00,Paul Doherty,complete
+FOY-0041,Placement Offer,2026-02-04 12:00,Niamh Kelly,complete
+FOY-0041,Booking Confirmed,05/02/2026,Ciaran Bradley,completed
+FOY-0041,Invoice Issued,2026-02-08,Niamh Kelly,ok
+FOY-0041,Document Re-request,09/02/2026,Niamh Kelly,complete
+FOY-0041,Pre-Arrival Logistics,2026-02-14 12:00,Roisin Friel,done
+FOY-0041,Arrival,2026-02-21 12:00,Ciaran Bradley,done
+FOY-0042,REQUEST RECEIVED,"Jan 09, 2026",Ciaran Bradley,completed
+FOY-0042,Placement Offer,2026-01-10,Aine Murray,
+FOY-0042,BOOKING CONFIRMED,2026-01-24 16:45,Sean Gallagher,complete
+FOY-0042,INVOICE ISSUED,"Jan 27, 2026",Orla McLaughlin,
+FOY-0042,Pre-Arrival Logistics,2026-01-31,,
+FOY-0042,Arrival ,"Feb 06, 2026",Paul Doherty,ok
+FOY-0043,Request Received,14/01/2026,,
+FOY-0043,PLACEMENT OFFER,17/01/2026,Roisin Friel,ok
+FOY-0043,Placement Re-allocation,2026-01-18 09:30,Ciaran Bradley,completed
+FOY-0043,  Booking Confirmed,27-Jan-2026,Orla McLaughlin,done
+FOY-0043,INVOICE ISSUED,2026-01-30 09:30,Orla McLaughlin,complete
+FOY-0043,DOCUMENT RE-REQUEST ,2026-01-30,Ciaran Bradley,complete
+FOY-0043,Pre-Arrival Logistics,2026-02-05 09:30,,
+FOY-0043,  arrival,11-Feb-2026,Orla McLaughlin,closed
+FOY-0044,Request Received,10/03/2026,Niamh Kelly,ok
+FOY-0044,  Placement Offer,13/03/2026,Aine Murray,ok
+FOY-0044,Booking Confirmed,25/03/2026,,complete
+FOY-0044,Invoice Issued,"Mar 27, 2026",Niamh Kelly,completed
+FOY-0044,  Pre-Arrival Logistics,"Mar 29, 2026",Paul Doherty,closed
+FOY-0044,Arrival,08-Apr-2026,Niamh Kelly,completed
+FOY-0045,  Request Received ,"Mar 07, 2026",Roisin Friel,complete
+FOY-0045,Placement Offer,2026-03-08 08:00,Sean Gallagher,ok
+FOY-0045,  Placement Re-allocation,10-Mar-2026,Aine Murray,closed
+FOY-0045,booking confirmed,"Mar 12, 2026",Ciaran Bradley,
+FOY-0045,Invoice Issued,14/03/2026,Declan Quinn,ok
+FOY-0045,Pre-Arrival Logistics,17/03/2026,Aine Murray,done
+FOY-0045,Arrival ,"Mar 25, 2026",Aine Murray,ok
+FOY-0046,Request Received,"Jan 31, 2026",,complete
+FOY-0046,Placement Offer,2026-02-03,Paul Doherty,
+FOY-0046,Booking Confirmed,"Feb 04, 2026",Ciaran Bradley,ok
+FOY-0046,Invoice Issued ,07/02/2026,Niamh Kelly,closed
+FOY-0046,DOCUMENT RE-REQUEST,07-Feb-2026,Ciaran Bradley,complete
+FOY-0046,  Pre-Arrival Logistics,"Feb 12, 2026",Aine Murray,completed
+FOY-0046,Arrival ,"Feb 18, 2026",Orla McLaughlin,
+FOY-0047,request received,2026-02-01,Sean Gallagher,ok
+FOY-0047,  Placement Offer,2026-02-04,Aine Murray,complete
+FOY-0047,  Booking Confirmed,"Feb 15, 2026",,
+FOY-0047,Invoice Issued ,2026-02-19 09:45,Niamh Kelly,complete
+FOY-0047,  Pre-Arrival Logistics,24/02/2026,Orla McLaughlin,closed
+FOY-0047,Arrival,28-Feb-2026,Sean Gallagher,closed
+FOY-0048,Request Received,11/03/2026,Aine Murray,
+FOY-0048,placement offer,13-Mar-2026,Sean Gallagher,done
+FOY-0048,Booking Confirmed,2026-03-14,Sean Gallagher,ok
+FOY-0048,INVOICE ISSUED,"Mar 16, 2026",Aine Murray,completed
+FOY-0048,pre-arrival logistics,2026-03-22 15:30,Orla McLaughlin,done
+FOY-0048,  Arrival,"Mar 28, 2026",Sean Gallagher,completed
+FOY-0049,Request Received,2026-01-03,Ciaran Bradley,ok
+FOY-0049,Placement Offer,2026-01-05 10:15,Declan Quinn,complete
+FOY-0049,BOOKING CONFIRMED,"Jan 07, 2026",Orla McLaughlin,done
+FOY-0049,Invoice Issued,11/01/2026,Ciaran Bradley,closed
+FOY-0049,pre-arrival logistics,2026-01-17,Sean Gallagher,completed
+FOY-0049,Arrival,"Jan 21, 2026",,complete
+FOY-0050,Request Received,2026-01-01 08:45,Declan Quinn,completed
+FOY-0050,Placement Offer,02/01/2026,Niamh Kelly,done
+FOY-0050,  Placement Re-allocation,2026-01-04 08:45,Niamh Kelly,closed
+FOY-0050,Booking Confirmed,2026-01-12,Roisin Friel,complete
+FOY-0050,  INVOICE ISSUED,16/01/2026,Roisin Friel,closed
+FOY-0050,  Document Re-request,17-Jan-2026,Declan Quinn,
+FOY-0050,Pre-Arrival Logistics,19/01/2026,,complete
+FOY-0050,  Arrival,2026-01-23 08:45,Declan Quinn,completed
+FOY-0051,request received,"Feb 17, 2026",Aine Murray,done
+FOY-0051,Placement Offer,19/02/2026,Aine Murray,closed
+FOY-0051,Booking Confirmed,03/03/2026,Declan Quinn,ok
+FOY-0051,Invoice Issued,04-Mar-2026,Niamh Kelly,ok
+FOY-0051,Document Re-request,2026-03-04 10:45,Paul Doherty,ok
+FOY-0051,Pre-Arrival Logistics,2026-03-07,Paul Doherty,ok
+FOY-0051,Arrival ,14-Mar-2026,Roisin Friel,complete
+FOY-0052,Request Received,2026-01-14 17:00,Orla McLaughlin,ok
+FOY-0052,placement offer,16-Jan-2026,,completed
+FOY-0052,Booking Confirmed,2026-01-24,Ciaran Bradley,completed
+FOY-0052,Invoice Issued,28/01/2026,Niamh Kelly,ok
+FOY-0052,Pre-Arrival Logistics,01/02/2026,Declan Quinn,ok
+FOY-0052,Arrival,"Feb 09, 2026",Roisin Friel,closed
+FOY-0053,Request Received,"Jan 08, 2026",Ciaran Bradley,closed
+FOY-0053,Placement Offer,2026-01-09 11:00,Niamh Kelly,ok
+FOY-0053,Booking Confirmed,2026-01-19,,done
+FOY-0053,Invoice Issued,"Jan 21, 2026",Roisin Friel,done
+FOY-0053,Document Re-request ,"Jan 21, 2026",Orla McLaughlin,completed
+FOY-0053,Pre-Arrival Logistics,"Jan 26, 2026",Roisin Friel,done
+FOY-0053,Arrival,2026-02-03,,completed
+FOY-0054,request received,25-Mar-2026,Roisin Friel,complete
+FOY-0054,Placement Offer,2026-03-28 12:15,Roisin Friel,closed
+FOY-0054,Booking Confirmed,2026-03-29 12:15,Ciaran Bradley,complete
+FOY-0054,Invoice Issued,31-Mar-2026,Niamh Kelly,completed
+FOY-0054,Document Re-request,"Mar 31, 2026",Ciaran Bradley,completed
+FOY-0054,Pre-Arrival Logistics,02-Apr-2026,Paul Doherty,complete
+FOY-0054,Arrival,11/04/2026,Niamh Kelly,completed
+FOY-0055,Request Received,2026-02-10,Aine Murray,complete
+FOY-0055,Placement Offer,2026-02-11,Niamh Kelly,ok
+FOY-0055,  Booking Confirmed,"Feb 22, 2026",Aine Murray,closed
+FOY-0055,Invoice Issued,"Feb 23, 2026",Orla McLaughlin,ok
+FOY-0055,PRE-ARRIVAL LOGISTICS,"Feb 27, 2026",Declan Quinn,closed
+FOY-0055,Arrival,2026-03-08 10:00,Ciaran Bradley,complete
+FOY-0056,Request Received,2026-01-17,Roisin Friel,completed
+FOY-0056,placement offer,2026-01-20,Aine Murray,ok
+FOY-0056,Placement Re-allocation,2026-01-21,Orla McLaughlin,done
+FOY-0056,Booking Confirmed,2026-01-23,Paul Doherty,done
+FOY-0056,Invoice Issued,"Jan 25, 2026",Roisin Friel,done
+FOY-0056,Pre-Arrival Logistics,2026-01-28,Paul Doherty,closed
+FOY-0056,Arrival ,2026-02-02,Orla McLaughlin,ok
+FOY-0057,Request Received,2026-01-23,Paul Doherty,
+FOY-0057,Placement Offer,2026-01-24 08:30,Orla McLaughlin,done
+FOY-0057,PLACEMENT RE-ALLOCATION,"Jan 26, 2026",Roisin Friel,ok
+FOY-0057,Booking Confirmed,2026-02-08,Niamh Kelly,closed
+FOY-0057,INVOICE ISSUED,2026-02-12,Niamh Kelly,ok
+FOY-0057,  Pre-Arrival Logistics,2026-02-17,Sean Gallagher,completed
+FOY-0057,Arrival,2026-02-21 08:30,Niamh Kelly,closed
+FOY-0058,  Request Received,06/03/2026,Ciaran Bradley,done
+FOY-0058,Placement Offer,2026-03-09 15:45,Declan Quinn,ok
+FOY-0058,  Booking Confirmed,2026-03-11,Paul Doherty,done
+FOY-0058,Invoice Issued,"Mar 12, 2026",Sean Gallagher,ok
+FOY-0058,Document Re-request,"Mar 13, 2026",Declan Quinn,completed
+FOY-0058,pre-arrival logistics ,"Mar 15, 2026",Orla McLaughlin,completed
+FOY-0058,Arrival,2026-03-18 15:45,Paul Doherty,complete
+FOY-0059,  Request Received,25-Jan-2026,Paul Doherty,ok
+FOY-0059,Placement Offer,28-Jan-2026,Aine Murray,ok
+FOY-0059,Booking Confirmed,30-Jan-2026,Niamh Kelly,complete
+FOY-0059,Invoice Issued,02/02/2026,Orla McLaughlin,completed
+FOY-0059,Document Re-request,03-Feb-2026,Orla McLaughlin,closed
+FOY-0059,Pre-Arrival Logistics,"Feb 09, 2026",Ciaran Bradley,complete
+FOY-0059,Arrival,2026-02-14,Ciaran Bradley,closed
+FOY-0060,Request Received ,10/03/2026,Aine Murray,complete
+FOY-0060,Placement Offer,2026-03-11,Orla McLaughlin,
+FOY-0060,booking confirmed,13/03/2026,Roisin Friel,completed
+FOY-0060,Invoice Issued,"Mar 14, 2026",,completed
+FOY-0060,Pre-Arrival Logistics,"Mar 19, 2026",Sean Gallagher,complete
+FOY-0060,  Arrival,24-Mar-2026,Paul Doherty,ok
+FOY-0061,Request Received,"Jan 01, 2026",Aine Murray,closed
+FOY-0061,Placement Offer,"Jan 03, 2026",Sean Gallagher,
+FOY-0061,BOOKING CONFIRMED,"Jan 15, 2026",Sean Gallagher,completed
+FOY-0061,INVOICE ISSUED,18-Jan-2026,Aine Murray,completed
+FOY-0061,Document Re-request,2026-01-18,Roisin Friel,
+FOY-0061,Pre-Arrival Logistics,2026-01-24 13:45,,complete
+FOY-0061,Arrival,28-Jan-2026,Aine Murray,complete
+FOY-0062,Request Received,14/01/2026,Aine Murray,
+FOY-0062,placement offer,15-Jan-2026,Sean Gallagher,ok
+FOY-0062,  Booking Confirmed,17-Jan-2026,Aine Murray,
+FOY-0062,  Invoice Issued,2026-01-18,Orla McLaughlin,completed
+FOY-0062,Pre-Arrival Logistics,2026-01-22,Declan Quinn,complete
+FOY-0062,Arrival,31/01/2026,Orla McLaughlin,completed
+FOY-0063,Request Received,"Jan 06, 2026",Sean Gallagher,closed
+FOY-0063,PLACEMENT OFFER,07/01/2026,Aine Murray,closed
+FOY-0063,placement re-allocation,10/01/2026,Declan Quinn,completed
+FOY-0063,BOOKING CONFIRMED ,23/01/2026,Ciaran Bradley,completed
+FOY-0063,Invoice Issued,"Jan 26, 2026",Roisin Friel,completed
+FOY-0063,Pre-Arrival Logistics,"Jan 29, 2026",Niamh Kelly,completed
+FOY-0063,Arrival,2026-02-08,Niamh Kelly,done
+FOY-0064,Request Received,03-Feb-2026,Roisin Friel,complete
+FOY-0064,Placement Offer,06/02/2026,Ciaran Bradley,closed
+FOY-0064,booking confirmed ,"Feb 08, 2026",Aine Murray,closed
+FOY-0064,Invoice Issued,10/02/2026,Declan Quinn,done
+FOY-0064,DOCUMENT RE-REQUEST,11/02/2026,Ciaran Bradley,ok
+FOY-0064,Pre-Arrival Logistics,13-Feb-2026,Orla McLaughlin,completed
+FOY-0064,Arrival,2026-02-18,Orla McLaughlin,complete
+FOY-0065,Request Received,2026-03-03,Orla McLaughlin,complete
+FOY-0065,  Placement Offer,"Mar 06, 2026",Paul Doherty,ok
+FOY-0065,BOOKING CONFIRMED ,2026-03-18,Niamh Kelly,complete
+FOY-0065,Invoice Issued,19/03/2026,Roisin Friel,closed
+FOY-0065,Pre-Arrival Logistics,2026-03-23 17:00,Declan Quinn,ok
+FOY-0065,Arrival,"Mar 28, 2026",Declan Quinn,done
+FOY-0066,Request Received,06-Mar-2026,Aine Murray,closed
+FOY-0066,placement offer,07-Mar-2026,Aine Murray,ok
+FOY-0066,Placement Re-allocation,2026-03-09 14:15,Roisin Friel,closed
+FOY-0066,Booking Confirmed,2026-03-18,Orla McLaughlin,closed
+FOY-0066,invoice issued ,20-Mar-2026,Paul Doherty,ok
+FOY-0066,  Document Re-request,21-Mar-2026,Orla McLaughlin,closed
+FOY-0066,Pre-Arrival Logistics,25/03/2026,Roisin Friel,closed
+FOY-0066,Arrival,02-Apr-2026,Ciaran Bradley,ok
+FOY-0067,REQUEST RECEIVED,27-Feb-2026,Aine Murray,done
+FOY-0067,Placement Offer ,"Feb 28, 2026",Sean Gallagher,
+FOY-0067,Booking Confirmed,"Mar 02, 2026",Aine Murray,complete
+FOY-0067,invoice issued,06-Mar-2026,Orla McLaughlin,closed
+FOY-0067,Pre-Arrival Logistics,2026-03-09,Niamh Kelly,completed
+FOY-0067,Arrival,2026-03-17,Paul Doherty,closed
+FOY-0068,Request Received ,05/02/2026,Roisin Friel,
+FOY-0068,  Placement Offer,"Feb 07, 2026",Orla McLaughlin,ok
+FOY-0068,Booking Confirmed,2026-02-08 11:15,Aine Murray,
+FOY-0068,Invoice Issued,"Feb 10, 2026",Aine Murray,completed
+FOY-0068,Pre-Arrival Logistics,12-Feb-2026,Niamh Kelly,completed
+FOY-0068,ARRIVAL,19/02/2026,Declan Quinn,complete
+FOY-0069,  REQUEST RECEIVED,2026-02-01 17:30,Aine Murray,closed
+FOY-0069,Placement Offer,03-Feb-2026,Orla McLaughlin,closed
+FOY-0069,Placement Re-allocation,2026-02-04 17:30,Declan Quinn,done
+FOY-0069,Booking Confirmed,2026-02-06,Declan Quinn,
+FOY-0069,  Invoice Issued,"Feb 08, 2026",Niamh Kelly,complete
+FOY-0069,Document Re-request,"Feb 09, 2026",Ciaran Bradley,completed
+FOY-0069,pre-arrival logistics,2026-02-15,Orla McLaughlin,closed
+FOY-0069,ARRIVAL,2026-02-24 17:30,Aine Murray,ok
+FOY-0070,Request Received ,2026-02-10,,completed
+FOY-0070,placement offer,"Feb 13, 2026",Orla McLaughlin,ok
+FOY-0070,Booking Confirmed,"Feb 14, 2026",Ciaran Bradley,closed
+FOY-0070,Invoice Issued,18/02/2026,Niamh Kelly,completed
+FOY-0070,Pre-Arrival Logistics ,24/02/2026,Ciaran Bradley,completed
+FOY-0070,Arrival,"Mar 03, 2026",Declan Quinn,complete
+FOY-0071,  REQUEST RECEIVED ,2026-03-31 09:15,,ok
+FOY-0071,placement offer ,2026-04-01 09:15,Orla McLaughlin,completed
+FOY-0071,placement re-allocation ,"Apr 02, 2026",Ciaran Bradley,ok
+FOY-0071,Booking Confirmed,14-Apr-2026,Niamh Kelly,ok
+FOY-0071,Invoice Issued,"Apr 18, 2026",Declan Quinn,done
+FOY-0071,Document Re-request ,19-Apr-2026,Niamh Kelly,ok
+FOY-0071,Pre-Arrival Logistics ,2026-04-24 09:15,Orla McLaughlin,done
+FOY-0071,Arrival,30/04/2026,Roisin Friel,complete
+FOY-0072,Request Received,20/03/2026,Paul Doherty,completed
+FOY-0072,Placement Offer,22/03/2026,,done
+FOY-0072,  BOOKING CONFIRMED,2026-03-30 12:30,Aine Murray,
+FOY-0072,Invoice Issued,"Apr 01, 2026",Declan Quinn,done
+FOY-0072,document re-request ,2026-04-01 12:30,Niamh Kelly,completed
+FOY-0072,pre-arrival logistics,2026-04-03 12:30,Sean Gallagher,done
+FOY-0072,Arrival,"Apr 07, 2026",Ciaran Bradley,done
+FOY-0073,Request Received,2026-02-08,Sean Gallagher,
+FOY-0073,Placement Offer,2026-02-10,Declan Quinn,complete
+FOY-0073,BOOKING CONFIRMED,"Feb 18, 2026",,complete
+FOY-0073,invoice issued,"Feb 19, 2026",Declan Quinn,done
+FOY-0073,Document Re-request ,2026-02-20 11:30,Orla McLaughlin,ok
+FOY-0073,Pre-Arrival Logistics,23-Feb-2026,,complete
+FOY-0073,Arrival,02-Mar-2026,Roisin Friel,done
+FOY-0074,REQUEST RECEIVED,09/01/2026,Orla McLaughlin,completed
+FOY-0074,  Placement Offer,12/01/2026,Aine Murray,ok
+FOY-0074,Booking Confirmed,20-Jan-2026,,complete
+FOY-0074,invoice issued,2026-01-21,Declan Quinn,done
+FOY-0074,Pre-Arrival Logistics ,26-Jan-2026,Orla McLaughlin,done
+FOY-0074,Arrival ,30/01/2026,Roisin Friel,closed
+FOY-0075,Request Received,2026-03-13 14:00,Paul Doherty,complete
+FOY-0075,Placement Offer,2026-03-16 14:00,Ciaran Bradley,closed
+FOY-0075,Booking Confirmed,"Mar 26, 2026",Sean Gallagher,complete
+FOY-0075,Invoice Issued,2026-03-29,Aine Murray,
+FOY-0075,Pre-Arrival Logistics,01/04/2026,Sean Gallagher,done
+FOY-0075,Arrival,08-Apr-2026,Niamh Kelly,ok
+FOY-0076,request received,2026-01-30,Ciaran Bradley,complete
+FOY-0076,Placement Offer ,"Feb 02, 2026",Aine Murray,closed
+FOY-0076,booking confirmed,2026-02-16 12:30,Roisin Friel,done
+FOY-0076,Invoice Issued,2026-02-18 12:30,Aine Murray,done
+FOY-0076,Document Re-request,2026-02-18 12:30,Declan Quinn,closed
+FOY-0076,Pre-Arrival Logistics,"Feb 21, 2026",Paul Doherty,done
+FOY-0076,arrival,28/02/2026,Niamh Kelly,complete
+FOY-0077,request received,09-Mar-2026,Paul Doherty,ok
+FOY-0077,PLACEMENT OFFER,"Mar 11, 2026",Niamh Kelly,closed
+FOY-0077,Booking Confirmed,13/03/2026,Sean Gallagher,complete
+FOY-0077,  invoice issued,14/03/2026,,done
+FOY-0077,document re-request,15/03/2026,Orla McLaughlin,closed
+FOY-0077,Pre-Arrival Logistics,18-Mar-2026,Aine Murray,done
+FOY-0077,arrival ,2026-03-25 11:15,Orla McLaughlin,completed
+FOY-0078,Request Received,2026-01-30,Niamh Kelly,ok
+FOY-0078,placement offer,"Feb 02, 2026",Declan Quinn,
+FOY-0078,Booking Confirmed,15-Feb-2026,Orla McLaughlin,completed
+FOY-0078,Invoice Issued,"Feb 16, 2026",Roisin Friel,done
+FOY-0078,Pre-Arrival Logistics,22/02/2026,Roisin Friel,complete
+FOY-0078,Arrival,01/03/2026,Niamh Kelly,complete
+FOY-0079,Request Received,2026-01-18,Paul Doherty,complete
+FOY-0079,Placement Offer,2026-01-20 14:15,Orla McLaughlin,complete
+FOY-0079,booking confirmed,29-Jan-2026,Sean Gallagher,complete
+FOY-0079,invoice issued,01-Feb-2026,Declan Quinn,completed
+FOY-0079,Pre-Arrival Logistics,2026-02-06,Roisin Friel,done
+FOY-0079,ARRIVAL,15/02/2026,Paul Doherty,ok
+FOY-0080,Request Received,"Feb 01, 2026",Roisin Friel,closed
+FOY-0080,Placement Offer ,2026-02-04,Declan Quinn,done
+FOY-0080,Booking Confirmed,13-Feb-2026,Roisin Friel,done
+FOY-0080,Invoice Issued,2026-02-17 14:45,Niamh Kelly,closed
+FOY-0080,Document Re-request ,17-Feb-2026,Paul Doherty,closed
+FOY-0080,pre-arrival logistics,23/02/2026,Declan Quinn,complete
+FOY-0080,Arrival,27/02/2026,Paul Doherty,ok
+FOY-0081,Request Received,"Mar 07, 2026",Niamh Kelly,complete
+FOY-0081,placement offer,2026-03-10 17:15,Orla McLaughlin,done
+FOY-0081,booking confirmed ,2026-03-19 17:15,Declan Quinn,done
+FOY-0081,INVOICE ISSUED,2026-03-23 17:15,,
+FOY-0081,Pre-Arrival Logistics,29/03/2026,Aine Murray,done
+FOY-0081,  arrival,01-Apr-2026,Orla McLaughlin,
+FOY-0082,Request Received,2026-03-20,Paul Doherty,completed
+FOY-0082,Placement Offer,2026-03-22,Orla McLaughlin,done
+FOY-0082,Booking Confirmed,01/04/2026,Aine Murray,closed
+FOY-0082,Invoice Issued,"Apr 05, 2026",Roisin Friel,completed
+FOY-0082,Document Re-request,2026-04-06 17:15,Declan Quinn,closed
+FOY-0082,  Pre-Arrival Logistics ,2026-04-10,Sean Gallagher,ok
+FOY-0082,Arrival,18/04/2026,Orla McLaughlin,done
+FOY-0083,Request Received,29/03/2026,Sean Gallagher,completed
+FOY-0083,Placement Offer,2026-03-31 13:30,Niamh Kelly,closed
+FOY-0083,Placement Re-allocation,02-Apr-2026,Orla McLaughlin,completed
+FOY-0083,BOOKING CONFIRMED,"Apr 10, 2026",Paul Doherty,completed
+FOY-0083,Invoice Issued,13-Apr-2026,Roisin Friel,done
+FOY-0083,Document Re-request ,2026-04-14 13:30,Paul Doherty,complete
+FOY-0083,PRE-ARRIVAL LOGISTICS ,2026-04-18,Sean Gallagher,ok
+FOY-0083,Arrival,2026-04-28 13:30,Orla McLaughlin,complete
+FOY-0084,Request Received,2026-01-17,Orla McLaughlin,closed
+FOY-0084,  Placement Offer,"Jan 19, 2026",Aine Murray,completed
+FOY-0084,Booking Confirmed,"Jan 28, 2026",Declan Quinn,completed
+FOY-0084,invoice issued,2026-01-31,Sean Gallagher,closed
+FOY-0084,Pre-Arrival Logistics,03/02/2026,Paul Doherty,completed
+FOY-0084,arrival,2026-02-06,,ok
+FOY-0085,Request Received,30-Mar-2026,Paul Doherty,ok
+FOY-0085,Placement Offer,2026-03-31 15:30,Orla McLaughlin,ok
+FOY-0085,booking confirmed,"Apr 01, 2026",Roisin Friel,completed
+FOY-0085,  Invoice Issued,"Apr 04, 2026",Declan Quinn,complete
+FOY-0085,Pre-Arrival Logistics ,2026-04-08,Ciaran Bradley,done
+FOY-0085,Arrival,18-Apr-2026,Niamh Kelly,
+FOY-0086,Request Received,2026-02-25,Declan Quinn,closed
+FOY-0086,placement offer,2026-02-28 17:30,Paul Doherty,closed
+FOY-0086,Booking Confirmed ,11/03/2026,Niamh Kelly,done
+FOY-0086,Invoice Issued,2026-03-13 17:30,Sean Gallagher,completed
+FOY-0086,Pre-Arrival Logistics,"Mar 17, 2026",Paul Doherty,closed
+FOY-0086,Arrival ,26-Mar-2026,,closed
+FOY-0087,Request Received,2026-01-31 14:45,Sean Gallagher,ok
+FOY-0087,Placement Offer,03/02/2026,Orla McLaughlin,complete
+FOY-0087,Booking Confirmed,2026-02-11 14:45,Niamh Kelly,ok
+FOY-0087,Invoice Issued,2026-02-15 14:45,Roisin Friel,complete
+FOY-0087,Pre-Arrival Logistics,17-Feb-2026,Orla McLaughlin,closed
+FOY-0087,Arrival,2026-02-20,Declan Quinn,done
+FOY-0088,Request Received,2026-02-05,Orla McLaughlin,completed
+FOY-0088,Placement Offer,"Feb 06, 2026",Roisin Friel,completed
+FOY-0088,Booking Confirmed,07-Feb-2026,,ok
+FOY-0088,Invoice Issued,2026-02-08,Orla McLaughlin,complete
+FOY-0088,Pre-Arrival Logistics,"Feb 12, 2026",Aine Murray,closed
+FOY-0088,Arrival,17/02/2026,Declan Quinn,closed
+FOY-0089,Request Received,20/01/2026,Sean Gallagher,
+FOY-0089,  Placement Offer,2026-01-22 15:45,Declan Quinn,closed
+FOY-0089,Placement Re-allocation,2026-01-25 15:45,Aine Murray,ok
+FOY-0089,Booking Confirmed ,04-Feb-2026,Ciaran Bradley,ok
+FOY-0089,Invoice Issued ,07-Feb-2026,Roisin Friel,complete
+FOY-0089,Document Re-request,"Feb 07, 2026",Aine Murray,
+FOY-0089,Pre-Arrival Logistics,"Feb 09, 2026",Orla McLaughlin,done
+FOY-0089,Arrival,12-Feb-2026,Paul Doherty,done
+FOY-0090,Request Received,2026-03-24 17:15,Paul Doherty,completed
+FOY-0090,Placement Offer,27/03/2026,Paul Doherty,done
+FOY-0090,Booking Confirmed,29/03/2026,,complete
+FOY-0090,  Invoice Issued,2026-03-31 17:15,Sean Gallagher,done
+FOY-0090,  document re-request,"Apr 01, 2026",,ok
+FOY-0090,Pre-Arrival Logistics,"Apr 03, 2026",Roisin Friel,closed
+FOY-0090,Arrival,2026-04-13,,ok
+FOY-0091,Request Received ,08-Feb-2026,Ciaran Bradley,ok
+FOY-0091,Placement Offer ,2026-02-10 14:00,Sean Gallagher,ok
+FOY-0091,Booking Confirmed,2026-02-23 14:00,Sean Gallagher,
+FOY-0091,  Invoice Issued,"Feb 25, 2026",Declan Quinn,ok
+FOY-0091,  pre-arrival logistics,2026-02-27,Roisin Friel,closed
+FOY-0091,Arrival ,04/03/2026,Declan Quinn,ok
+FOY-0092,Request Received ,02-Jan-2026,Niamh Kelly,done
+FOY-0092,placement offer,2026-01-03,Sean Gallagher,ok
+FOY-0092,Booking Confirmed,2026-01-04,Niamh Kelly,done
+FOY-0092,INVOICE ISSUED,08/01/2026,Aine Murray,closed
+FOY-0092,document re-request ,08/01/2026,Paul Doherty,closed
+FOY-0092,Pre-Arrival Logistics,13/01/2026,Sean Gallagher,completed
+FOY-0092,ARRIVAL,22-Jan-2026,Niamh Kelly,closed
+FOY-0093,REQUEST RECEIVED,01-Jan-2026,Ciaran Bradley,closed
+FOY-0093,Placement Offer,03/01/2026,Paul Doherty,ok
+FOY-0093,  Booking Confirmed,"Jan 04, 2026",Sean Gallagher,completed
+FOY-0093,invoice issued,08/01/2026,Niamh Kelly,ok
+FOY-0093,Pre-Arrival Logistics,"Jan 10, 2026",Roisin Friel,completed
+FOY-0093,  Arrival,14/01/2026,Roisin Friel,done
+FOY-0094,Request Received,"Mar 20, 2026",Orla McLaughlin,
+FOY-0094,placement offer,2026-03-23 15:15,Roisin Friel,completed
+FOY-0094,Placement Re-allocation,25-Mar-2026,Niamh Kelly,closed
+FOY-0094,Booking Confirmed,02/04/2026,Declan Quinn,
+FOY-0094,Invoice Issued,06-Apr-2026,Sean Gallagher,closed
+FOY-0094,Pre-Arrival Logistics ,2026-04-12 15:15,Aine Murray,ok
+FOY-0094,Arrival,2026-04-16,Roisin Friel,complete
+FOY-0095,Request Received,2026-03-27,Declan Quinn,complete
+FOY-0095,PLACEMENT OFFER,2026-03-29,Paul Doherty,completed
+FOY-0095,Placement Re-allocation,31-Mar-2026,Sean Gallagher,done
+FOY-0095,  Booking Confirmed,"Apr 10, 2026",Aine Murray,completed
+FOY-0095,Invoice Issued,2026-04-11,Sean Gallagher,completed
+FOY-0095,Pre-Arrival Logistics,13/04/2026,Sean Gallagher,completed
+FOY-0095,  Arrival,2026-04-22 12:15,Paul Doherty,closed
+FOY-0096,Request Received ,28/03/2026,Orla McLaughlin,done
+FOY-0096,placement offer,30/03/2026,Aine Murray,closed
+FOY-0096,Booking Confirmed,"Apr 10, 2026",,complete
+FOY-0096,Invoice Issued,"Apr 13, 2026",Declan Quinn,closed
+FOY-0096,Document Re-request,"Apr 14, 2026",Niamh Kelly,complete
+FOY-0096,  Pre-Arrival Logistics,2026-04-18 09:15,Niamh Kelly,complete
+FOY-0096,ARRIVAL,25/04/2026,Niamh Kelly,done
+FOY-0097,Request Received,2026-01-27 16:00,Niamh Kelly,done
+FOY-0097,Placement Offer,"Jan 29, 2026",,closed
+FOY-0097,Booking Confirmed,08-Feb-2026,Niamh Kelly,ok
+FOY-0097,Invoice Issued,09-Feb-2026,Paul Doherty,ok
+FOY-0097,  Pre-Arrival Logistics ,12/02/2026,Sean Gallagher,completed
+FOY-0097,Arrival,2026-02-16,Roisin Friel,completed
+FOY-0098,Request Received,"Feb 20, 2026",Orla McLaughlin,closed
+FOY-0098,Placement Offer,2026-02-23 10:45,Orla McLaughlin,ok
+FOY-0098,booking confirmed ,06/03/2026,Orla McLaughlin,closed
+FOY-0098,Invoice Issued,2026-03-07,Roisin Friel,completed
+FOY-0098,Document Re-request,08/03/2026,Roisin Friel,
+FOY-0098,Pre-Arrival Logistics,2026-03-12 10:45,,done
+FOY-0098,Arrival,"Mar 19, 2026",Roisin Friel,
+FOY-0099,Request Received,2026-03-18 13:45,Paul Doherty,
+FOY-0099,  PLACEMENT OFFER,20/03/2026,Ciaran Bradley,completed
+FOY-0099,booking confirmed,2026-03-22,Sean Gallagher,complete
+FOY-0099,Invoice Issued,"Mar 24, 2026",Orla McLaughlin,completed
+FOY-0099,Pre-Arrival Logistics,"Mar 30, 2026",Ciaran Bradley,ok
+FOY-0099,arrival,04/04/2026,Paul Doherty,done
+FOY-0100,Request Received,"Mar 30, 2026",Niamh Kelly,done
+FOY-0100,PLACEMENT OFFER,31/03/2026,Orla McLaughlin,complete
+FOY-0100,Booking Confirmed ,2026-04-11 13:15,,
+FOY-0100,Invoice Issued ,"Apr 12, 2026",Aine Murray,done
+FOY-0100,Document Re-request,2026-04-12,Paul Doherty,completed
+FOY-0100,Pre-Arrival Logistics,16-Apr-2026,Sean Gallagher,done
+FOY-0100,Arrival,19/04/2026,Aine Murray,done
+FOY-0101,Request Received,"Mar 31, 2026",Roisin Friel,closed
+FOY-0101,Placement Offer,01-Apr-2026,Niamh Kelly,completed
+FOY-0101,booking confirmed,2026-04-02 17:15,Orla McLaughlin,ok
+FOY-0101,Invoice Issued,2026-04-06,Declan Quinn,completed
+FOY-0101,Pre-Arrival Logistics,2026-04-11,Paul Doherty,ok
+FOY-0101,Arrival,"Apr 15, 2026",Sean Gallagher,closed
+FOY-0102,Request Received,"Mar 05, 2026",Declan Quinn,ok
+FOY-0102,Placement Offer ,"Mar 08, 2026",Declan Quinn,
+FOY-0102,  booking confirmed,21/03/2026,Roisin Friel,completed
+FOY-0102,Invoice Issued,2026-03-22 12:30,Declan Quinn,ok
+FOY-0102,Document Re-request,2026-03-23,Aine Murray,done
+FOY-0102,Pre-Arrival Logistics ,27/03/2026,Orla McLaughlin,complete
+FOY-0102,Arrival,01-Apr-2026,Declan Quinn,closed
+FOY-0103,Request Received,"Feb 20, 2026",,
+FOY-0103,Placement Offer ,"Feb 22, 2026",Roisin Friel,completed
+FOY-0103,Booking Confirmed,"Mar 05, 2026",Paul Doherty,done
+FOY-0103,  Invoice Issued,2026-03-06 12:45,Roisin Friel,ok
+FOY-0103,Pre-Arrival Logistics,2026-03-11 12:45,Ciaran Bradley,ok
+FOY-0103,Arrival,"Mar 17, 2026",Niamh Kelly,completed
+FOY-0104,  Request Received,2026-01-10 16:15,Sean Gallagher,done
+FOY-0104,placement offer ,13-Jan-2026,Declan Quinn,completed
+FOY-0104,Booking Confirmed,26-Jan-2026,Ciaran Bradley,ok
+FOY-0104,Invoice Issued,30-Jan-2026,Niamh Kelly,complete
+FOY-0104,Pre-Arrival Logistics,2026-02-04 16:15,Aine Murray,completed
+FOY-0104,ARRIVAL,2026-02-10 16:15,Roisin Friel,done
+FOY-0105,  Request Received,21/01/2026,Orla McLaughlin,closed
+FOY-0105,  Placement Offer,23/01/2026,Aine Murray,completed
+FOY-0105,  Placement Re-allocation,2026-01-24,Aine Murray,done
+FOY-0105,Booking Confirmed,"Jan 26, 2026",Paul Doherty,complete
+FOY-0105,Invoice Issued,27-Jan-2026,Orla McLaughlin,done
+FOY-0105,Document Re-request,2026-01-27 12:15,Sean Gallagher,complete
+FOY-0105,PRE-ARRIVAL LOGISTICS,30-Jan-2026,Aine Murray,completed
+FOY-0105,Arrival,"Feb 03, 2026",Niamh Kelly,completed
+FOY-0106,Request Received,"Mar 26, 2026",Paul Doherty,complete
+FOY-0106,placement offer,"Mar 28, 2026",Orla McLaughlin,complete
+FOY-0106,Booking Confirmed,2026-04-11 08:15,Aine Murray,done
+FOY-0106,Invoice Issued,2026-04-15 08:15,Paul Doherty,completed
+FOY-0106,Pre-Arrival Logistics,"Apr 19, 2026",Declan Quinn,done
+FOY-0106,Arrival,2026-04-24 08:15,Sean Gallagher,completed
+FOY-0107,Request Received,25/03/2026,Orla McLaughlin,closed
+FOY-0107,PLACEMENT OFFER,2026-03-27 10:45,,done
+FOY-0107,Booking Confirmed ,2026-04-09 10:45,Sean Gallagher,
+FOY-0107,Invoice Issued,13/04/2026,,closed
+FOY-0107,Document Re-request,14/04/2026,Sean Gallagher,completed
+FOY-0107,Pre-Arrival Logistics,19/04/2026,Orla McLaughlin,complete
+FOY-0107,  Arrival,28/04/2026,Declan Quinn,completed
+FOY-0108,Request Received,"Feb 11, 2026",Paul Doherty,
+FOY-0108,Placement Offer,12-Feb-2026,,closed
+FOY-0108,Booking Confirmed,14-Feb-2026,Aine Murray,completed
+FOY-0108,Invoice Issued,"Feb 18, 2026",Roisin Friel,done
+FOY-0108,Document Re-request,"Feb 18, 2026",Roisin Friel,completed
+FOY-0108,Pre-Arrival Logistics,2026-02-22 14:15,Niamh Kelly,
+FOY-0108,arrival,27/02/2026,Declan Quinn,
+FOY-0109,  request received,05/03/2026,Niamh Kelly,completed
+FOY-0109,Placement Offer,08-Mar-2026,Niamh Kelly,done
+FOY-0109,Booking Confirmed ,2026-03-19,Roisin Friel,done
+FOY-0109,invoice issued,2026-03-21 09:15,Declan Quinn,completed
+FOY-0109,  Pre-Arrival Logistics,2026-03-23 09:15,Ciaran Bradley,closed
+FOY-0109,Arrival,2026-03-26,Roisin Friel,completed
+FOY-0110,Request Received,27/01/2026,Paul Doherty,ok
+FOY-0110,Placement Offer,2026-01-29,Ciaran Bradley,ok
+FOY-0110,Placement Re-allocation,2026-01-31 10:45,Ciaran Bradley,ok
+FOY-0110,booking confirmed,01/02/2026,Niamh Kelly,closed
+FOY-0110,Invoice Issued,2026-02-02 10:45,Orla McLaughlin,complete
+FOY-0110,Pre-Arrival Logistics,2026-02-06,Paul Doherty,closed
+FOY-0110,Arrival,"Feb 15, 2026",Ciaran Bradley,done
+FOY-0111,request received,24-Jan-2026,Declan Quinn,ok
+FOY-0111,Placement Offer,26/01/2026,,closed
+FOY-0111,booking confirmed ,2026-02-08,Aine Murray,ok
+FOY-0111,Invoice Issued,2026-02-12 14:00,Orla McLaughlin,closed
+FOY-0111,  Pre-Arrival Logistics,17/02/2026,Paul Doherty,complete
+FOY-0111,Arrival,23-Feb-2026,Sean Gallagher,ok
+FOY-0112,Request Received,31/03/2026,Orla McLaughlin,
+FOY-0112,placement offer,2026-04-01 15:45,Declan Quinn,closed
+FOY-0112,booking confirmed,11-Apr-2026,Declan Quinn,done
+FOY-0112,Invoice Issued,2026-04-15 15:45,Declan Quinn,closed
+FOY-0112,Document Re-request,16/04/2026,Declan Quinn,complete
+FOY-0112,Pre-Arrival Logistics,2026-04-22 15:45,Niamh Kelly,ok
+FOY-0112,Arrival,30-Apr-2026,Sean Gallagher,done
+FOY-0113,Request Received ,2026-01-13,Ciaran Bradley,completed
+FOY-0113,Placement Offer ,2026-01-14,Ciaran Bradley,closed
+FOY-0113,BOOKING CONFIRMED,"Jan 26, 2026",Aine Murray,closed
+FOY-0113,Invoice Issued,2026-01-28,Aine Murray,ok
+FOY-0113,Document Re-request,2026-01-28,Aine Murray,complete
+FOY-0113,Pre-Arrival Logistics,2026-01-31 14:45,Declan Quinn,done
+FOY-0113,Arrival,2026-02-08 14:45,Roisin Friel,done
+FOY-0114,Request Received,11/01/2026,Niamh Kelly,closed
+FOY-0114,placement offer,2026-01-12 12:30,Ciaran Bradley,ok
+FOY-0114,Booking Confirmed ,"Jan 13, 2026",Ciaran Bradley,complete
+FOY-0114,Invoice Issued,17-Jan-2026,Aine Murray,closed
+FOY-0114,Document Re-request,"Jan 18, 2026",Ciaran Bradley,done
+FOY-0114,Pre-Arrival Logistics,24/01/2026,Declan Quinn,ok
+FOY-0114,arrival,31/01/2026,Orla McLaughlin,closed
+FOY-0115,REQUEST RECEIVED,04-Jan-2026,Paul Doherty,completed
+FOY-0115,  Placement Offer,2026-01-07,Declan Quinn,done
+FOY-0115,Placement Re-allocation,08-Jan-2026,Sean Gallagher,completed
+FOY-0115,Booking Confirmed,22-Jan-2026,Sean Gallagher,closed
+FOY-0115,Invoice Issued,2026-01-25 16:30,Paul Doherty,ok
+FOY-0115,  PRE-ARRIVAL LOGISTICS,2026-01-30 16:30,Roisin Friel,closed
+FOY-0115,Arrival,2026-02-08 16:30,Niamh Kelly,complete
+FOY-0116,  Request Received,09-Mar-2026,Ciaran Bradley,done
+FOY-0116,placement offer,11-Mar-2026,Niamh Kelly,completed
+FOY-0116,  Booking Confirmed,21-Mar-2026,,completed
+FOY-0116,INVOICE ISSUED ,23-Mar-2026,,done
+FOY-0116,Pre-Arrival Logistics,2026-03-29 09:15,Declan Quinn,closed
+FOY-0116,Arrival,2026-04-03 09:15,Niamh Kelly,completed
+FOY-0117,Request Received,2026-02-20,Niamh Kelly,closed
+FOY-0117,Placement Offer,2026-02-23,Sean Gallagher,closed
+FOY-0117,Booking Confirmed,24-Feb-2026,Aine Murray,closed
+FOY-0117,Invoice Issued,25-Feb-2026,Declan Quinn,closed
+FOY-0117,Pre-Arrival Logistics,"Mar 02, 2026",Roisin Friel,done
+FOY-0117,  Arrival,10-Mar-2026,Niamh Kelly,complete
+FOY-0118,REQUEST RECEIVED,2026-01-22,Ciaran Bradley,completed
+FOY-0118,placement offer,23/01/2026,Declan Quinn,closed
+FOY-0118,Booking Confirmed,2026-01-31,,complete
+FOY-0118,Invoice Issued,01/02/2026,Niamh Kelly,ok
+FOY-0118,Document Re-request,01/02/2026,Sean Gallagher,ok
+FOY-0118,  Pre-Arrival Logistics,07-Feb-2026,Orla McLaughlin,
+FOY-0118,Arrival,"Feb 17, 2026",Sean Gallagher,closed
+FOY-0119,Request Received,2026-01-12 14:00,Sean Gallagher,completed
+FOY-0119,Placement Offer,"Jan 14, 2026",Sean Gallagher,completed
+FOY-0119,Placement Re-allocation,16/01/2026,Aine Murray,done
+FOY-0119,BOOKING CONFIRMED,2026-01-29 14:00,Roisin Friel,done
+FOY-0119,Invoice Issued,02-Feb-2026,Ciaran Bradley,done
+FOY-0119,Pre-Arrival Logistics,2026-02-06,Orla McLaughlin,completed
+FOY-0119,Arrival,"Feb 13, 2026",Aine Murray,closed
+FOY-0120,REQUEST RECEIVED,05-Feb-2026,,complete
+FOY-0120,Placement Offer,06-Feb-2026,Orla McLaughlin,done
+FOY-0120,Booking Confirmed,2026-02-19 17:45,Aine Murray,done
+FOY-0120,Invoice Issued,22-Feb-2026,Declan Quinn,closed
+FOY-0120,pre-arrival logistics,"Feb 25, 2026",Aine Murray,completed
+FOY-0120,Arrival,2026-02-28,Sean Gallagher,completed
+FOY-0121,Request Received,"Jan 04, 2026",Aine Murray,closed
+FOY-0121,Placement Offer,2026-01-05 17:30,Paul Doherty,done
+FOY-0121,Booking Confirmed ,07/01/2026,Aine Murray,
+FOY-0121,invoice issued,"Jan 11, 2026",Roisin Friel,closed
+FOY-0121,Document Re-request,2026-01-11 17:30,Roisin Friel,ok
+FOY-0121,pre-arrival logistics,2026-01-17,Declan Quinn,closed
+FOY-0121,arrival,21/01/2026,Niamh Kelly,completed
+FOY-0122,request received,"Jan 18, 2026",Orla McLaughlin,closed
+FOY-0122,Placement Offer,2026-01-19,,closed
+FOY-0122,Placement Re-allocation,22/01/2026,Sean Gallagher,completed
+FOY-0122,Booking Confirmed,"Feb 02, 2026",Ciaran Bradley,ok
+FOY-0122,Invoice Issued ,03/02/2026,Aine Murray,complete
+FOY-0122,PRE-ARRIVAL LOGISTICS,"Feb 06, 2026",Roisin Friel,complete
+FOY-0122,  Arrival ,2026-02-09,Niamh Kelly,complete
+FOY-0123,REQUEST RECEIVED,"Jan 26, 2026",Sean Gallagher,done
+FOY-0123,  Placement Offer,2026-01-28 11:30,Paul Doherty,complete
+FOY-0123,Booking Confirmed,29-Jan-2026,Roisin Friel,done
+FOY-0123,Invoice Issued,"Jan 31, 2026",Ciaran Bradley,complete
+FOY-0123,Document Re-request,31/01/2026,Aine Murray,completed
+FOY-0123,Pre-Arrival Logistics,2026-02-06,Declan Quinn,
+FOY-0123,Arrival,2026-02-15 11:30,Declan Quinn,completed
+FOY-0124,REQUEST RECEIVED,16/03/2026,Roisin Friel,ok
+FOY-0124,PLACEMENT OFFER,2026-03-19,Niamh Kelly,completed
+FOY-0124,  BOOKING CONFIRMED,"Mar 29, 2026",Roisin Friel,ok
+FOY-0124,Invoice Issued,02/04/2026,Orla McLaughlin,completed
+FOY-0124,Pre-Arrival Logistics,"Apr 06, 2026",Sean Gallagher,done
+FOY-0124,Arrival,"Apr 12, 2026",Sean Gallagher,complete
+FOY-0125,Request Received,2026-01-02 12:30,Aine Murray,closed
+FOY-0125,Placement Offer,03/01/2026,Declan Quinn,closed
+FOY-0125,Booking Confirmed,"Jan 05, 2026",Sean Gallagher,ok
+FOY-0125,  Invoice Issued,09/01/2026,Orla McLaughlin,done
+FOY-0125,Pre-Arrival Logistics,2026-01-13 12:30,Orla McLaughlin,done
+FOY-0125,Arrival,"Jan 16, 2026",Roisin Friel,complete
+FOY-0126,Request Received,12-Feb-2026,,closed
+FOY-0126,PLACEMENT OFFER,13/02/2026,Sean Gallagher,
+FOY-0126,  Booking Confirmed,2026-02-21 17:45,Roisin Friel,done
+FOY-0126,  Invoice Issued,25/02/2026,Niamh Kelly,completed
+FOY-0126,DOCUMENT RE-REQUEST,26/02/2026,Declan Quinn,done
+FOY-0126,pre-arrival logistics,03-Mar-2026,Ciaran Bradley,ok
+FOY-0126,Arrival,2026-03-06 17:45,Ciaran Bradley,completed
+FOY-0127,Request Received,23-Jan-2026,Paul Doherty,done
+FOY-0127,Placement Offer,2026-01-24,Sean Gallagher,ok
+FOY-0127,  Booking Confirmed ,"Jan 25, 2026",Roisin Friel,completed
+FOY-0127,  Invoice Issued,2026-01-26 17:45,Roisin Friel,ok
+FOY-0127,pre-arrival logistics,31/01/2026,Ciaran Bradley,ok
+FOY-0127,arrival,2026-02-04 17:45,Niamh Kelly,completed
+FOY-0128,REQUEST RECEIVED ,"Feb 07, 2026",Niamh Kelly,complete
+FOY-0128,Placement Offer,2026-02-08,Paul Doherty,completed
+FOY-0128,placement re-allocation,11/02/2026,Ciaran Bradley,complete
+FOY-0128,  booking confirmed,2026-02-22,Sean Gallagher,done
+FOY-0128,  Invoice Issued,"Feb 24, 2026",Ciaran Bradley,complete
+FOY-0128,Document Re-request,"Feb 25, 2026",Ciaran Bradley,ok
+FOY-0128,Pre-Arrival Logistics ,"Feb 27, 2026",,complete
+FOY-0128,  Arrival,09-Mar-2026,Niamh Kelly,done
+FOY-0129,REQUEST RECEIVED,2026-03-30 10:30,Paul Doherty,closed
+FOY-0129,Placement Offer,01-Apr-2026,Aine Murray,closed
+FOY-0129,Booking Confirmed,02-Apr-2026,,completed
+FOY-0129,INVOICE ISSUED ,04-Apr-2026,Declan Quinn,completed
+FOY-0129,Pre-Arrival Logistics,2026-04-08 10:30,Orla McLaughlin,complete
+FOY-0129,Arrival ,16/04/2026,Sean Gallagher,ok
+FOY-0130,request received,04/03/2026,Paul Doherty,closed
+FOY-0130,  PLACEMENT OFFER,"Mar 05, 2026",Niamh Kelly,complete
+FOY-0130,PLACEMENT RE-ALLOCATION,08/03/2026,Orla McLaughlin,ok
+FOY-0130,Booking Confirmed,18-Mar-2026,Roisin Friel,
+FOY-0130,  Invoice Issued,"Mar 22, 2026",Niamh Kelly,complete
+FOY-0130,Pre-Arrival Logistics,2026-03-27 09:15,Paul Doherty,ok
+FOY-0130,arrival,"Apr 02, 2026",Declan Quinn,ok
+FOY-0131,  Request Received,2026-03-24 17:00,Niamh Kelly,ok
+FOY-0131,Placement Offer,"Mar 27, 2026",Aine Murray,ok
+FOY-0131,Booking Confirmed,2026-03-28,Niamh Kelly,ok
+FOY-0131,Invoice Issued,30/03/2026,Aine Murray,done
+FOY-0131,Document Re-request,31-Mar-2026,Sean Gallagher,complete
+FOY-0131,Pre-Arrival Logistics,2026-04-04 17:00,Orla McLaughlin,done
+FOY-0131,Arrival,2026-04-12 17:00,,complete
+FOY-0132,Request Received,09/03/2026,Sean Gallagher,closed
+FOY-0132,Placement Offer,11/03/2026,Sean Gallagher,ok
+FOY-0132,booking confirmed ,2026-03-23,Roisin Friel,done
+FOY-0132,Invoice Issued ,2026-03-25,Orla McLaughlin,done
+FOY-0132,document re-request ,25-Mar-2026,Orla McLaughlin,ok
+FOY-0132,Pre-Arrival Logistics,"Mar 31, 2026",Sean Gallagher,ok
+FOY-0132,Arrival,2026-04-03,Declan Quinn,ok
+FOY-0133,Request Received,2026-03-09 12:15,Roisin Friel,done
+FOY-0133,placement offer ,"Mar 11, 2026",Declan Quinn,ok
+FOY-0133,Booking Confirmed,2026-03-12 12:15,Paul Doherty,completed
+FOY-0133,Invoice Issued,14-Mar-2026,Aine Murray,done
+FOY-0133,DOCUMENT RE-REQUEST ,15-Mar-2026,Sean Gallagher,complete
+FOY-0133,pre-arrival logistics ,"Mar 17, 2026",Roisin Friel,complete
+FOY-0133,Arrival,27-Mar-2026,Declan Quinn,completed
+FOY-0134,Request Received,24-Mar-2026,Roisin Friel,complete
+FOY-0134,  placement offer,26/03/2026,Paul Doherty,complete
+FOY-0134,  Booking Confirmed ,28-Mar-2026,Sean Gallagher,ok
+FOY-0134,Invoice Issued,31-Mar-2026,Sean Gallagher,done
+FOY-0134,Pre-Arrival Logistics,05/04/2026,Declan Quinn,complete
+FOY-0134,Arrival,2026-04-10,Ciaran Bradley,done
+FOY-0135,Request Received,"Jan 28, 2026",Niamh Kelly,complete
+FOY-0135,  Placement Offer,29/01/2026,Declan Quinn,completed
+FOY-0135,Booking Confirmed,2026-01-30 15:30,Ciaran Bradley,
+FOY-0135,Invoice Issued,02-Feb-2026,Roisin Friel,completed
+FOY-0135,  Pre-Arrival Logistics,"Feb 08, 2026",Declan Quinn,closed
+FOY-0135,Arrival,18/02/2026,Aine Murray,closed
+FOY-0136,request received,2026-02-24,Paul Doherty,completed
+FOY-0136,Placement Offer ,25/02/2026,Roisin Friel,closed
+FOY-0136,Booking Confirmed,2026-02-27,Declan Quinn,ok
+FOY-0136,Invoice Issued ,2026-03-03 10:00,,closed
+FOY-0136,Pre-Arrival Logistics,08/03/2026,Roisin Friel,ok
+FOY-0136,  arrival,13-Mar-2026,Niamh Kelly,done
+FOY-0137,Request Received,2026-01-09,Niamh Kelly,
+FOY-0137,Placement Offer,11/01/2026,Niamh Kelly,completed
+FOY-0137,booking confirmed,12-Jan-2026,Niamh Kelly,done
+FOY-0137,Invoice Issued,13-Jan-2026,Declan Quinn,ok
+FOY-0137,Pre-Arrival Logistics,19-Jan-2026,Sean Gallagher,done
+FOY-0137,arrival,25/01/2026,Sean Gallagher,completed
+FOY-0138,Request Received,18/02/2026,,completed
+FOY-0138,Placement Offer,21-Feb-2026,Niamh Kelly,complete
+FOY-0138,Placement Re-allocation,"Feb 23, 2026",Paul Doherty,closed
+FOY-0138,Booking Confirmed,"Feb 25, 2026",Niamh Kelly,complete
+FOY-0138,Invoice Issued,2026-02-26,Paul Doherty,completed
+FOY-0138,document re-request,"Feb 27, 2026",Orla McLaughlin,done
+FOY-0138,PRE-ARRIVAL LOGISTICS,04-Mar-2026,Roisin Friel,complete
+FOY-0138,Arrival,"Mar 09, 2026",Aine Murray,completed
+FOY-0139,Request Received,2026-01-24 15:30,Sean Gallagher,done
+FOY-0139,Placement Offer,2026-01-26,Sean Gallagher,complete
+FOY-0139,Booking Confirmed,2026-02-03,Roisin Friel,complete
+FOY-0139,Invoice Issued,2026-02-04,Roisin Friel,completed
+FOY-0139,  Pre-Arrival Logistics,10/02/2026,Sean Gallagher,completed
+FOY-0139,Arrival,"Feb 18, 2026",Paul Doherty,complete
+FOY-0140,REQUEST RECEIVED,03/03/2026,Orla McLaughlin,closed
+FOY-0140,Placement Offer,2026-03-04,,ok
+FOY-0140,placement re-allocation,2026-03-06 12:30,,ok
+FOY-0140,Booking Confirmed,2026-03-07 12:30,Aine Murray,completed
+FOY-0140,Invoice Issued,11-Mar-2026,Orla McLaughlin,ok
+FOY-0140,PRE-ARRIVAL LOGISTICS,"Mar 16, 2026",Sean Gallagher,
+FOY-0140,Arrival ,25/03/2026,Declan Quinn,completed
+FOY-0141,Request Received,2026-01-17 13:45,Niamh Kelly,done
+FOY-0141,PLACEMENT OFFER,18/01/2026,Aine Murray,completed
+FOY-0141,Booking Confirmed,2026-01-30 13:45,Paul Doherty,complete
+FOY-0141,INVOICE ISSUED,01/02/2026,Roisin Friel,done
+FOY-0141,Pre-Arrival Logistics,07/02/2026,Sean Gallagher,
+FOY-0141,Arrival,2026-02-13,Aine Murray,closed
+FOY-0142,Request Received,"Mar 03, 2026",Ciaran Bradley,complete
+FOY-0142,  PLACEMENT OFFER,"Mar 04, 2026",Sean Gallagher,completed
+FOY-0142,Booking Confirmed,"Mar 05, 2026",Orla McLaughlin,done
+FOY-0142,Invoice Issued,07-Mar-2026,Ciaran Bradley,completed
+FOY-0142,  document re-request,08-Mar-2026,,complete
+FOY-0142,  Pre-Arrival Logistics,"Mar 13, 2026",Orla McLaughlin,complete
+FOY-0142,arrival,"Mar 18, 2026",Ciaran Bradley,ok
+FOY-0143,REQUEST RECEIVED,"Mar 09, 2026",Aine Murray,done
+FOY-0143,PLACEMENT OFFER,12-Mar-2026,Paul Doherty,closed
+FOY-0143,Booking Confirmed,2026-03-26,Niamh Kelly,closed
+FOY-0143,Invoice Issued,30/03/2026,Orla McLaughlin,closed
+FOY-0143,pre-arrival logistics ,02/04/2026,Orla McLaughlin,completed
+FOY-0143,Arrival,05-Apr-2026,,completed
+FOY-0144,Request Received,2026-03-12,Aine Murray,complete
+FOY-0144,PLACEMENT OFFER,14-Mar-2026,Paul Doherty,ok
+FOY-0144,Booking Confirmed,2026-03-16 12:15,Sean Gallagher,complete
+FOY-0144,INVOICE ISSUED,"Mar 20, 2026",Niamh Kelly,done
+FOY-0144,DOCUMENT RE-REQUEST,2026-03-21 12:15,Niamh Kelly,done
+FOY-0144,Pre-Arrival Logistics,24/03/2026,Paul Doherty,ok
+FOY-0144,arrival,2026-04-02,Paul Doherty,done
+FOY-0145,Request Received,2026-01-17,Paul Doherty,completed
+FOY-0145,PLACEMENT OFFER,2026-01-18 11:00,Niamh Kelly,ok
+FOY-0145,Booking Confirmed,2026-01-26,Aine Murray,completed
+FOY-0145,invoice issued ,2026-01-30 11:00,Roisin Friel,completed
+FOY-0145,Pre-Arrival Logistics,2026-02-04 11:00,Niamh Kelly,complete
+FOY-0145,Arrival ,2026-02-11,Aine Murray,complete
+FOY-0146,  Request Received,"Mar 27, 2026",Orla McLaughlin,done
+FOY-0146,Placement Offer,2026-03-28 12:30,Declan Quinn,done
+FOY-0146,  Booking Confirmed,10/04/2026,Roisin Friel,ok
+FOY-0146,Invoice Issued,14/04/2026,Roisin Friel,ok
+FOY-0146,Document Re-request,15-Apr-2026,Roisin Friel,complete
+FOY-0146,Pre-Arrival Logistics,"Apr 18, 2026",Declan Quinn,
+FOY-0146,Arrival,26/04/2026,Orla McLaughlin,closed
+FOY-0147,Request Received,2026-01-08,Roisin Friel,done
+FOY-0147,Placement Offer,09/01/2026,Ciaran Bradley,
+FOY-0147,booking confirmed,11-Jan-2026,Orla McLaughlin,completed
+FOY-0147,Invoice Issued,2026-01-12,Niamh Kelly,done
+FOY-0147,Document Re-request,"Jan 13, 2026",Orla McLaughlin,ok
+FOY-0147,Pre-Arrival Logistics,17/01/2026,Sean Gallagher,done
+FOY-0147,Arrival,2026-01-22,Declan Quinn,ok
+FOY-0148,request received,"Jan 25, 2026",Aine Murray,complete
+FOY-0148,  PLACEMENT OFFER,26/01/2026,Sean Gallagher,done
+FOY-0148,Booking Confirmed,2026-02-03 12:00,,done
+FOY-0148,Invoice Issued,04-Feb-2026,Sean Gallagher,ok
+FOY-0148,  Pre-Arrival Logistics,07-Feb-2026,Paul Doherty,
+FOY-0148,Arrival ,16/02/2026,Niamh Kelly,done
+FOY-0149,Request Received,29-Mar-2026,Ciaran Bradley,complete
+FOY-0149,Placement Offer ,2026-03-31 10:15,Sean Gallagher,closed
+FOY-0149,Booking Confirmed ,2026-04-09,Niamh Kelly,completed
+FOY-0149,Invoice Issued,"Apr 10, 2026",,closed
+FOY-0149,pre-arrival logistics,2026-04-12 10:15,Orla McLaughlin,ok
+FOY-0149,Arrival,"Apr 17, 2026",Orla McLaughlin,closed
+FOY-0150,Request Received,2026-02-10,Aine Murray,complete
+FOY-0150,placement offer,13/02/2026,Roisin Friel,complete
+FOY-0150,Booking Confirmed,24-Feb-2026,Declan Quinn,complete
+FOY-0150,Invoice Issued,"Feb 28, 2026",Ciaran Bradley,ok
+FOY-0150,document re-request,2026-03-01 13:00,Niamh Kelly,completed
+FOY-0150,  Pre-Arrival Logistics,2026-03-07 13:00,Declan Quinn,complete
+FOY-0150,Arrival ,2026-03-16,Orla McLaughlin,completed

@@ -29,74 +29,77 @@ from pipeline.embed import query
 # the suggested fix. Keyed by detector `type`.
 _TEMPLATES = {
     "delay": {
-        "title": "Booking confirmations delayed by one to two weeks",
-        "workflow_area": "Booking confirmations",
+        "title": "Placement confirmations delayed by one to two weeks",
+        "workflow_area": "Placement confirmations",
         "severity": "high",
         "confidence": 0.84,
         "description": (
-            "Booking Confirmation is taking far longer than it should — around "
+            "Booking Confirmed is taking far longer than it should — around "
             "{metric:.0f} days from the previous step, against an expected 1-2 days. "
-            "The delay recurs across {count} of the booking cases and is the slowest "
-            "step in the workflow."
+            "The delay recurs across {count} of the placement cases and is the slowest "
+            "step in the workflow, with host-family matching the usual hold-up."
         ),
         "fix": {
-            "summary": "Acknowledge on submission and put an SLA on confirmation",
+            "summary": "Acknowledge on request and put an SLA on host-family confirmation",
             "steps": [
-                "Send an automatic 'request received' acknowledgement the moment a booking is submitted.",
-                "Set an explicit confirmation SLA (e.g. next working day) and state it to the customer.",
-                "Flag any booking still unconfirmed after 48 hours for priority handling.",
+                "Send an automatic 'request received' acknowledgement the moment a placement request arrives.",
+                "Set an explicit confirmation SLA (e.g. host family matched within 3 working days) and state it to the partner school.",
+                "Flag any placement still unconfirmed after 48 hours for priority host-matching.",
             ],
             "rationale": (
-                "The gap sits entirely in the confirmation step. An immediate acknowledgement "
-                "removes customer uncertainty, and an SLA with an aging flag stops individual "
-                "bookings from quietly slipping past a week."
+                "The gap sits entirely in the confirmation step while a host family is found. An "
+                "immediate acknowledgement removes the partner school's uncertainty, and an SLA "
+                "with an aging flag stops individual placements from quietly slipping past a week."
             ),
         },
     },
     "repetition": {
-        "title": "Payment details re-entered into the pre-arrival sheet",
-        "workflow_area": "Payments",
+        "title": "Student documents re-requested and re-keyed across sheets",
+        "workflow_area": "Student documents",
         "severity": "medium",
         "confidence": 0.95,
         "description": (
-            "Payment information is keyed a second time into the pre-arrival sheet after "
-            "the Payment step — a duplicate-entry stage that appears in {count} cases. "
-            "The double entry is wasted effort and a transcription-error risk."
+            "Student paperwork (CV, motivation letter, parental consent) is collected a "
+            "second time and re-keyed into the homestay and enrolment sheets after the "
+            "Invoice Issued step — a duplicate-entry stage that appears in {count} cases. "
+            "The double handling is wasted effort and a transcription-error risk."
         ),
         "fix": {
-            "summary": "Carry payment data forward from a single source instead of re-keying",
+            "summary": "Hold student documents once in a single record instead of re-collecting",
             "steps": [
-                "Populate the pre-arrival sheet from the payment record automatically.",
-                "Remove the manual Payment Re-entry step from the process.",
+                "Populate the homestay and enrolment sheets from the student's document record automatically.",
+                "Remove the manual Document Re-request step from the process.",
                 "Spot-check the first week of auto-carried rows against source before switching off manual entry.",
             ],
             "rationale": (
-                "The re-entry stage exists only because the two sheets are not linked. "
-                "Generating the pre-arrival row from the payment record removes the second "
-                "entry point entirely and the errors that come with it."
+                "The re-request stage exists only because the document record and the placement "
+                "sheets are not linked. Carrying the student's details forward from a single record "
+                "removes the second collection point entirely and the errors that come with it."
             ),
         },
     },
     "rework": {
-        "title": "Quotes revised (looped back) before booking is confirmed",
-        "workflow_area": "Sales quotes",
+        "title": "Host placements re-allocated (looped back) before confirmation",
+        "workflow_area": "Host-family placement",
         "severity": "medium",
         "confidence": 0.90,
         "description": (
-            "Quotes are being revised after they were first issued — a rework loop that "
-            "appears in {count} cases and pushes the booking back. Rework this early "
-            "usually means the initial quote was missing information."
+            "Placements are being re-allocated after they were first offered — a rework "
+            "loop that appears in {count} cases and pushes the booking back. Re-allocation "
+            "this early usually means a host family dropped out or was matched on incomplete "
+            "student requirements."
         ),
         "fix": {
-            "summary": "Capture quote requirements up front to cut the revision loop",
+            "summary": "Confirm host availability and student requirements up front to cut the re-allocation loop",
             "steps": [
-                "Add a short pre-quote checklist so the key details are captured before the first quote.",
-                "Have a second person sanity-check quotes above a value threshold before they go out.",
-                "Track revision reasons so the most common gaps can be designed out.",
+                "Add a short pre-placement checklist so host availability and student needs are confirmed before the first offer.",
+                "Re-confirm each host family's commitment before the placement is offered to the school.",
+                "Track re-allocation reasons so the most common drop-out causes can be designed out.",
             ],
             "rationale": (
-                "The loop-back is driven by incomplete initial quotes. Capturing the missing "
-                "inputs before the first quote removes the most common reason for revising it."
+                "The loop-back is driven by host drop-outs and incomplete initial matches. Confirming "
+                "availability and requirements before the first offer removes the most common reason "
+                "for re-allocating a placement."
             ),
         },
     },

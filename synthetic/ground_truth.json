@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-17T08:46:10.942228",
+  "generated_at": "2026-06-22T09:52:43.494604",
   "seed": 42,
   "n_cases": 150,
   "window": "2026-01 to 2026-04",
@@ -8,8 +8,8 @@
     {
       "id": "BN001",
       "type": "delay",
-      "stage": "Booking Confirmation",
-      "description": "Booking Confirmation takes 8-14 days instead of 1-2.",
+      "stage": "Booking Confirmed",
+      "description": "Booking Confirmed (host-family matching) takes 8-14 days instead of 1-2.",
       "affected_cases": [
         "BR-0002",
         "BR-0003",
@@ -105,8 +105,8 @@
     {
       "id": "BN002",
       "type": "repetition",
-      "stage": "Payment Re-entry",
-      "description": "Payment data re-entered into the Pre-Arrival sheet (duplicate activity after Payment).",
+      "stage": "Document Re-request",
+      "description": "Student documents (CV/ML/consent) re-requested and re-keyed (duplicate activity after Invoice Issued).",
       "affected_cases": [
         "BR-0001",
         "BR-0002",
@@ -180,8 +180,8 @@
     {
       "id": "BN003",
       "type": "rework",
-      "stage": "Quote Revision",
-      "description": "Quote revised (loop-back) before the booking is confirmed.",
+      "stage": "Placement Re-allocation",
+      "description": "Host placement re-allocated (loop-back) before the booking is confirmed.",
       "affected_cases": [
         "BR-0001",
         "BR-0002",

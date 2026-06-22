@@ -1,7 +1,7 @@
 """Detection tests on a hand-built event log — deterministic, no parquet needed.
 
 Covers the three patterns and the casing-noise tolerance (stage labels arrive as
-"ENQUIRY"/"Enquiry"/"enquiry ").
+"REQUEST RECEIVED"/"Request Received"/"request received ").
 """
 
 from __future__ import annotations
@@ -25,11 +25,11 @@ def _by_id(results):
 
 def test_repetition_and_rework_detected_by_presence() -> None:
     df = _df([
-        ("C1", "Payment", "2026-01-01", None, "ok", "r1"),
-        ("C1", "Payment Re-entry", "2026-01-02", None, "ok", "r2"),   # repetition marker
-        ("C2", "Quote", "2026-01-01", None, "ok", "r3"),
-        ("C2", "QUOTE REVISION", "2026-01-03", None, "ok", "r4"),     # rework, noisy casing
-        ("C3", "Enquiry", "2026-01-01", None, "ok", "r5"),            # clean case, no markers
+        ("C1", "Invoice Issued", "2026-01-01", None, "ok", "r1"),
+        ("C1", "Document Re-request", "2026-01-02", None, "ok", "r2"),     # repetition marker
+        ("C2", "Placement Offer", "2026-01-01", None, "ok", "r3"),
+        ("C2", "PLACEMENT RE-ALLOCATION", "2026-01-03", None, "ok", "r4"), # rework, noisy casing
+        ("C3", "Request Received", "2026-01-01", None, "ok", "r5"),        # clean case, no markers
     ])
     res = _by_id(detect_all(df))
     assert res["BN002"].affected_cases == ["C1"]
@@ -39,12 +39,12 @@ def test_repetition_and_rework_detected_by_presence() -> None:
 def test_delay_flags_only_cases_over_threshold() -> None:
     thresh = config.DELAY_THRESHOLD_DAYS
     df = _df([
-        # slow: big gap into booking confirmation -> flagged
-        ("S1", "Quote", "2026-01-01", None, "ok", "s1"),
-        ("S1", "Booking Confirmation", f"2026-01-{1 + thresh + 3:02d}", None, "ok", "s2"),
+        # slow: big gap into booking confirmed -> flagged
+        ("S1", "Placement Offer", "2026-01-01", None, "ok", "s1"),
+        ("S1", "Booking Confirmed", f"2026-01-{1 + thresh + 3:02d}", None, "ok", "s2"),
         # fast: 1-day gap -> not flagged
-        ("F1", "Quote", "2026-01-01", None, "ok", "f1"),
-        ("F1", "booking confirmation", "2026-01-02", None, "ok", "f2"),
+        ("F1", "Placement Offer", "2026-01-01", None, "ok", "f1"),
+        ("F1", "booking confirmed", "2026-01-02", None, "ok", "f2"),
     ])
     res = _by_id(detect_all(df))
     assert res["BN001"].affected_cases == ["S1"]
@@ -52,6 +52,6 @@ def test_delay_flags_only_cases_over_threshold() -> None:
 
 
 def test_all_three_bottlenecks_always_returned() -> None:
-    res = _by_id(detect_all(_df([("C1", "Enquiry", "2026-01-01", None, "ok", "r1")])))
+    res = _by_id(detect_all(_df([("C1", "Request Received", "2026-01-01", None, "ok", "r1")])))
     assert set(res) == {"BN001", "BN002", "BN003"}
     assert all(b.affected_count == 0 for b in res.values())  # nothing matched

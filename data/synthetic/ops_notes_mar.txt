@@ -1,3 +1,3 @@
-March review. The confirmation backlog has not improved. Aisha Khan flagged that the same booking can sit for over a week before anyone signs it off.
+March review. The confirmation backlog has not improved. Niamh Kelly flagged that the same placement can sit for over a week before a host family is signed off.
 
-Payment re-entry into the pre-arrival sheet came up again at the standup. Contact the office on 028 9012 3456 or ops@foyle-mock-sme.example if you spot a duplicate entry. We need a single source of truth.
+Document re-requests came up again at the standup — students re-sending CVs and consent forms that we already had on file. Contact the office on 028 9012 3456 or ops@foyle-mock-sme.example if you spot a duplicate. We need a single source of truth for student paperwork.

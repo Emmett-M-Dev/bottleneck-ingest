@@ -43,16 +43,19 @@ CHROMA_COLLECTION = "sme_ops"
 
 # ── Detection ────────────────────────────────────────────────────────────────
 # Marker stages for the three bottleneck patterns (matched case-insensitively).
-DELAY_STAGE         = "Booking Confirmation"   # delay: takes 8-14 days vs 1-2
-REPETITION_STAGE    = "Payment Re-entry"       # repetition: data keyed twice
-REWORK_STAGE        = "Quote Revision"         # rework: quote looped back
-DELAY_THRESHOLD_DAYS = 7                        # gap into DELAY_STAGE that counts as delayed
+# Domain: Foyle International student-placement workflow (host families / CVs /
+# invoices). Stage labels reflect the real SMMP process; detection mechanics are
+# unchanged (delay = temporal gap into marker; repetition/rework = marker present).
+DELAY_STAGE         = "Booking Confirmed"        # delay: host-family matching takes 8-14 days vs 1-2
+REPETITION_STAGE    = "Document Re-request"      # repetition: student docs (CV/ML/consent) re-keyed
+REWORK_STAGE        = "Placement Re-allocation"  # rework: host fell through, student re-placed
+DELAY_THRESHOLD_DAYS = 7                          # gap into DELAY_STAGE that counts as delayed
 
-# Canonical stage order (the booking workflow, start -> finish). Drives the
+# Canonical stage order (the Foyle placement workflow, start -> finish). Drives the
 # workflow-map layout in the dashboard.
 STAGE_ORDER = [
-    "Enquiry", "Quote", "Quote Revision", "Booking Confirmation",
-    "Payment", "Payment Re-entry", "Pre-Arrival Logistics", "Completed",
+    "Request Received", "Placement Offer", "Placement Re-allocation", "Booking Confirmed",
+    "Invoice Issued", "Document Re-request", "Pre-Arrival Logistics", "Arrival",
 ]
 
 # UI export
