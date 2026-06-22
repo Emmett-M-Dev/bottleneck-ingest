@@ -48,5 +48,13 @@ REPETITION_STAGE    = "Payment Re-entry"       # repetition: data keyed twice
 REWORK_STAGE        = "Quote Revision"         # rework: quote looped back
 DELAY_THRESHOLD_DAYS = 7                        # gap into DELAY_STAGE that counts as delayed
 
+# Canonical stage order (the booking workflow, start -> finish). Drives the
+# workflow-map layout in the dashboard.
+STAGE_ORDER = [
+    "Enquiry", "Quote", "Quote Revision", "Booking Confirmation",
+    "Payment", "Payment Re-entry", "Pre-Arrival Logistics", "Completed",
+]
+
 # UI export
-UI_CASES_PATH = OUTPUTS / "ui_cases.json"
+UI_CASES_PATH    = OUTPUTS / "ui_cases.json"
+UI_WORKFLOW_PATH = OUTPUTS / "ui_workflow.json"

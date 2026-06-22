@@ -21,7 +21,7 @@ import json
 from datetime import datetime, timezone
 
 import config
-from detection.detect import DetectedBottleneck, detect_all
+from detection.detect import DetectedBottleneck, detect_all, load_event_log
 from pipeline.embed import query
 
 # ── Authored content per bottleneck type ─────────────────────────────────────
@@ -198,17 +198,71 @@ def build_cases() -> list[dict]:
     return cases
 
 
-def export(path=None) -> int:
-    path = path or config.UI_CASES_PATH
+def build_workflow() -> dict:
+    """Workflow graph + headline KPIs for the dashboard, built from the real event
+    log. Nodes are the canonical stages (in order); edges are observed stage->stage
+    transitions with counts; bottleneck stages are flagged with their detected id."""
+    df = load_event_log()
+    detected = detect_all(df)
+
+    # Map a canonical stage label -> detected bottleneck (if any).
+    stage_to_bn = {bn.stage: bn for bn in detected if bn.affected_count > 0}
+    canon_to_label = {s.lower(): s for s in config.STAGE_ORDER}
+
+    present = {s for s in df["stage"].unique() if s in canon_to_label}
+    nodes = []
+    for label in config.STAGE_ORDER:
+        if label.lower() not in present:
+            continue
+        bn = stage_to_bn.get(label)
+        nodes.append({
+            "id": label,
+            "label": label,
+            "bottleneck": bn.id if bn else None,
+            "bottleneck_type": bn.type if bn else None,
+            "affected": bn.affected_count if bn else 0,
+        })
+
+    # Observed transitions between consecutive events within each case.
+    transitions: dict[tuple[str, str], int] = {}
+    for _, g in df.sort_values("ts").groupby("case_id"):
+        seq = [canon_to_label[s] for s in g["stage"] if s in canon_to_label]
+        for a, b in zip(seq, seq[1:]):
+            if a != b:
+                transitions[(a, b)] = transitions.get((a, b), 0) + 1
+    edges = [{"from": a, "to": b, "count": c} for (a, b), c in sorted(transitions.items())]
+
+    affected_cases = {c for bn in detected for c in bn.affected_cases}
+    kpis = {
+        "cases": int(df["case_id"].nunique()),
+        "events": int(len(df)),
+        "open_bottlenecks": sum(1 for bn in detected if bn.affected_count > 0),
+        "cases_affected": len(affected_cases),
+    }
+    return {"nodes": nodes, "edges": edges, "kpis": kpis}
+
+
+def export(cases_path=None, workflow_path=None) -> tuple[int, dict]:
+    cases_path = cases_path or config.UI_CASES_PATH
+    workflow_path = workflow_path or config.UI_WORKFLOW_PATH
+
     cases = build_cases()
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(cases, ensure_ascii=False, indent=2), encoding="utf-8")
-    return len(cases)
+    workflow = build_workflow()
+
+    cases_path.parent.mkdir(parents=True, exist_ok=True)
+    cases_path.write_text(json.dumps(cases, ensure_ascii=False, indent=2), encoding="utf-8")
+    workflow_path.write_text(json.dumps(workflow, ensure_ascii=False, indent=2), encoding="utf-8")
+    return len(cases), workflow
 
 
 def main() -> None:
-    n = export()
-    print(f"Exported {n} UI cases to {config.UI_CASES_PATH.relative_to(config.ROOT)}")
+    n, workflow = export()
+    rel_c = config.UI_CASES_PATH.relative_to(config.ROOT)
+    rel_w = config.UI_WORKFLOW_PATH.relative_to(config.ROOT)
+    print(f"Exported {n} UI cases to {rel_c}")
+    print(f"Exported workflow ({len(workflow['nodes'])} stages, "
+          f"{len(workflow['edges'])} transitions) to {rel_w}")
+    print(f"KPIs: {workflow['kpis']}")
 
 
 if __name__ == "__main__":
