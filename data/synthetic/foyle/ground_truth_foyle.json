@@ -1,0 +1,57 @@
+{
+  "generated_at": "2026-06-22T13:57:38.768907",
+  "seed": 7,
+  "partner": "EduMobil Bremen",
+  "cohort_size": 14,
+  "sheets": [
+    "placements.xlsx",
+    "host_families.xlsx",
+    "work_placements.xlsx",
+    "documents.xlsx",
+    "invoices.xlsx",
+    "accessni.xlsx"
+  ],
+  "bottlenecks": {
+    "delay_invoice_to_payment": [
+      "INV-2601",
+      "INV-2605",
+      "INV-2607",
+      "INV-2609",
+      "INV-2612"
+    ],
+    "repetition_rekeyed_students": [
+      "Clara Schaefer",
+      "Hannah Wolf",
+      "Mia Berg",
+      "Tobias Hoffmann",
+      "Lena Wagner",
+      "Marie Vogel",
+      "Paul Schwarz",
+      "Finn Frank",
+      "Felix Becker",
+      "Jonas Braun",
+      "Greta Richter",
+      "Noah Neumann",
+      "Leon Krueger",
+      "Emma Sommer"
+    ],
+    "rework_reallocated": [
+      "Marie Vogel",
+      "Jonas Braun",
+      "Greta Richter",
+      "Noah Neumann"
+    ],
+    "host_dropouts": [
+      "Clara Schaefer"
+    ],
+    "doc_rerequests": [
+      "Mia Berg",
+      "Marie Vogel",
+      "Paul Schwarz",
+      "Felix Becker",
+      "Jonas Braun",
+      "Leon Krueger",
+      "Emma Sommer"
+    ]
+  }
+}
