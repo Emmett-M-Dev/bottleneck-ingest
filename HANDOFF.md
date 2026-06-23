@@ -14,7 +14,7 @@ They are split on purpose. The only thing crossing between them is plain JSON
 ## Status: working end-to-end ✅
 Live Google Sheet → detection → RAG → Foyle-branded dashboard with HITL approval.
 
-- `bottleneck-ingest`: 23/23 tests pass.
+- `bottleneck-ingest`: 27/27 tests pass.
 - `hitl-interface`: 19/19 tests pass.
 
 ## The pipeline (bottleneck-ingest)
@@ -38,6 +38,31 @@ Live Google Sheet → detection → RAG → Foyle-branded dashboard with HITL ap
   - `outputs/ui_cases.json` — list of `BottleneckCase` (matches the dashboard schema):
     real metrics + scrubbed evidence excerpts + ChromaDB retrieval (RAG) + authored fix template.
   - `outputs/ui_workflow.json` — `{nodes, edges, kpis}` for the workflow map.
+
+## Multi-sheet Foyle model — `--source foyle` (Phase B)
+A second, more realistic data model: instead of one event-log sheet, **six wide
+staff-maintained sheets + three driver emails** (`data/synthetic/foyle/`), built by
+`synthetic/generate_foyle.py`. Models how a placement office really runs — emails
+arrive, staff re-key the same student into every sheet by hand.
+
+- **Sheets:** placements, host_families, work_placements, documents, invoices, accessni.
+  **Emails:** group request · host drop-out · company decline. One EduMobil Bremen
+  cohort (14 students) links them all. All synthetic; `ground_truth_foyle.json` seeds.
+- **Reader:** `readers/foyle_reader.py` — derives one event log FROM the six sheets.
+  Cross-sheet name resolution: `_canon_name` folds re-keyed variants ("Wagner, Lena"
+  / "Schäfer") to one case. `case_id` is a **pseudonym** (`FOY-S01`) — the student
+  name is PII and never becomes a key. Person names in free text are redacted via the
+  wholesale registry (NER misses bare names); phone regex is international (`+49`).
+- **Detection:** `detection/detect.py::detect_foyle` — delay = **invoice→payment** gap
+  (≥21d, marker `Payment Received`); repetition = `Document Re-request` present;
+  rework = `Placement Re-allocation` present (host drop-out / company decline). Its own
+  `FOYLE_*` marker block in `config.py`, so the old single-sheet path + tests are intact.
+- **Export:** `bridge/export_foyle.py` — same `ui_*.json` contract, so the dashboard is
+  unchanged. Evidence + RAG now drawn from real sheet rows + the 3 emails (scrubbed).
+- **Run:** `python ingest.py --source foyle` then `python -m bridge.export_foyle`.
+- **Accuracy vs ground truth:** repetition 7/7, rework 5/5, delay 4/5 (one PENDING
+  invoice sits at a 20-day gap, just under the 21-day threshold — honest boundary).
+- **Zero PII verified:** 38 source names + email/phone/postcode regex, all outputs clean.
 
 ## The dashboard (hitl-interface)
 Streamlit, Foyle-branded, 3 tabs. Reads the JSON export — never imports chromadb/spacy/torch.

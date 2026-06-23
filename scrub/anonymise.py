@@ -21,7 +21,8 @@ import spacy
 from config import SCRUB_ENTITIES, SPACY_MODEL
 
 EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
-PHONE_RE = re.compile(r"(?:\+44\s?|\b0)\d[\d\s-]{7,11}\d")
+# International (+<country code>) or a UK 0-prefixed number.
+PHONE_RE = re.compile(r"(?:\+\d{1,3}[\s-]?|\b0)\d[\d\s-]{6,12}\d")
 POSTCODE_RE = re.compile(r"\b[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}\b")
 
 _REGEX_TYPES = [("EMAIL", EMAIL_RE), ("PHONE", PHONE_RE), ("POSTCODE", POSTCODE_RE)]

@@ -80,6 +80,63 @@ def _detect_delay(df: pd.DataFrame, stage_canon: str, threshold_days: int):
     return sorted(set(flagged)), mean_gap, refs
 
 
+def _detect_invoice_payment_delay(df: pd.DataFrame, threshold_days: int):
+    """Foyle delay: per case, the gap between its Invoice Issued and Payment Received
+    events. Pairs the two events directly (rather than using the generic prior-event
+    gap) so the measure is always invoice->payment regardless of event interleaving."""
+    flagged: list[str] = []
+    gaps: list[float] = []
+    refs: list[str] = []
+    for case_id, g in df.groupby("case_id"):
+        inv = g[g["stage"] == "invoice issued"].sort_values("ts")
+        pay = g[g["stage"] == "payment received"].sort_values("ts")
+        if inv.empty or pay.empty:
+            continue
+        i_ts, p_ts = inv["ts"].iloc[0], pay["ts"].iloc[0]
+        if pd.isna(i_ts) or pd.isna(p_ts):
+            continue
+        gap = (p_ts - i_ts).days
+        if gap >= threshold_days:
+            flagged.append(case_id)
+            gaps.append(gap)
+            if len(refs) < 3:
+                refs.append(pay["source_ref"].iloc[0])
+    mean_gap = round(sum(gaps) / len(gaps), 1) if gaps else 0.0
+    return sorted(set(flagged)), mean_gap, refs
+
+
+def detect_foyle(df: pd.DataFrame | None = None) -> list[DetectedBottleneck]:
+    """Detection for the multi-sheet Foyle model. Delay = invoice->payment gap;
+    repetition = Document Re-request present; rework = Placement Re-allocation present.
+    Reuses the presence helper; the algorithm is shared, only the markers differ."""
+    if df is None:
+        df = load_event_log()
+
+    delay_cases, mean_gap, delay_refs = _detect_invoice_payment_delay(
+        df, config.FOYLE_DELAY_THRESHOLD_DAYS
+    )
+    rep_cases, rep_refs = _detect_presence(df, config.FOYLE_REPETITION_STAGE.lower())
+    rew_cases, rew_refs = _detect_presence(df, config.FOYLE_REWORK_STAGE.lower())
+
+    return [
+        DetectedBottleneck(
+            id="BN001", type="delay", stage=config.FOYLE_DELAY_STAGE,
+            affected_cases=delay_cases, metric_label="avg_days_to_pay",
+            metric_value=mean_gap, example_refs=delay_refs,
+        ),
+        DetectedBottleneck(
+            id="BN002", type="repetition", stage=config.FOYLE_REPETITION_STAGE,
+            affected_cases=rep_cases, metric_label="doc_rerequest_cases",
+            metric_value=float(len(rep_cases)), example_refs=rep_refs,
+        ),
+        DetectedBottleneck(
+            id="BN003", type="rework", stage=config.FOYLE_REWORK_STAGE,
+            affected_cases=rew_cases, metric_label="reallocation_cases",
+            metric_value=float(len(rew_cases)), example_refs=rew_refs,
+        ),
+    ]
+
+
 def detect_all(df: pd.DataFrame | None = None) -> list[DetectedBottleneck]:
     if df is None:
         df = load_event_log()

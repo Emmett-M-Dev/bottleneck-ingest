@@ -31,7 +31,7 @@ import config
 from models import NormalisedRecord
 from pipeline.chunk import chunk_records
 from pipeline.embed import embed_chunks
-from pipeline.normalise import normalise_structured, normalise_text
+from pipeline.normalise import normalise_foyle_events, normalise_structured, normalise_text
 from readers.excel_reader import read_excel_folder
 from readers.text_reader import read_text_folder
 
@@ -60,6 +60,20 @@ def _read_sheets() -> tuple[list[NormalisedRecord], str]:
     rows = read_sheet()
     records = normalise_structured(rows, source_type="sheets")
     summary = f"[sheets] Read {len(rows)} rows from Google Sheet (mock env)"
+    return records, summary
+
+
+def _read_foyle() -> tuple[list[NormalisedRecord], str]:
+    from readers.foyle_reader import read_foyle  # lazy: only this path needs the foyle sheets
+    event_rows, doc_rows = read_foyle()
+    records = (
+        normalise_foyle_events(event_rows)
+        + normalise_text(doc_rows, source_type="foyle_text")
+    )
+    summary = (
+        f"[foyle]  Derived {len(event_rows)} events from 6 sheets, "
+        f"{len(doc_rows)} text snippets (sheet rows + 3 emails)"
+    )
     return records, summary
 
 
@@ -106,6 +120,10 @@ def run(source: str) -> None:
         recs, summ = _read_sheets()
         records += recs
         summaries.append(summ)
+    if source == "foyle":
+        recs, summ = _read_foyle()
+        records += recs
+        summaries.append(summ)
 
     if source == "all":
         records = _dedup(records)
@@ -128,7 +146,7 @@ def run(source: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="SME ops ingestion pipeline")
-    parser.add_argument("--source", choices=["local", "sheets", "all"], default="local")
+    parser.add_argument("--source", choices=["local", "sheets", "all", "foyle"], default="local")
     args = parser.parse_args()
     run(args.source)
 

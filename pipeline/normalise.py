@@ -109,6 +109,47 @@ def normalise_structured(raw_rows: list[dict], source_type: str) -> list[Normali
     return records
 
 
+def normalise_foyle_events(event_rows: list[dict], source_type: str = "foyle") -> list[NormalisedRecord]:
+    """Build one NormalisedRecord + Event per already-canonical Foyle event dict.
+
+    The Foyle reader resolves columns itself (cross-sheet name canonicalisation), so
+    these rows are canonical already — no COLUMN_MAP. Only the actor (host/mentor/
+    staff name) is PII and gets scrubbed; the stage label is controlled vocabulary
+    the detector depends on and is left verbatim.
+    """
+    records: list[NormalisedRecord] = []
+    ingested_at = _now_iso()
+    seq: dict[str, int] = {}
+
+    for raw in event_rows:
+        case_id = raw["case_id"]
+        activity = raw["activity"]
+        timestamp = raw["timestamp"]
+        status = raw.get("status")
+        actor, actor_reps = scrub_actor(raw.get("actor"))
+        source_ref = raw.get("source_ref", "foyle")
+
+        idx = seq.get(source_ref, 0)
+        seq[source_ref] = idx + 1
+        record_id = f"{source_ref}#e{idx}"
+
+        text = _record_text(case_id, activity, timestamp, actor, status)
+        records.append(NormalisedRecord(
+            record_id=record_id,
+            source_type=source_type,
+            source_ref=source_ref,
+            ingested_at=ingested_at,
+            text=text,
+            structured={"case_id": case_id, "activity": activity,
+                        "timestamp": timestamp, "actor": actor, "status": status},
+            events=[Event(case_id=str(case_id), activity=str(activity),
+                          timestamp=str(timestamp), actor=actor, status=status,
+                          source_ref=source_ref)],
+            scrubbed_entities=actor_reps,
+        ))
+    return records
+
+
 def normalise_text(text_rows: list[dict], source_type: str = "text") -> list[NormalisedRecord]:
     """One NormalisedRecord per paragraph, fully scrubbed. No events."""
     records: list[NormalisedRecord] = []

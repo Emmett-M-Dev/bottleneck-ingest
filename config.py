@@ -61,3 +61,21 @@ STAGE_ORDER = [
 # UI export
 UI_CASES_PATH    = OUTPUTS / "ui_cases.json"
 UI_WORKFLOW_PATH = OUTPUTS / "ui_workflow.json"
+
+# ── Foyle multi-sheet model (Phase B) ────────────────────────────────────────
+# The `--source foyle` path reads six wide staff-maintained sheets + three emails
+# (data/synthetic/foyle/) and derives an event log from them. Unlike the single
+# event-log sheet, the genuine timestamps here are invoice->payment, so the delay
+# marker is Payment Received (not Booking Confirmed). Its own marker set keeps the
+# old single-sheet path + tests untouched.
+FOYLE_DIR              = DATA_SYNTHETIC / "foyle"
+FOYLE_DELAY_STAGE          = "Payment Received"       # delay: invoice -> payment gap
+FOYLE_REPETITION_STAGE     = "Document Re-request"    # repetition: docs collected twice
+FOYLE_REWORK_STAGE         = "Placement Re-allocation"  # rework: host drop-out / company decline
+FOYLE_DELAY_THRESHOLD_DAYS = 21                        # invoice->payment gap that counts as late
+
+# Canonical Foyle stage order (drives the dashboard workflow map for this model).
+FOYLE_STAGE_ORDER = [
+    "Request Received", "Placement Offer", "Placement Re-allocation", "Booking Confirmed",
+    "Invoice Issued", "Payment Received", "Document Re-request", "Arrival",
+]
