@@ -74,7 +74,7 @@ FOYLE_DIR              = DATA_SYNTHETIC / "foyle"
 # (foyle.mock.sme account) instead of local xlsx. Auto-discovery lists every
 # spreadsheet in the folder, so dropping a new sheet in is picked up automatically.
 # YOU fills FOYLE_DRIVE_FOLDER_ID after uploading the sheets (folder URL id).
-FOYLE_DRIVE_FOLDER_ID  = ""                            # <- paste the Drive folder id here
+FOYLE_DRIVE_FOLDER_ID  = "1XnjN1dvsqZ1PnKvrQJp1xkbGn0Bk-7C-"  # foyle.mock.sme synthetic-sheets folder
 # Sheets read + Drive folder listing. Wider than the single-sheet readonly scope, so the
 # first foyle-sheets run re-opens the browser to re-consent (token.json is re-minted).
 FOYLE_SCOPES = [

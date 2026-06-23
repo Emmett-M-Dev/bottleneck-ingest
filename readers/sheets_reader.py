@@ -28,9 +28,11 @@ def get_credentials(scopes: list[str] | None = None):
     scopes = scopes or SCOPES
     creds = None
     if TOKEN_PATH.exists():
-        creds = Credentials.from_authorized_user_file(str(TOKEN_PATH), scopes)
+        # Load WITHOUT passing scopes, so creds.scopes reflects what the token was
+        # actually granted (passing scopes would just echo the request back).
+        creds = Credentials.from_authorized_user_file(str(TOKEN_PATH))
         if not set(scopes).issubset(set(creds.scopes or [])):
-            creds = None  # cached token lacks a required scope -> re-consent
+            creds = None  # cached token lacks a required scope -> re-consent (browser)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
