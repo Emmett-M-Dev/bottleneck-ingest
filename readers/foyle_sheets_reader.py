@@ -14,6 +14,7 @@ Emails are not read from Drive yet (deferred) — the RAG corpus here is the she
 
 from __future__ import annotations
 
+import io
 import logging
 
 import pandas as pd
@@ -26,6 +27,7 @@ from readers.sheets_reader import get_credentials
 logger = logging.getLogger(__name__)
 
 _SPREADSHEET_MIME = "application/vnd.google-apps.spreadsheet"
+_XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 
 def _values_to_frame(values: list[list]) -> pd.DataFrame:
@@ -42,7 +44,11 @@ def _values_to_frame(values: list[list]) -> pd.DataFrame:
 
 
 def _match_key(title: str) -> str | None:
-    key = title.strip().lower().replace(" ", "_").replace("-", "_")
+    name = title.strip()
+    for ext in (".xlsx", ".xls", ".csv"):
+        if name.lower().endswith(ext):
+            name = name[: -len(ext)]
+    key = name.strip().lower().replace(" ", "_").replace("-", "_")
     return key if key in SHEET_KEYS else None
 
 
@@ -56,22 +62,30 @@ def read_foyle_sheets() -> tuple[list[dict], list[dict]]:
     drive = build("drive", "v3", credentials=creds)
     sheets = build("sheets", "v4", credentials=creds)
 
+    # Accept both native Google Sheets and plain uploaded .xlsx files, so the sheets
+    # can be dropped into the folder with "New -> Upload" (no conversion needed).
     query = (
-        f"'{config.FOYLE_DRIVE_FOLDER_ID}' in parents "
-        f"and mimeType='{_SPREADSHEET_MIME}' and trashed=false"
+        f"'{config.FOYLE_DRIVE_FOLDER_ID}' in parents and trashed=false "
+        f"and (mimeType='{_SPREADSHEET_MIME}' or mimeType='{_XLSX_MIME}')"
     )
-    files = drive.files().list(q=query, fields="files(id,name)", pageSize=100).execute().get("files", [])
+    files = drive.files().list(
+        q=query, fields="files(id,name,mimeType)", pageSize=100
+    ).execute().get("files", [])
 
     frames: dict[str, pd.DataFrame] = {}
     for f in files:
         key = _match_key(f["name"])
         if not key:
-            logger.warning("Ignoring Drive sheet %r — not one of %s", f["name"], SHEET_KEYS)
+            logger.warning("Ignoring Drive file %r — not one of %s", f["name"], SHEET_KEYS)
             continue
-        result = sheets.spreadsheets().values().get(
-            spreadsheetId=f["id"], range="A:Z"
-        ).execute()
-        frames[key] = _values_to_frame(result.get("values", []))
+        if f["mimeType"] == _SPREADSHEET_MIME:
+            result = sheets.spreadsheets().values().get(
+                spreadsheetId=f["id"], range="A:Z"
+            ).execute()
+            frames[key] = _values_to_frame(result.get("values", []))
+        else:  # uploaded .xlsx — download the bytes and read it like the local reader
+            data = drive.files().get_media(fileId=f["id"]).execute()
+            frames[key] = pd.read_excel(io.BytesIO(data), dtype=str, engine="openpyxl").fillna("")
 
     missing = [k for k in SHEET_KEYS if k not in frames]
     if missing:
