@@ -63,6 +63,10 @@ def _iso(value) -> str | None:
     return None if pd.isna(ts) else ts.isoformat()
 
 
+# Canonical sheet keys (used as both the frames-dict keys and the source_ref prefix).
+SHEET_KEYS = ["placements", "host_families", "work_placements", "documents", "invoices", "accessni"]
+
+
 def _read(name: str) -> pd.DataFrame:
     df = pd.read_excel(config.FOYLE_DIR / name, dtype=str, engine="openpyxl")
     return df.fillna("")
@@ -76,8 +80,25 @@ def _derived(arrival_iso: str | None, stage: str) -> str | None:
 
 
 def read_foyle() -> tuple[list[dict], list[dict]]:
+    """Local-disk Foyle reader: build frames from the six xlsx + load the emails,
+    then derive the event log. The Drive reader builds frames differently and calls
+    `_derive` directly — the derivation logic is shared."""
+    frames = {key: _read(f"{key}.xlsx") for key in SHEET_KEYS}
+    email_dir = config.FOYLE_DIR / "emails"
+    email_texts = {p.name: p.read_text(encoding="utf-8") for p in sorted(email_dir.glob("*.txt"))}
+    return _derive(frames, email_texts)
+
+
+def _derive(frames: dict[str, pd.DataFrame],
+            email_texts: dict[str, str] | None = None) -> tuple[list[dict], list[dict]]:
+    """Derive the event log + RAG snippets from sheet frames (keyed by SHEET_KEYS),
+    independent of whether the frames came from local xlsx or the live Drive sheets."""
     event_rows: list[dict] = []
     doc_rows: list[dict] = []
+
+    def frame(key: str) -> pd.DataFrame:
+        df = frames.get(key)
+        return df if df is not None else pd.DataFrame()
 
     # case_id must NOT be the student's name (that is PII). Map each canonical
     # name to a stable pseudonym; the name itself never leaves this function.
@@ -105,13 +126,13 @@ def read_foyle() -> tuple[list[dict], list[dict]]:
             })
 
     # ── placements: request / offer / re-allocation / confirmed / arrival ─────
-    pl = _read("placements.xlsx")
+    pl = frame("placements")
     arrival_by_case: dict[str, str] = {}
     for i, r in pl.iterrows():
         case = _canon_name(r.get("Student Name", ""))
         if not case:
             continue
-        ref = f"placements.xlsx:{i + 2}"
+        ref = f"placements:{i + 2}"
         arr = _iso(r.get("Arrival"))
         arrival_by_case[case] = arr
         staff = r.get("Updated By") or r.get("Mentor")
@@ -132,12 +153,12 @@ def read_foyle() -> tuple[list[dict], list[dict]]:
             f"{r.get('Confirmed Placement') or 'TBC'}. {r.get('Notes')}".strip()})
 
     # ── host_families: re-allocation on drop-out / re-housing ─────────────────
-    hf = _read("host_families.xlsx")
+    hf = frame("host_families")
     for i, r in hf.iterrows():
         case = _canon_name(r.get("Student Hosted", ""))
         if not case:
             continue
-        ref = f"host_families.xlsx:{i + 2}"
+        ref = f"host_families:{i + 2}"
         status = (r.get("Status", "") or "").lower()
         arr = arrival_by_case.get(case)
         note(r.get("Student Hosted"), r.get("Host Family"), r.get("Updated By"))
@@ -149,12 +170,12 @@ def read_foyle() -> tuple[list[dict], list[dict]]:
             f"{r.get('Student Hosted')} — status {r.get('Status')}."})
 
     # ── work_placements: re-allocation on company decline ─────────────────────
-    wp = _read("work_placements.xlsx")
+    wp = frame("work_placements")
     for i, r in wp.iterrows():
         case = _canon_name(r.get("Student Name", ""))
         if not case:
             continue
-        ref = f"work_placements.xlsx:{i + 2}"
+        ref = f"work_placements:{i + 2}"
         arr = arrival_by_case.get(case)
         note(r.get("Student Name"), r.get("Mentor"), r.get("Updated By"))
         if "decline" in (r.get("Confirmed?", "") or "").lower():
@@ -167,12 +188,12 @@ def read_foyle() -> tuple[list[dict], list[dict]]:
             f"{('Re-allocated to ' + r.get('Re-allocated To')) if r.get('Re-allocated To') else ''}".strip()})
 
     # ── invoices: Invoice Issued -> Payment Received (the delay pair) ──────────
-    iv = _read("invoices.xlsx")
+    iv = frame("invoices")
     for i, r in iv.iterrows():
         case = _canon_name(r.get("Student Name", ""))
         if not case:
             continue
-        ref = f"invoices.xlsx:{i + 2}"
+        ref = f"invoices:{i + 2}"
         staff = r.get("Updated By")
         note(r.get("Student Name"), r.get("Updated By"))
         inv_iso = _iso(r.get("Invoice Date"))
@@ -190,12 +211,12 @@ def read_foyle() -> tuple[list[dict], list[dict]]:
             f"payment {r.get('Payment Received') or 'unpaid'}."})
 
     # ── documents: re-request = repetition marker ─────────────────────────────
-    dc = _read("documents.xlsx")
+    dc = frame("documents")
     for i, r in dc.iterrows():
         case = _canon_name(r.get("Student Name", ""))
         if not case:
             continue
-        ref = f"documents.xlsx:{i + 2}"
+        ref = f"documents:{i + 2}"
         note(r.get("Student Name"), r.get("Updated By"))
         if (r.get("Re-requested?", "") or "").strip():
             ts = _iso(r.get("Date Requested")) or arrival_by_case.get(case)
@@ -206,18 +227,16 @@ def read_foyle() -> tuple[list[dict], list[dict]]:
             f"{r.get('Parental Consent') or '-'}. {r.get('Re-requested?')}".strip()})
 
     # ── accessni: background-check context (RAG only) ─────────────────────────
-    ac = _read("accessni.xlsx")
+    ac = frame("accessni")
     for i, r in ac.iterrows():
-        ref = f"accessni.xlsx:{i + 2}"
+        ref = f"accessni:{i + 2}"
         note(r.get("Student Name"))
         doc_rows.append({"source_ref": ref, "text":
             f"AccessNI {r.get('Check Type')} for {r.get('Student Name')} "
             f"({r.get('Sector')}): {r.get('Status')}."})
 
-    # ── emails: split into paragraphs for the RAG corpus ──────────────────────
-    email_dir = config.FOYLE_DIR / "emails"
-    for path in sorted(email_dir.glob("*.txt")):
-        body = path.read_text(encoding="utf-8")
+    # ── emails: split into paragraphs for the RAG corpus (if provided) ────────
+    for name, body in (email_texts or {}).items():
         # Capture display names from the headers (e.g. "From: Niamh Kelly <...>").
         for m in re.finditer(r"^(?:From|To):\s*([^<\n]+?)\s*<", body, re.MULTILINE):
             note(m.group(1))
@@ -228,7 +247,7 @@ def read_foyle() -> tuple[list[dict], list[dict]]:
         for para in body.split("\n\n"):
             para = para.strip()
             if para:
-                doc_rows.append({"source_ref": path.name, "text": para})
+                doc_rows.append({"source_ref": name, "text": para})
 
     # ── redact every gathered person name from the free-text snippets ─────────
     # Done explicitly (not via NER) so a bare name can never leak; emails/phones/

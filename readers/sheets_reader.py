@@ -19,16 +19,23 @@ from config import CREDS_PATH, TOKEN_PATH, SHEET_ID, SHEET_TAB, SHEET_RANGE
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 
 
-def get_credentials():
-    """First run: opens browser for OAuth login. Later runs: loads token.json silently."""
+def get_credentials(scopes: list[str] | None = None):
+    """First run: opens browser for OAuth login. Later runs: loads token.json silently.
+
+    `scopes` defaults to read-only Sheets. If a cached token is missing a requested
+    scope (e.g. the Foyle path also needs Drive listing), re-consent is forced so the
+    token is re-minted with the wider scope."""
+    scopes = scopes or SCOPES
     creds = None
     if TOKEN_PATH.exists():
-        creds = Credentials.from_authorized_user_file(str(TOKEN_PATH), SCOPES)
+        creds = Credentials.from_authorized_user_file(str(TOKEN_PATH), scopes)
+        if not set(scopes).issubset(set(creds.scopes or [])):
+            creds = None  # cached token lacks a required scope -> re-consent
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(str(CREDS_PATH), SCOPES)
+            flow = InstalledAppFlow.from_client_secrets_file(str(CREDS_PATH), scopes)
             creds = flow.run_local_server(port=0)
         TOKEN_PATH.write_text(creds.to_json())
     return creds

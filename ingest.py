@@ -1,8 +1,10 @@
 """Ingestion CLI.
 
-    python ingest.py --source local     # data/synthetic/ (xlsx + txt)
-    python ingest.py --source sheets    # live mock Google Sheet
-    python ingest.py --source all       # both, deduplicated by source_ref
+    python ingest.py --source local         # data/synthetic/ (xlsx + txt)
+    python ingest.py --source sheets        # live mock Google Sheet
+    python ingest.py --source all           # both, deduplicated by source_ref
+    python ingest.py --source foyle         # six local Foyle sheets (data/synthetic/foyle/)
+    python ingest.py --source foyle-sheets  # the same six sheets live from a Drive folder
 
 Each mode: read -> scrub -> normalise -> write parquet + jsonl -> embed into ChromaDB.
 The local and sheets paths produce identical output shapes, so downstream detection
@@ -77,6 +79,20 @@ def _read_foyle() -> tuple[list[NormalisedRecord], str]:
     return records, summary
 
 
+def _read_foyle_sheets() -> tuple[list[NormalisedRecord], str]:
+    from readers.foyle_sheets_reader import read_foyle_sheets  # lazy: needs google libs + creds
+    event_rows, doc_rows = read_foyle_sheets()
+    records = (
+        normalise_foyle_events(event_rows)
+        + normalise_text(doc_rows, source_type="foyle_text")
+    )
+    summary = (
+        f"[foyle-sheets] Derived {len(event_rows)} events from the Drive folder, "
+        f"{len(doc_rows)} sheet-row snippets"
+    )
+    return records, summary
+
+
 def _dedup(records: list[NormalisedRecord]) -> list[NormalisedRecord]:
     seen: dict[str, NormalisedRecord] = {}
     for rec in records:
@@ -124,6 +140,10 @@ def run(source: str) -> None:
         recs, summ = _read_foyle()
         records += recs
         summaries.append(summ)
+    if source == "foyle-sheets":
+        recs, summ = _read_foyle_sheets()
+        records += recs
+        summaries.append(summ)
 
     if source == "all":
         records = _dedup(records)
@@ -146,7 +166,11 @@ def run(source: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="SME ops ingestion pipeline")
-    parser.add_argument("--source", choices=["local", "sheets", "all", "foyle"], default="local")
+    parser.add_argument(
+        "--source",
+        choices=["local", "sheets", "all", "foyle", "foyle-sheets"],
+        default="local",
+    )
     args = parser.parse_args()
     run(args.source)
 

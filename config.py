@@ -69,6 +69,19 @@ UI_WORKFLOW_PATH = OUTPUTS / "ui_workflow.json"
 # marker is Payment Received (not Booking Confirmed). Its own marker set keeps the
 # old single-sheet path + tests untouched.
 FOYLE_DIR              = DATA_SYNTHETIC / "foyle"
+
+# `--source foyle-sheets` reads the same six sheets live from a Google Drive folder
+# (foyle.mock.sme account) instead of local xlsx. Auto-discovery lists every
+# spreadsheet in the folder, so dropping a new sheet in is picked up automatically.
+# YOU fills FOYLE_DRIVE_FOLDER_ID after uploading the sheets (folder URL id).
+FOYLE_DRIVE_FOLDER_ID  = ""                            # <- paste the Drive folder id here
+# Sheets read + Drive folder listing. Wider than the single-sheet readonly scope, so the
+# first foyle-sheets run re-opens the browser to re-consent (token.json is re-minted).
+FOYLE_SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets.readonly",
+    "https://www.googleapis.com/auth/drive.readonly",
+]
+
 FOYLE_DELAY_STAGE          = "Payment Received"       # delay: invoice -> payment gap
 FOYLE_REPETITION_STAGE     = "Document Re-request"    # repetition: docs collected twice
 FOYLE_REWORK_STAGE         = "Placement Re-allocation"  # rework: host drop-out / company decline

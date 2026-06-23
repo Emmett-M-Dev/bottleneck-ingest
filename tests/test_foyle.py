@@ -6,7 +6,8 @@ from __future__ import annotations
 import pandas as pd
 
 from detection.detect import detect_foyle
-from readers.foyle_reader import _canon_name
+from readers.foyle_reader import _canon_name, _derive
+from readers.foyle_sheets_reader import _match_key
 
 
 def _df(rows: list[tuple]) -> pd.DataFrame:
@@ -57,3 +58,41 @@ def test_foyle_always_returns_three_bottlenecks() -> None:
     res = _by_id(detect_foyle(_df([("S1", "Arrival", "2026-04-07", None, "arrived", "placements.xlsx:2")])))
     assert set(res) == {"BN001", "BN002", "BN003"}
     assert all(b.affected_count == 0 for b in res.values())
+
+
+def test_match_key_normalises_sheet_titles() -> None:
+    assert _match_key("placements") == "placements"
+    assert _match_key("Host Families") == "host_families"
+    assert _match_key("work-placements") == "work_placements"
+    assert _match_key("Random Sheet") is None
+
+
+def test_derive_is_source_agnostic_and_redacts_names() -> None:
+    # Same student re-keyed across three sheets (incl. surname-first) -> one case;
+    # the derivation is identical whether frames came from xlsx or Drive.
+    frames = {
+        "placements": pd.DataFrame([{
+            "Student Name": "Lena Wagner", "Arrival": "07.04.2026", "Updated By": "Aine Murray",
+            "Mentor": "Joy McCallion", "Accommodation": "Bernadette Coyle", "Sector": "Education",
+            "Partner": "EduMobil Bremen", "Potential Placement": "Riverside Primary School",
+            "Confirmed Placement": "St Brigids PS", "Notes": "re-allocated from 1st pref",
+        }]),
+        "invoices": pd.DataFrame([{
+            "Student Name": "Wagner, Lena", "Updated By": "Paul Doherty", "Invoice Date": "01.03.2026",
+            "Invoice No": "INV-2600", "Payment Received": "yes", "Payment Date": "05.04.2026",
+            "Partner": "EduMobil Bremen", "Amount (GBP)": "1450",
+        }]),
+        "documents": pd.DataFrame([{
+            "Student Name": "Lena Wagner", "Updated By": "Niamh Kelly", "Re-requested?": "Yes - chased",
+            "Date Requested": "05.03.2026", "CV": "Yes", "Motivation Letter": "Yes", "Parental Consent": "N/A",
+        }]),
+    }
+    events, docs = _derive(frames, email_texts=None)
+
+    acts = {e["activity"] for e in events}
+    assert {"Invoice Issued", "Payment Received", "Document Re-request", "Placement Re-allocation"} <= acts
+    # the re-keyed variants resolve to a single pseudonymous case
+    assert {e["case_id"] for e in events} == {"FOY-S01"}
+    # the real name never appears in a case_id or a (redacted) snippet
+    blob = " ".join(e["case_id"] for e in events) + " " + " ".join(d["text"] for d in docs)
+    assert "Lena Wagner" not in blob and "Wagner, Lena" not in blob

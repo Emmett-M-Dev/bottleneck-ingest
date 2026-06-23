@@ -59,10 +59,31 @@ arrive, staff re-key the same student into every sheet by hand.
   `FOYLE_*` marker block in `config.py`, so the old single-sheet path + tests are intact.
 - **Export:** `bridge/export_foyle.py` — same `ui_*.json` contract, so the dashboard is
   unchanged. Evidence + RAG now drawn from real sheet rows + the 3 emails (scrubbed).
-- **Run:** `python ingest.py --source foyle` then `python -m bridge.export_foyle`.
+- **Run (local):** `python ingest.py --source foyle` then `python -m bridge.export_foyle`.
 - **Accuracy vs ground truth:** repetition 7/7, rework 5/5, delay 4/5 (one PENDING
   invoice sits at a 20-day gap, just under the 21-day threshold — honest boundary).
 - **Zero PII verified:** 38 source names + email/phone/postcode regex, all outputs clean.
+
+### Live from Google Drive — `--source foyle-sheets` (Phase C)
+The same six sheets, read **live from a Drive folder** instead of local xlsx. The
+backend reads Drive → scrub/detect/export JSON → dashboard reads JSON (the dashboard
+never touches Drive or heavy libs; PII is scrubbed server-side first).
+- **Reader:** `readers/foyle_sheets_reader.py` — auto-discovers every spreadsheet in
+  `config.FOYLE_DRIVE_FOLDER_ID`, matches titles (case-insensitive) to the six canonical
+  keys, reads each via the Sheets API, and reuses `foyle_reader._derive` (so the result
+  is identical to the local path). Emails are **not** read from Drive yet (deferred).
+- **Auth:** reuses `sheets_reader.get_credentials(scopes=…)` with `FOYLE_SCOPES`
+  (sheets.readonly + drive.readonly). The wider scope means the **first** foyle-sheets
+  run re-opens the browser to re-consent on `foyle.mock.sme` (token.json is re-minted).
+- **Setup (one-time, manual):** create a Drive folder in `foyle.mock.sme`; import each
+  sheet as a Google Sheet with **"Convert text to numbers/dates" UNTICKED** (else the
+  messy dates reformat and the invoice→payment delay shifts); name the sheets
+  `placements / host_families / work_placements / documents / invoices / accessni`; paste
+  the folder id into `config.FOYLE_DRIVE_FOLDER_ID`.
+- **Run:** `python ingest.py --source foyle-sheets` then `python -m bridge.export_foyle`.
+- **Live:** `python -m bridge.refresh_foyle --interval 30` polls Drive and re-exports;
+  the dashboard auto-reloads (mtime-keyed cache + `streamlit-autorefresh`, ~10s), so a
+  Drive edit surfaces within a pass. `--once` does a single smoke pass.
 
 ## The dashboard (hitl-interface)
 Streamlit, Foyle-branded, 3 tabs. Reads the JSON export — never imports chromadb/spacy/torch.
