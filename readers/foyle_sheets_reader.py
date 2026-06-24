@@ -32,6 +32,16 @@ _SPREADSHEET_MIME = "application/vnd.google-apps.spreadsheet"
 _XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 _TEXT_MIME = "text/plain"
 _DOC_MIME = "application/vnd.google-apps.document"  # an uploaded .txt Drive auto-converted
+_FOLDER_MIME = "application/vnd.google-apps.folder"
+
+
+def _email_body(drive, f: dict) -> str:
+    """Plain-text body of an email file (downloads .txt, exports a converted Doc)."""
+    if f["mimeType"] == _DOC_MIME:
+        body = drive.files().export(fileId=f["id"], mimeType="text/plain").execute()
+    else:
+        body = drive.files().get_media(fileId=f["id"]).execute()
+    return body.decode("utf-8") if isinstance(body, bytes) else body
 
 
 def _values_to_frame(values: list[list]) -> pd.DataFrame:
@@ -66,12 +76,12 @@ def read_foyle_sheets() -> tuple[list[dict], list[dict]]:
     drive = build("drive", "v3", credentials=creds)
     sheets = build("sheets", "v4", credentials=creds)
 
-    # Accept native Google Sheets, uploaded .xlsx, and plain-text/Doc emails, so the
-    # whole dataset can be dropped into the folder with "New -> Upload" (no conversion).
+    # Accept native Google Sheets, uploaded .xlsx, plain-text/Doc emails, and any
+    # subfolders, so the whole dataset can be dropped in with "New -> Upload".
     query = (
         f"'{config.FOYLE_DRIVE_FOLDER_ID}' in parents and trashed=false and ("
         f"mimeType='{_SPREADSHEET_MIME}' or mimeType='{_XLSX_MIME}' "
-        f"or mimeType='{_TEXT_MIME}' or mimeType='{_DOC_MIME}')"
+        f"or mimeType='{_TEXT_MIME}' or mimeType='{_DOC_MIME}' or mimeType='{_FOLDER_MIME}')"
     )
     files = drive.files().list(
         q=query, fields="files(id,name,mimeType)", pageSize=100
@@ -79,15 +89,15 @@ def read_foyle_sheets() -> tuple[list[dict], list[dict]]:
 
     frames: dict[str, pd.DataFrame] = {}
     email_texts: dict[str, str] = {}
+    subfolders: list[str] = []
     for f in files:
         mime = f["mimeType"]
+        if mime == _FOLDER_MIME:                       # e.g. an "emails/" subfolder
+            subfolders.append(f["id"])
+            continue
         # Emails: any plain-text file (or auto-converted Google Doc) in the folder.
         if mime in (_TEXT_MIME, _DOC_MIME):
-            if mime == _DOC_MIME:
-                body = drive.files().export(fileId=f["id"], mimeType="text/plain").execute()
-            else:
-                body = drive.files().get_media(fileId=f["id"]).execute()
-            email_texts[f["name"]] = body.decode("utf-8") if isinstance(body, bytes) else body
+            email_texts[f["name"]] = _email_body(drive, f)
             continue
 
         key = _match_key(f["name"])
@@ -102,6 +112,15 @@ def read_foyle_sheets() -> tuple[list[dict], list[dict]]:
         else:  # uploaded .xlsx — download the bytes and read it like the local reader
             data = drive.files().get_media(fileId=f["id"]).execute()
             frames[key] = pd.read_excel(io.BytesIO(data), dtype=str, engine="openpyxl").fillna("")
+
+    # Emails are often kept in an "emails/" subfolder (mirroring the local layout).
+    for sub in subfolders:
+        sub_q = (
+            f"'{sub}' in parents and trashed=false "
+            f"and (mimeType='{_TEXT_MIME}' or mimeType='{_DOC_MIME}')"
+        )
+        for f in drive.files().list(q=sub_q, fields="files(id,name,mimeType)").execute().get("files", []):
+            email_texts[f["name"]] = _email_body(drive, f)
 
     missing = [k for k in SHEET_KEYS if k not in frames]
     if missing:
