@@ -71,7 +71,9 @@ never touches Drive or heavy libs; PII is scrubbed server-side first).
 - **Reader:** `readers/foyle_sheets_reader.py` — auto-discovers every spreadsheet in
   `config.FOYLE_DRIVE_FOLDER_ID`, matches titles (case-insensitive) to the six canonical
   keys, reads each via the Sheets API, and reuses `foyle_reader._derive` (so the result
-  is identical to the local path). Emails are **not** read from Drive yet (deferred).
+  is identical to the local path). Accepts both native Google Sheets and uploaded
+  `.xlsx`. The three driver emails are read too — any plain-text/Doc file in the folder
+  or an `emails/` subfolder is fed to `_derive` (RAG corpus + name redaction).
 - **Auth:** reuses `sheets_reader.get_credentials(scopes=…)` with `FOYLE_SCOPES`
   (sheets.readonly + drive.readonly). The wider scope means the **first** foyle-sheets
   run re-opens the browser to re-consent on `foyle.mock.sme` (token.json is re-minted).
