@@ -9,7 +9,9 @@ title matched (case-insensitively, spaces/hyphens -> underscores) to a canonical
 key. Unknown titles are ignored with a warning, so dropping a new sheet in the folder
 is picked up automatically.
 
-Emails are not read from Drive yet (deferred) — the RAG corpus here is the sheet rows.
+The three driver emails are read too: any plain-text file (or auto-converted Google
+Doc) in the same folder is collected as an email and fed to `_derive`, so the live RAG
+corpus matches the local path.
 """
 
 from __future__ import annotations
@@ -28,6 +30,8 @@ logger = logging.getLogger(__name__)
 
 _SPREADSHEET_MIME = "application/vnd.google-apps.spreadsheet"
 _XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+_TEXT_MIME = "text/plain"
+_DOC_MIME = "application/vnd.google-apps.document"  # an uploaded .txt Drive auto-converted
 
 
 def _values_to_frame(values: list[list]) -> pd.DataFrame:
@@ -62,23 +66,35 @@ def read_foyle_sheets() -> tuple[list[dict], list[dict]]:
     drive = build("drive", "v3", credentials=creds)
     sheets = build("sheets", "v4", credentials=creds)
 
-    # Accept both native Google Sheets and plain uploaded .xlsx files, so the sheets
-    # can be dropped into the folder with "New -> Upload" (no conversion needed).
+    # Accept native Google Sheets, uploaded .xlsx, and plain-text/Doc emails, so the
+    # whole dataset can be dropped into the folder with "New -> Upload" (no conversion).
     query = (
-        f"'{config.FOYLE_DRIVE_FOLDER_ID}' in parents and trashed=false "
-        f"and (mimeType='{_SPREADSHEET_MIME}' or mimeType='{_XLSX_MIME}')"
+        f"'{config.FOYLE_DRIVE_FOLDER_ID}' in parents and trashed=false and ("
+        f"mimeType='{_SPREADSHEET_MIME}' or mimeType='{_XLSX_MIME}' "
+        f"or mimeType='{_TEXT_MIME}' or mimeType='{_DOC_MIME}')"
     )
     files = drive.files().list(
         q=query, fields="files(id,name,mimeType)", pageSize=100
     ).execute().get("files", [])
 
     frames: dict[str, pd.DataFrame] = {}
+    email_texts: dict[str, str] = {}
     for f in files:
+        mime = f["mimeType"]
+        # Emails: any plain-text file (or auto-converted Google Doc) in the folder.
+        if mime in (_TEXT_MIME, _DOC_MIME):
+            if mime == _DOC_MIME:
+                body = drive.files().export(fileId=f["id"], mimeType="text/plain").execute()
+            else:
+                body = drive.files().get_media(fileId=f["id"]).execute()
+            email_texts[f["name"]] = body.decode("utf-8") if isinstance(body, bytes) else body
+            continue
+
         key = _match_key(f["name"])
         if not key:
             logger.warning("Ignoring Drive file %r — not one of %s", f["name"], SHEET_KEYS)
             continue
-        if f["mimeType"] == _SPREADSHEET_MIME:
+        if mime == _SPREADSHEET_MIME:
             result = sheets.spreadsheets().values().get(
                 spreadsheetId=f["id"], range="A:Z"
             ).execute()
@@ -91,4 +107,4 @@ def read_foyle_sheets() -> tuple[list[dict], list[dict]]:
     if missing:
         logger.warning("Drive folder is missing expected sheets: %s", missing)
 
-    return _derive(frames, email_texts=None)
+    return _derive(frames, email_texts=email_texts)
