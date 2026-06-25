@@ -36,12 +36,30 @@ def _get_model():
     return _model
 
 
-def get_collection():
+def _get_client():
     global _client
     if _client is None:
         CHROMA_PATH.mkdir(parents=True, exist_ok=True)
         _client = chromadb.PersistentClient(path=str(CHROMA_PATH))
-    return _client.get_or_create_collection(CHROMA_COLLECTION)
+    return _client
+
+
+def get_collection():
+    return _get_client().get_or_create_collection(CHROMA_COLLECTION)
+
+
+def reset_collection() -> None:
+    """Drop the collection so a run's corpus contains only the current source.
+
+    Each ingest run fully rebuilds records.jsonl + the event log, so the vector store
+    must match — otherwise chunks from earlier `--source` runs (e.g. the old single-sheet
+    model) linger and pollute RAG retrieval."""
+    client = _get_client()
+    try:
+        client.delete_collection(CHROMA_COLLECTION)
+    except Exception:
+        pass  # collection may not exist yet
+    client.get_or_create_collection(CHROMA_COLLECTION)
 
 
 def embed_chunks(chunks: list[dict]) -> int:

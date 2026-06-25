@@ -32,7 +32,7 @@ import pandas as pd
 import config
 from models import NormalisedRecord
 from pipeline.chunk import chunk_records
-from pipeline.embed import embed_chunks
+from pipeline.embed import embed_chunks, reset_collection
 from pipeline.normalise import normalise_foyle_events, normalise_structured, normalise_text
 from readers.excel_reader import read_excel_folder
 from readers.text_reader import read_text_folder
@@ -152,6 +152,7 @@ def run(source: str) -> None:
     # Order matters: jsonl + embed (chroma/hnswlib) before the parquet write, because
     # pyarrow's Arrow runtime cannot coexist with the HNSW index build on Windows.
     n_records = _write_records(records)
+    reset_collection()  # rebuild the vector store from scratch for this source
     n_chunks = embed_chunks(chunk_records(records))
     n_events = _write_event_log(records)
 
