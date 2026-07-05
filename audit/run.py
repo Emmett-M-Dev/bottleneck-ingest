@@ -28,7 +28,23 @@ import config
 from audit.propose import build_proposal, write_proposal
 
 
+def _load_dotenv() -> None:
+    """Load KEY=VALUE lines from the repo's .env (gitignored) into os.environ.
+    Holds ANTHROPIC_API_KEY so the audit agent can run without a shell-level
+    env var. Deliberately minimal — no quoting/expansion, no dependency."""
+    env_file = config.ROOT / ".env"
+    if not env_file.exists():
+        return
+    for line in env_file.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
 def main() -> None:
+    _load_dotenv()
     parser = argparse.ArgumentParser(description="Propose a canonical-schema mapping for a messy drive")
     parser.add_argument("--profile", required=True, choices=sorted(config.MESSY_PROFILES),
                         help="SME profile (names the proposal artefact + default drive)")
