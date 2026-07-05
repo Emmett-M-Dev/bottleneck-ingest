@@ -30,4 +30,8 @@ google-api-python-client==2.137.0
 google-auth-httplib2==0.2.0
 google-auth-oauthlib==1.2.1
 
+# Audit agent (mapping inference). Pure Python + httpx — no native-DLL risk on
+# this pinned stack; brings pydantic 2.x, used only inside audit/.
+anthropic==0.116.0
+
 pytest==8.3.4
