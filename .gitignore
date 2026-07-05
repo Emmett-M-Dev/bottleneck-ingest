@@ -6,6 +6,7 @@ data/real/
 
 # Pipeline outputs (regenerated)
 outputs/
+refresh.log
 
 # Python
 *.pyc

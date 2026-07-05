@@ -4,6 +4,8 @@
     python ingest.py --source sheets        # live mock Google Sheet
     python ingest.py --source all           # both, deduplicated by source_ref
     python ingest.py --source foyle         # six local Foyle sheets (data/synthetic/foyle/)
+    python ingest.py --source foyle-tracker         # streamlined placement tracker (local xlsx)
+    python ingest.py --source foyle-tracker-sheets  # the same tracker live from a Drive sheet
     python ingest.py --source foyle-sheets  # the same six sheets live from a Drive folder
 
 Each mode: read -> scrub -> normalise -> write parquet + jsonl -> embed into ChromaDB.
@@ -79,6 +81,34 @@ def _read_foyle() -> tuple[list[NormalisedRecord], str]:
     return records, summary
 
 
+def _read_foyle_tracker() -> tuple[list[NormalisedRecord], str]:
+    from readers.foyle_tracker_reader import read_foyle_tracker  # lazy: only this path reads the tracker
+    event_rows, doc_rows = read_foyle_tracker()
+    records = (
+        normalise_foyle_events(event_rows)
+        + normalise_text(doc_rows, source_type="foyle_text")
+    )
+    summary = (
+        f"[foyle-tracker] Derived {len(event_rows)} events from the placement tracker, "
+        f"{len(doc_rows)} cohort snippets"
+    )
+    return records, summary
+
+
+def _read_foyle_tracker_sheets() -> tuple[list[NormalisedRecord], str]:
+    from readers.foyle_tracker_reader import read_foyle_tracker_sheets  # lazy: needs google libs + creds
+    event_rows, doc_rows = read_foyle_tracker_sheets()
+    records = (
+        normalise_foyle_events(event_rows)
+        + normalise_text(doc_rows, source_type="foyle_text")
+    )
+    summary = (
+        f"[foyle-tracker-sheets] Derived {len(event_rows)} events from the live tracker "
+        f"sheet, {len(doc_rows)} cohort snippets"
+    )
+    return records, summary
+
+
 def _read_foyle_sheets() -> tuple[list[NormalisedRecord], str]:
     from readers.foyle_sheets_reader import read_foyle_sheets  # lazy: needs google libs + creds
     event_rows, doc_rows = read_foyle_sheets()
@@ -140,6 +170,14 @@ def run(source: str) -> None:
         recs, summ = _read_foyle()
         records += recs
         summaries.append(summ)
+    if source == "foyle-tracker":
+        recs, summ = _read_foyle_tracker()
+        records += recs
+        summaries.append(summ)
+    if source == "foyle-tracker-sheets":
+        recs, summ = _read_foyle_tracker_sheets()
+        records += recs
+        summaries.append(summ)
     if source == "foyle-sheets":
         recs, summ = _read_foyle_sheets()
         records += recs
@@ -169,7 +207,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="SME ops ingestion pipeline")
     parser.add_argument(
         "--source",
-        choices=["local", "sheets", "all", "foyle", "foyle-sheets"],
+        choices=["local", "sheets", "all", "foyle", "foyle-tracker",
+                 "foyle-tracker-sheets", "foyle-sheets"],
         default="local",
     )
     args = parser.parse_args()

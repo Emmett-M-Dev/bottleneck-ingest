@@ -92,3 +92,43 @@ FOYLE_STAGE_ORDER = [
     "Request Received", "Placement Offer", "Placement Re-allocation", "Booking Confirmed",
     "Invoice Issued", "Payment Received", "Document Re-request", "Arrival",
 ]
+
+# ── Foyle Placement Tracker (real single-sheet model) ────────────────────────
+# The SharePoint audit found NO master tracker and NO invoice/document/AccessNI
+# sheets — the six-sheet model above is synthetic. The real workflow is one row
+# per sending-org cohort with sequential pre-arrival tasks (the "Pre arrival To
+# do" sheet). This block models a streamlined, dropdown-locked replacement of it.
+FOYLE_TRACKER_FILE            = DATA_SYNTHETIC / "foyle_tracker.xlsx"
+# Live Drive folder holding the single tracker sheet + the sheet's title to match.
+# Reuses the foyle.mock.sme Drive folder + FOYLE_SCOPES (Sheets + Drive readonly).
+FOYLE_TRACKER_DRIVE_FOLDER_ID = "1XnjN1dvsqZ1PnKvrQJp1xkbGn0Bk-7C-"
+FOYLE_TRACKER_SHEET_TITLE     = "foyle_tracker"
+
+# Tasks in workflow order: (status column, completion-date column | None, is_critical).
+# Milestone tasks carry a real completion date; the rest are status-only (their
+# event timestamp is derived from arrival purely to order the workflow map).
+FOYLE_TASKS = [
+    ("Enrolment",               None,                True),
+    ("Documents (CV/Letter)",   "Docs Date",         True),
+    ("Placement Confirmed",     "Placement Date",    True),
+    ("Accommodation Assigned",  "Accom Date",        True),
+    ("Arrival Info Received",   "Arrival Info Date", False),
+    ("SC Deposit Received",     "Deposit Date",      False),
+    ("Airport Transfer",        None,                False),
+    ("Welcome Pack Sent",       None,                False),
+    ("T&Cs Signed",             None,                False),
+    ("Local Transport",         None,                False),
+    ("Departure Details",       None,                False),
+    ("Feedback Sent",           None,                False),
+]
+# A task counts as settled when its status is one of these (matched lower-cased);
+# anything else ("Not Started", "In Progress", blank) is still open.
+FOYLE_TRACKER_DONE_STATUSES = {"complete", "n/a"}
+
+# Detection knobs for the tracker model.
+FOYLE_CRITICAL_TASKS   = [t[0] for t in FOYLE_TASKS if t[2]]          # BN002 scope
+FOYLE_LEADTIME_TASKS   = ["Accommodation Assigned", "Placement Confirmed"]  # BN001 scope
+FOYLE_LEAD_TIME_DAYS   = 7                                            # milestone locked <N days before arrival = late
+FOYLE_DEPOSIT_TASK     = "SC Deposit Received"                        # BN003: unpaid self-catering deposit
+
+FOYLE_TRACKER_STAGE_ORDER = [t[0] for t in FOYLE_TASKS] + ["Arrival"]

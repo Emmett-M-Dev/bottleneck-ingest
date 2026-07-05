@@ -1,6 +1,6 @@
-"""Background poller — keep the dashboard's JSON export in sync with the live Drive sheets.
+"""Background poller — keep the dashboard's JSON export in sync with the live Drive tracker.
 
-Every `--interval` seconds: read the six Foyle sheets from the Drive folder, scrub +
+Every `--interval` seconds: read the Foyle Placement Tracker sheet from Drive, scrub +
 detect, and re-export `ui_*.json`. The dashboard (which only ever reads JSON) reflects
 the change on its next auto-refresh. Detection and PII scrubbing stay server-side, so
 nothing raw or heavy crosses to the dashboard.
@@ -22,12 +22,12 @@ import traceback
 from datetime import datetime
 
 import ingest
-from bridge import export_foyle
+from bridge import export_foyle_tracker
 
 
 def _cycle() -> tuple[int, dict]:
-    ingest.run("foyle-sheets")               # read Drive -> scrub -> embed -> event log
-    n, workflow = export_foyle.export()      # detect -> ui_cases.json + ui_workflow.json
+    ingest.run("foyle-tracker-sheets")           # read Drive tracker -> scrub -> embed -> event log
+    n, workflow = export_foyle_tracker.export()  # detect -> ui_cases.json + ui_workflow.json
     return n, workflow["kpis"]
 
 

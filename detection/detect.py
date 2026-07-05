@@ -137,6 +137,89 @@ def detect_foyle(df: pd.DataFrame | None = None) -> list[DetectedBottleneck]:
     ]
 
 
+def _status_lower(value) -> str:
+    return "" if value is None or pd.isna(value) else str(value).strip().lower()
+
+
+def _detect_tracker_leadtime(df: pd.DataFrame, threshold_days: int):
+    """Tracker delay: cohorts where a milestone (accommodation / placement) was
+    locked within `threshold_days` of arrival, or after it. Lead = arrival - task
+    completion; a small or negative lead is the bottleneck. Returns (cases,
+    mean_lead_over_flagged, refs)."""
+    tasks = {t.lower() for t in config.FOYLE_LEADTIME_TASKS}
+    flagged: list[str] = []
+    leads: list[float] = []
+    refs: list[str] = []
+    for case_id, g in df.groupby("case_id"):
+        arr = g[g["stage"] == "arrival"]["ts"]
+        if arr.empty or pd.isna(arr.iloc[0]):
+            continue
+        a = arr.iloc[0]
+        worst: float | None = None
+        worst_ref: str | None = None
+        for _, row in g[g["stage"].isin(tasks)].iterrows():
+            if pd.isna(row["ts"]):
+                continue
+            lead = (a - row["ts"]).days
+            if lead < threshold_days and (worst is None or lead < worst):
+                worst, worst_ref = lead, row["source_ref"]
+        if worst is not None:
+            flagged.append(case_id)
+            leads.append(worst)
+            if len(refs) < 3:
+                refs.append(worst_ref)
+    mean_lead = round(sum(leads) / len(leads), 1) if leads else 0.0
+    return sorted(set(flagged)), mean_lead, refs
+
+
+def _detect_tracker_open(df: pd.DataFrame, stages: set[str], done: set[str]):
+    """Cohorts where any event in `stages` has a status outside `done` (still open).
+    Used for both outstanding-critical-task and unpaid-deposit detection."""
+    flagged: list[str] = []
+    refs: list[str] = []
+    for case_id, g in df.groupby("case_id"):
+        for _, row in g[g["stage"].isin(stages)].iterrows():
+            if _status_lower(row["status"]) not in done:
+                flagged.append(case_id)
+                if len(refs) < 3:
+                    refs.append(row["source_ref"])
+                break
+    return sorted(set(flagged)), refs
+
+
+def detect_foyle_tracker(df: pd.DataFrame | None = None) -> list[DetectedBottleneck]:
+    """Detection for the single-sheet Foyle Placement Tracker. Three real patterns,
+    all derivable from the tracker: milestone locked too close to arrival (delay),
+    a critical task still open at arrival (outstanding), and an unpaid self-catering
+    deposit (money)."""
+    if df is None:
+        df = load_event_log()
+
+    done = {s.lower() for s in config.FOYLE_TRACKER_DONE_STATUSES}
+    delay_cases, mean_lead, delay_refs = _detect_tracker_leadtime(df, config.FOYLE_LEAD_TIME_DAYS)
+    crit_stages = {t.lower() for t in config.FOYLE_CRITICAL_TASKS}
+    out_cases, out_refs = _detect_tracker_open(df, crit_stages, done)
+    dep_cases, dep_refs = _detect_tracker_open(df, {config.FOYLE_DEPOSIT_TASK.lower()}, done)
+
+    return [
+        DetectedBottleneck(
+            id="BN001", type="delay", stage="Accommodation Assigned",
+            affected_cases=delay_cases, metric_label="avg_lead_days",
+            metric_value=mean_lead, example_refs=delay_refs,
+        ),
+        DetectedBottleneck(
+            id="BN002", type="outstanding", stage="Critical task",
+            affected_cases=out_cases, metric_label="cohorts_with_open_task",
+            metric_value=float(len(out_cases)), example_refs=out_refs,
+        ),
+        DetectedBottleneck(
+            id="BN003", type="deposit", stage=config.FOYLE_DEPOSIT_TASK,
+            affected_cases=dep_cases, metric_label="unpaid_deposit_cohorts",
+            metric_value=float(len(dep_cases)), example_refs=dep_refs,
+        ),
+    ]
+
+
 def detect_all(df: pd.DataFrame | None = None) -> list[DetectedBottleneck]:
     if df is None:
         df = load_event_log()

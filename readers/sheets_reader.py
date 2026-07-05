@@ -10,6 +10,7 @@ the token is cached to credentials/token.json and all later runs are silent.
 from __future__ import annotations
 
 from googleapiclient.discovery import build
+from google.auth.exceptions import RefreshError
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -34,9 +35,16 @@ def get_credentials(scopes: list[str] | None = None):
         if not set(scopes).issubset(set(creds.scopes or [])):
             creds = None  # cached token lacks a required scope -> re-consent (browser)
     if not creds or not creds.valid:
+        refreshed = False
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
+            try:
+                creds.refresh(Request())
+                refreshed = True
+            except RefreshError:
+                # Refresh token revoked/expired (Google test apps expire them after a
+                # few days) -> fall through to a fresh browser consent rather than crash.
+                creds = None
+        if not refreshed:
             flow = InstalledAppFlow.from_client_secrets_file(str(CREDS_PATH), scopes)
             creds = flow.run_local_server(port=0)
         TOKEN_PATH.write_text(creds.to_json())
