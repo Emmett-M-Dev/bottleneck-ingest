@@ -1,0 +1,66 @@
+{
+  "profile": "joinery",
+  "approved_at": "2026-07-05T16:43:29.388622+00:00",
+  "source_proposal_generated_at": "2026-07-05T16:42:49.890527+00:00",
+  "files": [
+    {
+      "filename": "jobs 2026.xlsx",
+      "sheet": "Sheet1",
+      "role": "events",
+      "include": true,
+      "columns": {
+        "Job No": "case_id",
+        "Stage": "activity",
+        "Date": "timestamp",
+        "Fitter": "actor",
+        "Notes": "status"
+      }
+    },
+    {
+      "filename": "jobs spring - Marks copy.xlsx",
+      "sheet": "Sheet1",
+      "role": "events",
+      "include": true,
+      "columns": {
+        "Job #": "case_id",
+        "Phase": "activity",
+        "When": "timestamp",
+        "Who": "actor",
+        "Comments": "status"
+      }
+    },
+    {
+      "filename": "materials orders.xlsx",
+      "sheet": "Sheet1",
+      "role": "reference",
+      "include": true,
+      "columns": {
+        "Supplier": null,
+        "Material": null,
+        "Lead Time": null,
+        "Account": null
+      }
+    },
+    {
+      "filename": "old quotes 2024.xlsx",
+      "sheet": "Sheet1",
+      "role": "ignore",
+      "include": false,
+      "columns": {
+        "Quote Ref": null,
+        "Client": null,
+        "Job": null,
+        "Amount": null,
+        "Outcome": null
+      }
+    }
+  ],
+  "dedup": {
+    "keys": [
+      "case_id",
+      "activity",
+      "timestamp"
+    ],
+    "keep": "first"
+  }
+}

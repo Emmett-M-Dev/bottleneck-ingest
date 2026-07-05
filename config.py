@@ -158,6 +158,25 @@ MESSY_PROFILES = {
         "gt_mapping": DATA_SYNTHETIC / "ground_truth_mapping_foyle.json",
         "gt_bottlenecks": DATA_SYNTHETIC / "ground_truth_messy_foyle.json",
     },
+    # The contrasting SME: a joinery firm's job pipeline. Different workflow
+    # vocabulary, same canonical schema, zero new reader code — the
+    # generalisability claim in one config block.
+    "joinery": {
+        "dir": DATA_SYNTHETIC / "messy_joinery",
+        "markers": {
+            "delay_stage": "Site Work Started",      # materials lead time
+            "repetition_stage": "Re-measure",        # site measured twice
+            "rework_stage": "Snagging Revisit",      # post-handover call-back
+            "delay_threshold_days": 7,
+        },
+        "stage_order": [
+            "Quote Sent", "Quote Accepted", "Re-measure", "Materials Ordered",
+            "Site Work Started", "Snagging", "Snagging Revisit",
+            "Invoice Sent", "Payment Received",
+        ],
+        "gt_mapping": DATA_SYNTHETIC / "ground_truth_mapping_joinery.json",
+        "gt_bottlenecks": DATA_SYNTHETIC / "ground_truth_messy_joinery.json",
+    },
 }
 
 

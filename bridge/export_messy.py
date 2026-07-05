@@ -92,6 +92,73 @@ _TEMPLATES: dict[tuple[str, str], dict] = {
             ),
         },
     },
+    ("joinery", "delay"): {
+        "title": "Jobs waiting on materials before site work",
+        "workflow_area": "Materials & scheduling",
+        "severity": "high",
+        "confidence": 0.85,
+        "description": (
+            "Site work starts an average of {metric:.0f} days after materials "
+            "are ordered — {count} jobs sat over a week waiting on suppliers "
+            "while fitters were booked elsewhere."
+        ),
+        "fix": {
+            "summary": "Order long-lead materials at quote acceptance, track lead times",
+            "steps": [
+                "Order known long-lead items (glass, spray finishing) the day the quote is accepted.",
+                "Keep supplier lead times on the materials sheet and schedule site work against them.",
+                "Flag any job whose materials are outstanding a week after ordering.",
+            ],
+            "rationale": (
+                "The wait between ordering and starting is dead time the client sees. "
+                "Ordering earlier and scheduling against real lead times closes the gap."
+            ),
+        },
+    },
+    ("joinery", "repetition"): {
+        "title": "Sites measured twice before ordering",
+        "workflow_area": "Surveying & quoting",
+        "severity": "medium",
+        "confidence": 0.85,
+        "description": (
+            "{count} jobs needed a Re-measure — the original survey didn't "
+            "capture what the workshop needed, so someone drove back out."
+        ),
+        "fix": {
+            "summary": "One survey checklist so the first measure is the last",
+            "steps": [
+                "Use a fixed measure checklist (openings, services, access) on the first visit.",
+                "Photograph every opening alongside the measurements.",
+                "Have the workshop confirm the cutting list from the survey before ordering.",
+            ],
+            "rationale": (
+                "A second site visit costs half a day each time. A checklist plus photos "
+                "gives the workshop what it needs from visit one."
+            ),
+        },
+    },
+    ("joinery", "rework"): {
+        "title": "Snagging call-backs after handover",
+        "workflow_area": "Fitting & handover",
+        "severity": "medium",
+        "confidence": 0.8,
+        "description": (
+            "{count} jobs looped back through a Snagging Revisit — defects "
+            "found after the fitter had left, forcing an unbilled return trip."
+        ),
+        "fix": {
+            "summary": "Walk the snag list with the client before leaving site",
+            "steps": [
+                "Do a joint walk-through against the job spec at the end of the fit.",
+                "Fix same-day snags before leaving; book anything bigger there and then.",
+                "Sign off the walk-through so the invoice can go out immediately.",
+            ],
+            "rationale": (
+                "A revisit costs travel and an unbillable half-day. Catching snags while "
+                "still on site turns the call-back into a ten-minute fix."
+            ),
+        },
+    },
 }
 
 

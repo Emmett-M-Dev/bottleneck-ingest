@@ -1,125 +1,142 @@
-"""Generator-level invariants for the messy Foyle drive (data/synthetic/messy_foyle).
+"""Invariants of the messy synthetic drives, parametrised over every SME
+profile — the same assertions holding for both profiles IS the
+generalisability claim in test form.
 
-The drive is the mapping-agent's test bed, so these tests pin the properties the
-audit agent and the mapped reader depend on: the ground-truth mapping describes
-exactly the files on disk, the seasonal fork really does rename every header,
-the stale OLD file really is a row-subset of the NEW one, June really is a gap,
-and the seeded bottleneck cases really carry the pattern the detectors look for.
-End-to-end rediscovery (mapping -> ingest -> detect == ground truth) is covered
-separately once the mapped reader exists.
+Pinned properties: the ground-truth mapping describes exactly the files on
+disk, each drive contains a renamed-header fork and a cross-file duplicate,
+and the seeded bottlenecks are recoverable through the true mapping — both
+directly and through the full mapped-reader -> generic-detector loop.
 """
 
 from __future__ import annotations
 
 import json
+from itertools import combinations
 
 import pandas as pd
+import pytest
 
 import config
 
-_PROFILE = config.MESSY_PROFILES["foyle"]
-_DRIVE = _PROFILE["dir"]
+PROFILES = sorted(config.MESSY_PROFILES)
 
 
-def _gt_mapping() -> dict:
-    return json.loads(_PROFILE["gt_mapping"].read_text(encoding="utf-8"))
+@pytest.fixture(params=PROFILES)
+def profile(request) -> str:
+    return request.param
 
 
-def _gt_bottlenecks() -> dict:
-    return json.loads(_PROFILE["gt_bottlenecks"].read_text(encoding="utf-8"))
+def _gt_mapping(profile: str) -> dict:
+    return json.loads(config.MESSY_PROFILES[profile]["gt_mapping"]
+                      .read_text(encoding="utf-8"))
 
 
-def _events_frame(gt_file: dict) -> pd.DataFrame:
+def _gt_bottlenecks(profile: str) -> dict:
+    return json.loads(config.MESSY_PROFILES[profile]["gt_bottlenecks"]
+                      .read_text(encoding="utf-8"))
+
+
+def _events_frame(profile: str, gt_file: dict) -> pd.DataFrame:
     """Read one events-role file and canonicalise it via its ground-truth columns."""
-    df = pd.read_excel(_DRIVE / gt_file["filename"], dtype=str)
+    drive = config.MESSY_PROFILES[profile]["dir"]
+    df = pd.read_excel(drive / gt_file["filename"], dtype=str)
     df = df.rename(columns=gt_file["columns"])
     df["stage"] = df["activity"].fillna("").str.strip().str.lower()
-    df["ts"] = pd.to_datetime(df["timestamp"], dayfirst=True, errors="coerce", format="mixed")
+    df["ts"] = pd.to_datetime(df["timestamp"], dayfirst=True, errors="coerce",
+                              format="mixed")
     return df
 
 
-def test_drive_files_match_ground_truth_mapping() -> None:
-    gt_names = {f["filename"] for f in _gt_mapping()["files"]}
-    on_disk = {p.name for p in _DRIVE.glob("*.xlsx")}
+def _events_files(profile: str, include_only: bool = False) -> list[dict]:
+    return [f for f in _gt_mapping(profile)["files"]
+            if f["role"] == "events" and (f["include"] or not include_only)]
+
+
+def test_drive_files_match_ground_truth_mapping(profile: str) -> None:
+    gt_names = {f["filename"] for f in _gt_mapping(profile)["files"]}
+    on_disk = {p.name for p in config.MESSY_PROFILES[profile]["dir"].glob("*.xlsx")}
     assert gt_names == on_disk
 
 
-def test_fork_renames_every_header() -> None:
-    files = {f["filename"]: f for f in _gt_mapping()["files"]}
-    canon = set(files["bookings Jan-May 2026.xlsx"]["columns"])
-    fork = set(files["bookings summer NEW.xlsx"]["columns"])
-    assert canon.isdisjoint(fork)
-    for name in ("bookings Jan-May 2026.xlsx", "bookings summer NEW.xlsx"):
-        headers = set(pd.read_excel(_DRIVE / name, dtype=str, nrows=0).columns)
-        assert headers == set(files[name]["columns"])
+def test_drive_contains_a_renamed_header_fork(profile: str) -> None:
+    """At least one pair of events files shares NO headers — the seasonal/
+    personal fork the alias baseline cannot follow."""
+    files = _events_files(profile)
+    header_sets = {f["filename"]: set(f["columns"]) for f in files}
+    assert any(header_sets[a["filename"]].isdisjoint(header_sets[b["filename"]])
+               for a, b in combinations(files, 2))
+    for f in files:
+        drive = config.MESSY_PROFILES[profile]["dir"]
+        actual = set(pd.read_excel(drive / f["filename"], dtype=str, nrows=0).columns)
+        assert actual == set(f["columns"]), f["filename"]
 
 
-def test_old_file_is_duplicate_subset_of_new() -> None:
-    files = {f["filename"]: f for f in _gt_mapping()["files"]}
-    old = _events_frame(files["bookings summer OLD do not use.xlsx"])
-    new = _events_frame(files["bookings summer NEW.xlsx"])
-    new_keys = set(zip(new["case_id"], new["stage"], new["ts"]))
-    old_keys = set(zip(old["case_id"], old["stage"], old["ts"]))
-    assert old_keys and old_keys <= new_keys
+def test_drive_contains_a_cross_file_duplicate(profile: str) -> None:
+    """Some canonical event rows appear in more than one events file — the
+    stale-copy pattern the mapped reader's dedup must absorb."""
+    keysets = []
+    for f in _events_files(profile):
+        df = _events_frame(profile, f)
+        keysets.append(set(zip(df["case_id"], df["stage"], df["ts"])))
+    assert any(a & b for a, b in combinations(keysets, 2))
 
 
-def test_june_is_a_gap() -> None:
-    files = [f for f in _gt_mapping()["files"] if f["role"] == "events"]
-    ts = pd.concat([_events_frame(f)["ts"] for f in files])
+def test_foyle_june_is_a_gap() -> None:
+    ts = pd.concat([_events_frame("foyle", f) for f in _events_files("foyle")])["ts"]
     assert not ts.isna().any()
-    in_june = ts[(ts >= "2026-06-01") & (ts < "2026-07-01")]
-    assert in_june.empty
-    # ...but both sides of the gap are populated
+    assert ts[(ts >= "2026-06-01") & (ts < "2026-07-01")].empty
     assert (ts < "2026-06-01").any() and (ts >= "2026-07-01").any()
 
 
-def test_seeded_patterns_are_detectable_with_the_true_mapping() -> None:
-    gt = _gt_bottlenecks()["bottlenecks"]
-    files = [f for f in _gt_mapping()["files"]
-             if f["role"] == "events" and f["include"]]
-    df = pd.concat([_events_frame(f) for f in files], ignore_index=True)
-    assert df["case_id"].nunique() == _gt_bottlenecks()["cases"]
+def test_seeded_patterns_are_detectable_with_the_true_mapping(profile: str) -> None:
+    markers = config.MESSY_PROFILES[profile]["markers"]
+    gt = _gt_bottlenecks(profile)["bottlenecks"]
+    frames = [_events_frame(profile, f) for f in _events_files(profile, include_only=True)]
+    df = (pd.concat(frames, ignore_index=True)
+          .drop_duplicates(subset=["case_id", "stage", "ts"]))
+    assert df["case_id"].nunique() == _gt_bottlenecks(profile)["cases"]
 
-    # delay: the gap into Booking Confirmed crosses the threshold iff seeded
-    threshold = _PROFILE["markers"]["delay_threshold_days"]
+    # delay: the gap into the marker stage crosses the threshold iff seeded
+    delay_stage = markers["delay_stage"].lower()
     for case_id, g in df.sort_values("ts").groupby("case_id"):
         g = g.reset_index(drop=True)
-        idx = g.index[g["stage"] == "booking confirmed"]
+        idx = g.index[g["stage"] == delay_stage]
         assert len(idx) == 1 and idx[0] > 0
         gap = (g["ts"][idx[0]] - g["ts"][idx[0] - 1]).days
-        assert (gap >= threshold) == (case_id in gt["delay"]), case_id
+        assert (gap >= markers["delay_threshold_days"]) == (case_id in gt["delay"]), case_id
 
     # repetition / rework: marker presence iff seeded
-    for kind, marker in (("repetition", "document re-request"),
-                         ("rework", "placement re-allocation")):
+    for kind, marker in (("repetition", markers["repetition_stage"].lower()),
+                         ("rework", markers["rework_stage"].lower())):
         flagged = set(df[df["stage"] == marker]["case_id"])
         assert flagged == set(gt[kind]), kind
 
 
-def test_end_to_end_rediscovery_via_mapped_reader() -> None:
-    """The full loop the thesis claims: ground-truth mapping as the approved
-    mapping -> mapped reader (incl. dedup of the stale fork) -> generic
-    detector with the profile's markers == the seeded ground truth."""
+def test_end_to_end_rediscovery_via_mapped_reader(profile: str) -> None:
+    """The full loop the thesis claims, identical for every profile:
+    ground-truth mapping as the approved mapping -> mapped reader (incl.
+    dedup) -> generic detector with the profile's markers == seeded truth."""
     from audit.schemas import ApprovedFileMapping, ApprovedMapping
     from detection.detect import detect_generic
     from readers.mapped_reader import read_mapped
 
-    gt_map = _gt_mapping()
+    gt_map = _gt_mapping(profile)
     approved = ApprovedMapping(
-        profile="foyle", approved_at="2026-07-05T00:00:00+00:00",
+        profile=profile, approved_at="2026-07-05T00:00:00+00:00",
         source_proposal_generated_at="2026-07-05T00:00:00+00:00",
         files=[ApprovedFileMapping(
             filename=f["filename"], sheet=f["sheet"], role=f["role"],
             include=f["include"], columns=f["columns"]) for f in gt_map["files"]],
     )
-    event_rows, doc_rows = read_mapped(_DRIVE, approved)
+    event_rows, doc_rows = read_mapped(config.MESSY_PROFILES[profile]["dir"], approved)
     assert doc_rows, "reference sheet should feed the RAG corpus"
 
     df = pd.DataFrame(event_rows)
     df["stage"] = df["activity"].str.strip().str.lower()
     df["ts"] = pd.to_datetime(df["timestamp"], errors="coerce")
-    detected = {b.type: b for b in detect_generic(df, **_PROFILE["markers"])}
+    markers = config.MESSY_PROFILES[profile]["markers"]
+    detected = {b.type: b for b in detect_generic(df, **markers)}
 
-    gt = _gt_bottlenecks()["bottlenecks"]
+    gt = _gt_bottlenecks(profile)["bottlenecks"]
     for kind in ("delay", "repetition", "rework"):
         assert detected[kind].affected_cases == sorted(gt[kind]), kind
