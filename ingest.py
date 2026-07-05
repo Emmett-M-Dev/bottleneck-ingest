@@ -7,6 +7,11 @@
     python ingest.py --source foyle-tracker         # streamlined placement tracker (local xlsx)
     python ingest.py --source foyle-tracker-sheets  # the same tracker live from a Drive sheet
     python ingest.py --source foyle-sheets  # the same six sheets live from a Drive folder
+    python ingest.py --source messy --profile foyle   # messy drive via APPROVED mapping
+
+The messy path enforces the HITL gate ordering: it hard-errors unless a
+human-approved mapping exists (audit agent proposes -> dashboard Mapping
+Review approves -> only then does ingestion run).
 
 Each mode: read -> scrub -> normalise -> write parquet + jsonl -> embed into ChromaDB.
 The local and sheets paths produce identical output shapes, so downstream detection
@@ -28,6 +33,7 @@ os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
 import argparse
 import json
 import logging
+from pathlib import Path
 
 import pandas as pd
 
@@ -123,6 +129,34 @@ def _read_foyle_sheets() -> tuple[list[NormalisedRecord], str]:
     return records, summary
 
 
+def _read_messy(profile: str, mapping_path=None) -> tuple[list[NormalisedRecord], str]:
+    from audit.schemas import load_approved  # lazy: pydantic only on this path
+    from readers.mapped_reader import read_mapped
+
+    mapping_path = mapping_path or config.approved_mapping_path(profile)
+    if not mapping_path.exists():
+        raise SystemExit(
+            f"No approved mapping for profile '{profile}' ({mapping_path}).\n"
+            f"The messy path only ingests through a human-approved mapping:\n"
+            f"    1. python -m audit.run --profile {profile}\n"
+            f"    2. approve it in the dashboard's Mapping Review tab\n"
+            f"    3. re-run this command"
+        )
+    approved = load_approved(mapping_path)
+    drive = config.MESSY_PROFILES[profile]["dir"]
+    event_rows, doc_rows = read_mapped(drive, approved)
+    records = (
+        normalise_foyle_events(event_rows, source_type="messy")
+        + normalise_text(doc_rows, source_type="messy_text")
+    )
+    n_files = sum(1 for f in approved.files if f.include and f.role != "ignore")
+    summary = (
+        f"[messy:{profile}] Derived {len(event_rows)} events + {len(doc_rows)} snippets "
+        f"from {n_files} mapped files (approved {approved.approved_at[:19]})"
+    )
+    return records, summary
+
+
 def _dedup(records: list[NormalisedRecord]) -> list[NormalisedRecord]:
     seen: dict[str, NormalisedRecord] = {}
     for rec in records:
@@ -151,12 +185,19 @@ def _write_event_log(records: list[NormalisedRecord]) -> int:
     return len(events)
 
 
-def run(source: str) -> None:
+def run(source: str, profile: str | None = None, mapping_path=None) -> None:
     from scrub.anonymise import reset_actor_registry
     reset_actor_registry()  # deterministic actor placeholder numbering per run
 
     summaries: list[str] = []
     records: list[NormalisedRecord] = []
+
+    if source == "messy":
+        if not profile:
+            raise SystemExit("--source messy requires --profile")
+        recs, summ = _read_messy(profile, mapping_path)
+        records += recs
+        summaries.append(summ)
 
     if source in ("local", "all"):
         recs, summ = _read_local()
@@ -208,11 +249,15 @@ def main() -> None:
     parser.add_argument(
         "--source",
         choices=["local", "sheets", "all", "foyle", "foyle-tracker",
-                 "foyle-tracker-sheets", "foyle-sheets"],
+                 "foyle-tracker-sheets", "foyle-sheets", "messy"],
         default="local",
     )
+    parser.add_argument("--profile", choices=sorted(config.MESSY_PROFILES),
+                        default=None, help="SME profile for --source messy")
+    parser.add_argument("--mapping", type=Path, default=None,
+                        help="approved mapping JSON (default: mappings/approved_<profile>.json)")
     args = parser.parse_args()
-    run(args.source)
+    run(args.source, profile=args.profile, mapping_path=args.mapping)
 
 
 if __name__ == "__main__":

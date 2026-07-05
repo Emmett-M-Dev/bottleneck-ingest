@@ -1,0 +1,78 @@
+{
+  "profile": "foyle",
+  "approved_at": "2026-07-05T16:31:37.881704+00:00",
+  "source_proposal_generated_at": "2026-07-05T16:25:28.216881+00:00",
+  "files": [
+    {
+      "filename": "bookings Jan-May 2026.xlsx",
+      "sheet": "Sheet1",
+      "role": "events",
+      "include": true,
+      "columns": {
+        "Booking Ref": "case_id",
+        "Stage": "activity",
+        "Date": "timestamp",
+        "Handled By": "actor",
+        "Status": "status"
+      }
+    },
+    {
+      "filename": "bookings summer NEW.xlsx",
+      "sheet": "Sheet1",
+      "role": "events",
+      "include": true,
+      "columns": {
+        "Ref #": "case_id",
+        "Step": "activity",
+        "Updated On": "timestamp",
+        "Staff Member": "actor",
+        "Payment status": "status"
+      }
+    },
+    {
+      "filename": "bookings summer OLD do not use.xlsx",
+      "sheet": "Sheet1",
+      "role": "events",
+      "include": false,
+      "columns": {
+        "Booking Ref": "case_id",
+        "Stage": "activity",
+        "Date": "timestamp",
+        "Handled By": "actor",
+        "Status": "status"
+      }
+    },
+    {
+      "filename": "host families 2026.xlsx",
+      "sheet": "Sheet1",
+      "role": "reference",
+      "include": true,
+      "columns": {
+        "Family Name": null,
+        "Address": null,
+        "Area": null,
+        "Capacity": null,
+        "Notes": null
+      }
+    },
+    {
+      "filename": "staff phone list.xlsx",
+      "sheet": "Sheet1",
+      "role": "ignore",
+      "include": false,
+      "columns": {
+        "Name": null,
+        "Role": null,
+        "Mobile": null
+      }
+    }
+  ],
+  "dedup": {
+    "keys": [
+      "case_id",
+      "activity",
+      "timestamp"
+    ],
+    "keep": "first"
+  }
+}

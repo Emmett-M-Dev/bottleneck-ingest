@@ -94,3 +94,32 @@ def test_seeded_patterns_are_detectable_with_the_true_mapping() -> None:
                          ("rework", "placement re-allocation")):
         flagged = set(df[df["stage"] == marker]["case_id"])
         assert flagged == set(gt[kind]), kind
+
+
+def test_end_to_end_rediscovery_via_mapped_reader() -> None:
+    """The full loop the thesis claims: ground-truth mapping as the approved
+    mapping -> mapped reader (incl. dedup of the stale fork) -> generic
+    detector with the profile's markers == the seeded ground truth."""
+    from audit.schemas import ApprovedFileMapping, ApprovedMapping
+    from detection.detect import detect_generic
+    from readers.mapped_reader import read_mapped
+
+    gt_map = _gt_mapping()
+    approved = ApprovedMapping(
+        profile="foyle", approved_at="2026-07-05T00:00:00+00:00",
+        source_proposal_generated_at="2026-07-05T00:00:00+00:00",
+        files=[ApprovedFileMapping(
+            filename=f["filename"], sheet=f["sheet"], role=f["role"],
+            include=f["include"], columns=f["columns"]) for f in gt_map["files"]],
+    )
+    event_rows, doc_rows = read_mapped(_DRIVE, approved)
+    assert doc_rows, "reference sheet should feed the RAG corpus"
+
+    df = pd.DataFrame(event_rows)
+    df["stage"] = df["activity"].str.strip().str.lower()
+    df["ts"] = pd.to_datetime(df["timestamp"], errors="coerce")
+    detected = {b.type: b for b in detect_generic(df, **_PROFILE["markers"])}
+
+    gt = _gt_bottlenecks()["bottlenecks"]
+    for kind in ("delay", "repetition", "rework"):
+        assert detected[kind].affected_cases == sorted(gt[kind]), kind

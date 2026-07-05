@@ -220,33 +220,46 @@ def detect_foyle_tracker(df: pd.DataFrame | None = None) -> list[DetectedBottlen
     ]
 
 
-def detect_all(df: pd.DataFrame | None = None) -> list[DetectedBottleneck]:
-    if df is None:
-        df = load_event_log()
-
+def detect_generic(df: pd.DataFrame, *, delay_stage: str, repetition_stage: str,
+                   rework_stage: str, delay_threshold_days: int) -> list[DetectedBottleneck]:
+    """The generic delay/repetition/rework detector, parametrised by marker
+    stages so any profile (single-sheet model, messy-drive profiles) can run
+    it with its own vocabulary. `detect_all` wraps it with the config defaults."""
     results: list[DetectedBottleneck] = []
 
     delay_cases, mean_gap, delay_refs = _detect_delay(
-        df, config.DELAY_STAGE.lower(), config.DELAY_THRESHOLD_DAYS
+        df, delay_stage.lower(), delay_threshold_days
     )
     results.append(DetectedBottleneck(
-        id="BN001", type="delay", stage=config.DELAY_STAGE,
+        id="BN001", type="delay", stage=delay_stage,
         affected_cases=delay_cases, metric_label="avg_delay_days",
         metric_value=mean_gap, example_refs=delay_refs,
     ))
 
-    rep_cases, rep_refs = _detect_presence(df, config.REPETITION_STAGE.lower())
+    rep_cases, rep_refs = _detect_presence(df, repetition_stage.lower())
     results.append(DetectedBottleneck(
-        id="BN002", type="repetition", stage=config.REPETITION_STAGE,
+        id="BN002", type="repetition", stage=repetition_stage,
         affected_cases=rep_cases, metric_label="duplicate_entry_cases",
         metric_value=float(len(rep_cases)), example_refs=rep_refs,
     ))
 
-    rew_cases, rew_refs = _detect_presence(df, config.REWORK_STAGE.lower())
+    rew_cases, rew_refs = _detect_presence(df, rework_stage.lower())
     results.append(DetectedBottleneck(
-        id="BN003", type="rework", stage=config.REWORK_STAGE,
+        id="BN003", type="rework", stage=rework_stage,
         affected_cases=rew_cases, metric_label="rework_loop_cases",
         metric_value=float(len(rew_cases)), example_refs=rew_refs,
     ))
 
     return results
+
+
+def detect_all(df: pd.DataFrame | None = None) -> list[DetectedBottleneck]:
+    if df is None:
+        df = load_event_log()
+    return detect_generic(
+        df,
+        delay_stage=config.DELAY_STAGE,
+        repetition_stage=config.REPETITION_STAGE,
+        rework_stage=config.REWORK_STAGE,
+        delay_threshold_days=config.DELAY_THRESHOLD_DAYS,
+    )
