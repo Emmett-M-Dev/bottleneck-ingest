@@ -3,6 +3,10 @@
 Both readers (excel/text/sheets) and the future detection + RAG layers agree on
 `Event` and `NormalisedRecord`. Plain dataclasses with explicit to/from-dict so the
 shapes serialise cleanly to JSONL / Parquet without pulling in a validation library.
+
+`Event` + `NormalisedRecord` are THE canonical layer: the fixed schema every
+per-SME adapter maps into and the only shape the core pipeline (normalise, scrub,
+embed, detect, export) ever sees. See `readers/base.py` for the adapter contract.
 """
 
 from __future__ import annotations

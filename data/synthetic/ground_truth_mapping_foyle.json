@@ -1,0 +1,71 @@
+{
+  "profile": "foyle",
+  "seed": 13,
+  "files": [
+    {
+      "filename": "bookings Jan-May 2026.xlsx",
+      "sheet": "Sheet1",
+      "role": "events",
+      "include": true,
+      "columns": {
+        "Booking Ref": "case_id",
+        "Stage": "activity",
+        "Date": "timestamp",
+        "Handled By": "actor",
+        "Status": "status"
+      }
+    },
+    {
+      "filename": "bookings summer NEW.xlsx",
+      "sheet": "Sheet1",
+      "role": "events",
+      "include": true,
+      "columns": {
+        "Ref #": "case_id",
+        "Step": "activity",
+        "Updated On": "timestamp",
+        "Staff Member": "actor",
+        "Payment status": "status"
+      }
+    },
+    {
+      "filename": "bookings summer OLD do not use.xlsx",
+      "sheet": "Sheet1",
+      "role": "events",
+      "include": false,
+      "columns": {
+        "Booking Ref": "case_id",
+        "Stage": "activity",
+        "Date": "timestamp",
+        "Handled By": "actor",
+        "Status": "status"
+      }
+    },
+    {
+      "filename": "host families 2026.xlsx",
+      "sheet": "Sheet1",
+      "role": "reference",
+      "include": true,
+      "columns": {}
+    },
+    {
+      "filename": "staff phone list.xlsx",
+      "sheet": "Sheet1",
+      "role": "ignore",
+      "include": false,
+      "columns": {}
+    }
+  ],
+  "expected_issues": {
+    "duplicates": [
+      "bookings summer OLD do not use.xlsx duplicates the first rows of bookings summer NEW.xlsx"
+    ],
+    "overlaps": [],
+    "gaps": [
+      "No bookings cover June 2026"
+    ],
+    "irrelevant": [
+      "staff phone list.xlsx"
+    ]
+  }
+}

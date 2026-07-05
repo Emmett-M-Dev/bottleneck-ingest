@@ -132,3 +132,46 @@ FOYLE_LEAD_TIME_DAYS   = 7                                            # mileston
 FOYLE_DEPOSIT_TASK     = "SC Deposit Received"                        # BN003: unpaid self-catering deposit
 
 FOYLE_TRACKER_STAGE_ORDER = [t[0] for t in FOYLE_TASKS] + ["Arrival"]
+
+# ── Messy-drive profiles (mapping-agent path) ────────────────────────────────
+# The `--source messy` path reads a deliberately messy folder of xlsx files
+# (overlapping seasonal forks, renamed headers, freetext statuses, irrelevant
+# files) through an APPROVED mapping produced by the audit agent (audit/) and
+# confirmed by a human in the dashboard's Mapping Review tab. One profile per
+# SME; the core pipeline is identical for all of them — that is the point.
+MAPPINGS_DIR = ROOT / "mappings"
+
+MESSY_PROFILES = {
+    "foyle": {
+        "dir": DATA_SYNTHETIC / "messy_foyle",
+        "markers": {
+            "delay_stage": "Booking Confirmed",
+            "repetition_stage": "Document Re-request",
+            "rework_stage": "Placement Re-allocation",
+            "delay_threshold_days": 7,
+        },
+        "stage_order": [
+            "Request Received", "Placement Offer", "Placement Re-allocation",
+            "Booking Confirmed", "Invoice Issued", "Document Re-request",
+            "Pre-Arrival Logistics", "Arrival",
+        ],
+        "gt_mapping": DATA_SYNTHETIC / "ground_truth_mapping_foyle.json",
+        "gt_bottlenecks": DATA_SYNTHETIC / "ground_truth_messy_foyle.json",
+    },
+}
+
+
+def approved_mapping_path(profile: str) -> Path:
+    return MAPPINGS_DIR / f"approved_{profile}.json"
+
+
+def ui_mapping_proposal_path(profile: str) -> Path:
+    return OUTPUTS / f"ui_mapping_proposal_{profile}.json"
+
+
+# Audit agent knobs. Sample rows are scrubbed before they reach the API; the
+# caps bound both cost and payload size.
+AUDIT_SAMPLE_ROWS   = 5
+AUDIT_MAX_SHEETS    = 15
+AUDIT_CELL_MAX_CHARS = 80
+AUDIT_MODEL_DEFAULT = "claude-opus-4-8"
