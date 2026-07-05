@@ -1,0 +1,322 @@
+{
+  "profile": "joinery",
+  "drive": "C:\\Users\\Emmet\\bottleneck-ingest\\data\\synthetic\\messy_joinery",
+  "generated_at": "2026-07-05T16:42:49.890527+00:00",
+  "model": "claude-opus-4-8",
+  "mode": "llm",
+  "files": [
+    {
+      "filename": "jobs 2026.xlsx",
+      "sheet": "Sheet1",
+      "inferred_role": "events",
+      "role_confidence": 0.95,
+      "include": true,
+      "columns": [
+        {
+          "source_header": "Job No",
+          "canonical_field": "case_id",
+          "confidence": 0.95
+        },
+        {
+          "source_header": "Stage",
+          "canonical_field": "activity",
+          "confidence": 0.92
+        },
+        {
+          "source_header": "Date",
+          "canonical_field": "timestamp",
+          "confidence": 0.9
+        },
+        {
+          "source_header": "Fitter",
+          "canonical_field": "actor",
+          "confidence": 0.9
+        },
+        {
+          "source_header": "Notes",
+          "canonical_field": "status",
+          "confidence": 0.75
+        }
+      ],
+      "issues": [
+        "Date in DD/MM/YYYY format; differs from ISO format used in the spring copy",
+        "Stage/status labels inconsistently cased (e.g. 'Snagging', 'Done')"
+      ],
+      "n_rows": 66
+    },
+    {
+      "filename": "jobs spring - Marks copy.xlsx",
+      "sheet": "Sheet1",
+      "inferred_role": "events",
+      "role_confidence": 0.9,
+      "include": false,
+      "columns": [
+        {
+          "source_header": "Job #",
+          "canonical_field": "case_id",
+          "confidence": 0.9
+        },
+        {
+          "source_header": "Phase",
+          "canonical_field": "activity",
+          "confidence": 0.85
+        },
+        {
+          "source_header": "When",
+          "canonical_field": "timestamp",
+          "confidence": 0.85
+        },
+        {
+          "source_header": "Who",
+          "canonical_field": "actor",
+          "confidence": 0.85
+        },
+        {
+          "source_header": "Comments",
+          "canonical_field": "status",
+          "confidence": 0.7
+        }
+      ],
+      "issues": [
+        "Filename suggests a personal ('Marks copy') possibly superseded/partial copy of the main jobs sheet with renamed headers",
+        "ISO date format differs from main sheet; reconcile before merging",
+        "Likely overlaps in scope with jobs 2026.xlsx"
+      ],
+      "n_rows": 50
+    },
+    {
+      "filename": "materials orders.xlsx",
+      "sheet": "Sheet1",
+      "inferred_role": "reference",
+      "role_confidence": 0.9,
+      "include": false,
+      "columns": [
+        {
+          "source_header": "Supplier",
+          "canonical_field": null,
+          "confidence": 0.85
+        },
+        {
+          "source_header": "Material",
+          "canonical_field": null,
+          "confidence": 0.85
+        },
+        {
+          "source_header": "Lead Time",
+          "canonical_field": null,
+          "confidence": 0.8
+        },
+        {
+          "source_header": "Account",
+          "canonical_field": null,
+          "confidence": 0.8
+        }
+      ],
+      "issues": [
+        "No case_id, timestamp or event structure; supplier reference data, not workflow events"
+      ],
+      "n_rows": 4
+    },
+    {
+      "filename": "old quotes 2024.xlsx",
+      "sheet": "Sheet1",
+      "inferred_role": "reference",
+      "role_confidence": 0.6,
+      "include": false,
+      "columns": [
+        {
+          "source_header": "Quote Ref",
+          "canonical_field": "case_id",
+          "confidence": 0.4
+        },
+        {
+          "source_header": "Client",
+          "canonical_field": null,
+          "confidence": 0.7
+        },
+        {
+          "source_header": "Job",
+          "canonical_field": null,
+          "confidence": 0.6
+        },
+        {
+          "source_header": "Amount",
+          "canonical_field": null,
+          "confidence": 0.7
+        },
+        {
+          "source_header": "Outcome",
+          "canonical_field": "status",
+          "confidence": 0.4
+        }
+      ],
+      "issues": [
+        "Stale 2024 data, superseded by 2026 job sheets",
+        "One row per quote, not per event; lacks timestamps and actors",
+        "Quote refs (Q-2024-*) do not match job numbering (J-*)"
+      ],
+      "n_rows": 3
+    }
+  ],
+  "mess_report": {
+    "duplicates": [
+      "jobs spring - Marks copy.xlsx appears to be a renamed personal copy potentially duplicating jobs 2026.xlsx rows; case IDs differ in samples (J-1021 vs J-1030) so verify overlap"
+    ],
+    "overlaps": [
+      "jobs 2026.xlsx and jobs spring - Marks copy.xlsx both cover early-2026 joinery jobs and likely overlap in Jan-Mar 2026"
+    ],
+    "gaps": [
+      "No event coverage for 2025 (gap between old quotes 2024 and jobs 2026)",
+      "No event coverage after March 2026 based on sampled dates"
+    ],
+    "irrelevant": [
+      "materials orders.xlsx (supplier reference, no workflow events)",
+      "old quotes 2024.xlsx (stale 2024 quote data outside current operational workflow)"
+    ]
+  },
+  "baseline": {
+    "files": [
+      {
+        "filename": "jobs 2026.xlsx",
+        "sheet": "Sheet1",
+        "inferred_role": "ignore",
+        "role_confidence": 0.4,
+        "include": false,
+        "columns": [
+          {
+            "source_header": "Job No",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Stage",
+            "canonical_field": "activity",
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Date",
+            "canonical_field": "timestamp",
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Fitter",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Notes",
+            "canonical_field": null,
+            "confidence": 0.4
+          }
+        ],
+        "issues": []
+      },
+      {
+        "filename": "jobs spring - Marks copy.xlsx",
+        "sheet": "Sheet1",
+        "inferred_role": "ignore",
+        "role_confidence": 0.4,
+        "include": false,
+        "columns": [
+          {
+            "source_header": "Job #",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Phase",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "When",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Who",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Comments",
+            "canonical_field": null,
+            "confidence": 0.4
+          }
+        ],
+        "issues": []
+      },
+      {
+        "filename": "materials orders.xlsx",
+        "sheet": "Sheet1",
+        "inferred_role": "ignore",
+        "role_confidence": 0.4,
+        "include": false,
+        "columns": [
+          {
+            "source_header": "Supplier",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Material",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Lead Time",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Account",
+            "canonical_field": null,
+            "confidence": 0.4
+          }
+        ],
+        "issues": []
+      },
+      {
+        "filename": "old quotes 2024.xlsx",
+        "sheet": "Sheet1",
+        "inferred_role": "ignore",
+        "role_confidence": 0.4,
+        "include": false,
+        "columns": [
+          {
+            "source_header": "Quote Ref",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Client",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Job",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Amount",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Outcome",
+            "canonical_field": "status",
+            "confidence": 0.4
+          }
+        ],
+        "issues": []
+      }
+    ],
+    "mess_report": {
+      "duplicates": [],
+      "overlaps": [],
+      "gaps": [],
+      "irrelevant": []
+    }
+  }
+}

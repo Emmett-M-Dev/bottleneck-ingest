@@ -1,0 +1,45 @@
+{
+  "profile": "joinery",
+  "model": "claude-opus-4-8",
+  "proposal_generated_at": "2026-07-05T16:42:49.890527+00:00",
+  "conditions": {
+    "baseline": {
+      "role_accuracy": 0.25,
+      "include_accuracy": 0.25,
+      "column_exact_accuracy": 0.526,
+      "column_precision": 0.667,
+      "column_recall": 0.2,
+      "column_f1": 0.308,
+      "column_errors": 9
+    },
+    "llm": {
+      "role_accuracy": 0.75,
+      "include_accuracy": 0.5,
+      "column_exact_accuracy": 0.895,
+      "column_precision": 0.833,
+      "column_recall": 1.0,
+      "column_f1": 0.909,
+      "column_errors": 2
+    },
+    "approved": {
+      "role_accuracy": 1.0,
+      "include_accuracy": 1.0,
+      "column_exact_accuracy": 1.0,
+      "column_precision": 1.0,
+      "column_recall": 1.0,
+      "column_f1": 1.0,
+      "column_errors": 0
+    }
+  },
+  "hitl": {
+    "action": "modify",
+    "corrections": {
+      "role_changes": 1,
+      "column_changes": 2,
+      "include_toggles": 2
+    },
+    "time_to_decision_seconds": 0.3,
+    "decided_at": "2026-07-05T16:43:29.390663+00:00"
+  },
+  "hitl_error_delta": 2
+}

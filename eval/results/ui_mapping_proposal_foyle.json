@@ -1,0 +1,388 @@
+{
+  "profile": "foyle",
+  "drive": "C:\\Users\\Emmet\\bottleneck-ingest\\data\\synthetic\\messy_foyle",
+  "generated_at": "2026-07-05T16:25:28.216881+00:00",
+  "model": "claude-opus-4-8",
+  "mode": "llm",
+  "files": [
+    {
+      "filename": "bookings Jan-May 2026.xlsx",
+      "sheet": "Sheet1",
+      "inferred_role": "events",
+      "role_confidence": 0.95,
+      "include": true,
+      "columns": [
+        {
+          "source_header": "Booking Ref",
+          "canonical_field": "case_id",
+          "confidence": 0.95
+        },
+        {
+          "source_header": "Stage",
+          "canonical_field": "activity",
+          "confidence": 0.9
+        },
+        {
+          "source_header": "Date",
+          "canonical_field": "timestamp",
+          "confidence": 0.9
+        },
+        {
+          "source_header": "Handled By",
+          "canonical_field": "actor",
+          "confidence": 0.9
+        },
+        {
+          "source_header": "Status",
+          "canonical_field": "status",
+          "confidence": 0.9
+        }
+      ],
+      "issues": [
+        "Dates in DD/MM/YYYY format",
+        "Status values inconsistent (ok/done/complete/Completed \u2714)",
+        "Covers Jan-May 2026 per filename but sample only shows January"
+      ],
+      "n_rows": 64
+    },
+    {
+      "filename": "bookings summer NEW.xlsx",
+      "sheet": "Sheet1",
+      "inferred_role": "events",
+      "role_confidence": 0.92,
+      "include": true,
+      "columns": [
+        {
+          "source_header": "Ref #",
+          "canonical_field": "case_id",
+          "confidence": 0.9
+        },
+        {
+          "source_header": "Step",
+          "canonical_field": "activity",
+          "confidence": 0.88
+        },
+        {
+          "source_header": "Updated On",
+          "canonical_field": "timestamp",
+          "confidence": 0.85
+        },
+        {
+          "source_header": "Staff Member",
+          "canonical_field": "actor",
+          "confidence": 0.9
+        },
+        {
+          "source_header": "Payment status",
+          "canonical_field": "status",
+          "confidence": 0.7
+        }
+      ],
+      "issues": [
+        "Headers renamed vs Jan-May file; mapped by meaning",
+        "'Payment status' may be narrower than generic status",
+        "Uses ISO date format unlike the other files"
+      ],
+      "n_rows": 50
+    },
+    {
+      "filename": "bookings summer OLD do not use.xlsx",
+      "sheet": "Sheet1",
+      "inferred_role": "events",
+      "role_confidence": 0.9,
+      "include": false,
+      "columns": [
+        {
+          "source_header": "Booking Ref",
+          "canonical_field": "case_id",
+          "confidence": 0.95
+        },
+        {
+          "source_header": "Stage",
+          "canonical_field": "activity",
+          "confidence": 0.9
+        },
+        {
+          "source_header": "Date",
+          "canonical_field": "timestamp",
+          "confidence": 0.9
+        },
+        {
+          "source_header": "Handled By",
+          "canonical_field": "actor",
+          "confidence": 0.9
+        },
+        {
+          "source_header": "Status",
+          "canonical_field": "status",
+          "confidence": 0.9
+        }
+      ],
+      "issues": [
+        "Filename marks this as OLD / do not use \u2014 superseded by 'bookings summer NEW.xlsx'",
+        "Overlaps summer bookings with the NEW file (B-2026-011 appears in both)",
+        "Stale duplicate copy"
+      ],
+      "n_rows": 12
+    },
+    {
+      "filename": "host families 2026.xlsx",
+      "sheet": "Sheet1",
+      "inferred_role": "reference",
+      "role_confidence": 0.9,
+      "include": false,
+      "columns": [
+        {
+          "source_header": "Family Name",
+          "canonical_field": null,
+          "confidence": 0.6
+        },
+        {
+          "source_header": "Address",
+          "canonical_field": null,
+          "confidence": 0.9
+        },
+        {
+          "source_header": "Area",
+          "canonical_field": null,
+          "confidence": 0.9
+        },
+        {
+          "source_header": "Capacity",
+          "canonical_field": null,
+          "confidence": 0.9
+        },
+        {
+          "source_header": "Notes",
+          "canonical_field": null,
+          "confidence": 0.9
+        }
+      ],
+      "issues": [
+        "Operational context (host family roster), no event structure",
+        "No case_id or timestamp \u2014 not an events sheet"
+      ],
+      "n_rows": 6
+    },
+    {
+      "filename": "staff phone list.xlsx",
+      "sheet": "Sheet1",
+      "inferred_role": "reference",
+      "role_confidence": 0.85,
+      "include": false,
+      "columns": [
+        {
+          "source_header": "Name",
+          "canonical_field": "actor",
+          "confidence": 0.4
+        },
+        {
+          "source_header": "Role",
+          "canonical_field": null,
+          "confidence": 0.8
+        },
+        {
+          "source_header": "Mobile",
+          "canonical_field": null,
+          "confidence": 0.9
+        }
+      ],
+      "issues": [
+        "Staff directory \u2014 reference only, no events",
+        "Name could be used to resolve actor identities but is not event data"
+      ],
+      "n_rows": 4
+    }
+  ],
+  "mess_report": {
+    "duplicates": [
+      "'bookings summer OLD do not use.xlsx' duplicates rows in 'bookings summer NEW.xlsx' (shared B-2026-011 with same dates/stages)"
+    ],
+    "overlaps": [
+      "'bookings summer OLD do not use.xlsx' and 'bookings summer NEW.xlsx' both cover July 2026 summer bookings"
+    ],
+    "gaps": [
+      "No coverage between end of May 2026 and start of July 2026 (June 2026 gap)",
+      "No booking event data after mid-July 2026",
+      "Autumn/winter 2026 bookings not covered by any file"
+    ],
+    "irrelevant": [
+      "'staff phone list.xlsx' is a reference directory, not part of the event workflow"
+    ]
+  },
+  "baseline": {
+    "files": [
+      {
+        "filename": "bookings Jan-May 2026.xlsx",
+        "sheet": "Sheet1",
+        "inferred_role": "events",
+        "role_confidence": 0.4,
+        "include": true,
+        "columns": [
+          {
+            "source_header": "Booking Ref",
+            "canonical_field": "case_id",
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Stage",
+            "canonical_field": "activity",
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Date",
+            "canonical_field": "timestamp",
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Handled By",
+            "canonical_field": "actor",
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Status",
+            "canonical_field": "status",
+            "confidence": 0.4
+          }
+        ],
+        "issues": []
+      },
+      {
+        "filename": "bookings summer NEW.xlsx",
+        "sheet": "Sheet1",
+        "inferred_role": "ignore",
+        "role_confidence": 0.4,
+        "include": false,
+        "columns": [
+          {
+            "source_header": "Ref #",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Step",
+            "canonical_field": "activity",
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Updated On",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Staff Member",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Payment status",
+            "canonical_field": null,
+            "confidence": 0.4
+          }
+        ],
+        "issues": []
+      },
+      {
+        "filename": "bookings summer OLD do not use.xlsx",
+        "sheet": "Sheet1",
+        "inferred_role": "events",
+        "role_confidence": 0.4,
+        "include": true,
+        "columns": [
+          {
+            "source_header": "Booking Ref",
+            "canonical_field": "case_id",
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Stage",
+            "canonical_field": "activity",
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Date",
+            "canonical_field": "timestamp",
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Handled By",
+            "canonical_field": "actor",
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Status",
+            "canonical_field": "status",
+            "confidence": 0.4
+          }
+        ],
+        "issues": []
+      },
+      {
+        "filename": "host families 2026.xlsx",
+        "sheet": "Sheet1",
+        "inferred_role": "ignore",
+        "role_confidence": 0.4,
+        "include": false,
+        "columns": [
+          {
+            "source_header": "Family Name",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Address",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Area",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Capacity",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Notes",
+            "canonical_field": null,
+            "confidence": 0.4
+          }
+        ],
+        "issues": []
+      },
+      {
+        "filename": "staff phone list.xlsx",
+        "sheet": "Sheet1",
+        "inferred_role": "ignore",
+        "role_confidence": 0.4,
+        "include": false,
+        "columns": [
+          {
+            "source_header": "Name",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Role",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Mobile",
+            "canonical_field": null,
+            "confidence": 0.4
+          }
+        ],
+        "issues": []
+      }
+    ],
+    "mess_report": {
+      "duplicates": [],
+      "overlaps": [],
+      "gaps": [],
+      "irrelevant": []
+    }
+  }
+}
