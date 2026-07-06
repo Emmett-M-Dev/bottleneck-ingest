@@ -4,6 +4,9 @@ credentials/
 # Real client data — never committed
 data/real/
 
+# Remediation output (cleaned copies of the messy drives — regenerated)
+data/synthetic/*_cleaned/
+
 # Pipeline outputs (regenerated)
 outputs/
 refresh.log
