@@ -157,6 +157,9 @@ MESSY_PROFILES = {
         ],
         "gt_mapping": DATA_SYNTHETIC / "ground_truth_mapping_foyle.json",
         "gt_bottlenecks": DATA_SYNTHETIC / "ground_truth_messy_foyle.json",
+        # Drives the dashboard's SME-adaptive branding (header wordmark/context).
+        "ui": {"brand": "Foyle International", "context": "Placement Ops",
+               "domain": "international education placement", "initials": "FI"},
     },
     # The contrasting SME: a joinery firm's job pipeline. Different workflow
     # vocabulary, same canonical schema, zero new reader code — the
@@ -176,6 +179,8 @@ MESSY_PROFILES = {
         ],
         "gt_mapping": DATA_SYNTHETIC / "ground_truth_mapping_joinery.json",
         "gt_bottlenecks": DATA_SYNTHETIC / "ground_truth_messy_joinery.json",
+        "ui": {"brand": "McCrossan Joinery", "context": "Job Ops",
+               "domain": "joinery & fit-out", "initials": "MJ"},
     },
 }
 

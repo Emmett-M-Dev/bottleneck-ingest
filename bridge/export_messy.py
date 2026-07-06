@@ -224,7 +224,9 @@ def build_workflow(profile: str) -> dict:
         "open_bottlenecks": sum(1 for bn in detected if bn.affected_count > 0),
         "cases_affected": len(affected_cases),
     }
-    return {"nodes": nodes, "edges": edges, "kpis": kpis}
+    # Stamp the active SME so the dashboard's branding/KPIs adapt to it.
+    ui = config.MESSY_PROFILES[profile].get("ui", {})
+    return {"profile": profile, "ui": ui, "nodes": nodes, "edges": edges, "kpis": kpis}
 
 
 def export(profile: str, cases_path=None, workflow_path=None) -> tuple[int, dict]:
