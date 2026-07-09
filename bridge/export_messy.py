@@ -196,6 +196,13 @@ def build_workflow(profile: str) -> dict:
     stage_to_bn = {bn.stage: bn for bn in detected if bn.affected_count > 0}
     canon_to_label = {s.lower(): s for s in stage_order}
 
+    # Which drive sheet(s) feed each stage — the source_ref is "<file>:<sheet>:<row>".
+    files = df["source_ref"].fillna("").str.split(":").str[0]
+    stage_sources: dict[str, set[str]] = {}
+    for stage, fname in zip(df["stage"], files):
+        if fname:
+            stage_sources.setdefault(stage, set()).add(fname)
+
     present = {s for s in df["stage"].unique() if s in canon_to_label}
     nodes = []
     for label in stage_order:
@@ -207,6 +214,7 @@ def build_workflow(profile: str) -> dict:
             "bottleneck": bn.id if bn else None,
             "bottleneck_type": bn.type if bn else None,
             "affected": bn.affected_count if bn else 0,
+            "sources": sorted(stage_sources.get(label.lower(), set())),
         })
 
     transitions: dict[tuple[str, str], int] = {}
