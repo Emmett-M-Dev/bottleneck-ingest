@@ -1,18 +1,27 @@
 """Export messy-drive bottlenecks as UI cases, per SME profile.
 
-    python -m bridge.export_messy --profile foyle
+    python -m bridge.export_messy --profile foyle              # RAG diagnosis
+    python -m bridge.export_messy --profile foyle --offline    # templates only
 
 Same output contract as the other exporters (ui_cases.json + ui_workflow.json)
 so the dashboard consumes it unchanged. Detection is the generic
 delay/repetition/rework detector parametrised by the profile's marker stages
 (config.MESSY_PROFILES) — the whole point: onboarding a second SME adds a
 config block and a template dict here, zero new reader or detector code.
+
+Per bottleneck the RAG diagnosis agent (pipeline/diagnose.py) supplies the
+description, suggested fix, confidence and the retrieved past resolutions;
+title/workflow_area/severity stay authored (stable UI enums). On any
+diagnosis failure — or offline (--offline flag, DIAGNOSE_OFFLINE=1 env, or a
+missing API key) — the case falls back to the authored _TEMPLATES below, so
+the export never breaks and the JSON keyset never changes.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
 
 import config
 from bridge.export_cases import (
@@ -162,16 +171,19 @@ _TEMPLATES: dict[tuple[str, str], dict] = {
 }
 
 
-def build_cases(profile: str) -> list[dict]:
+def build_cases(profile: str, offline: bool = False, client=None) -> list[dict]:
     markers = config.MESSY_PROFILES[profile]["markers"]
     texts = _load_record_texts()
     detected = detect_generic(load_event_log(), **markers)
     detected_at = _utc_now_iso()
+    offline = offline or os.environ.get("DIAGNOSE_OFFLINE") == "1"
 
     cases: list[dict] = []
     for bn in detected:
         tpl = _TEMPLATES[(profile, bn.type)]
-        cases.append({
+        evidence = _evidence(bn, texts)
+        # Template-built case first — the guaranteed-valid fallback shape.
+        case = {
             "case_id": bn.id,
             "detected_at": detected_at,
             "title": tpl["title"],
@@ -179,11 +191,33 @@ def build_cases(profile: str) -> list[dict]:
             "severity": tpl["severity"],
             "confidence": tpl["confidence"],
             "description": tpl["description"].format(metric=bn.metric_value, count=bn.affected_count),
-            "evidence": _evidence(bn, texts),
+            "evidence": evidence,
             "suggested_fix": dict(tpl["fix"]),
             "retrieved_resolutions": _retrieved_resolutions(bn),
             "status": "pending",
-        })
+        }
+        if not offline:
+            try:
+                from pipeline.diagnose import diagnose, retrieve_resolutions
+
+                retrieved = retrieve_resolutions(
+                    f"{bn.stage} {bn.type} bottleneck: {tpl['title']}", profile)
+                result = diagnose(
+                    {"id": bn.id, "type": bn.type, "stage": bn.stage,
+                     "metric_label": bn.metric_label, "metric_value": bn.metric_value,
+                     "affected_count": bn.affected_count,
+                     "evidence_excerpts": [e["excerpt"] for e in evidence]},
+                    profile, retrieved=retrieved, client=client)
+                case["description"] = f"{result.diagnosis} Root cause: {result.root_cause}"
+                case["suggested_fix"] = result.suggested_fix.model_dump()
+                case["confidence"] = round(min(1.0, max(0.0, result.confidence)), 2)
+                case["retrieved_resolutions"] = [
+                    {k: r[k] for k in ("resolution_id", "source",
+                                       "similarity_score", "summary")}
+                    for r in retrieved]
+            except Exception as exc:
+                print(f"[diagnose] {bn.id}: fell back to the authored template ({exc})")
+        cases.append(case)
     return cases
 
 
@@ -237,11 +271,12 @@ def build_workflow(profile: str) -> dict:
     return {"profile": profile, "ui": ui, "nodes": nodes, "edges": edges, "kpis": kpis}
 
 
-def export(profile: str, cases_path=None, workflow_path=None) -> tuple[int, dict]:
+def export(profile: str, cases_path=None, workflow_path=None,
+           offline: bool = False) -> tuple[int, dict]:
     cases_path = cases_path or config.UI_CASES_PATH
     workflow_path = workflow_path or config.UI_WORKFLOW_PATH
 
-    cases = build_cases(profile)
+    cases = build_cases(profile, offline=offline)
     workflow = build_workflow(profile)
 
     cases_path.parent.mkdir(parents=True, exist_ok=True)
@@ -251,11 +286,16 @@ def export(profile: str, cases_path=None, workflow_path=None) -> tuple[int, dict
 
 
 def main() -> None:
+    from pipeline.diagnose import load_dotenv
+    load_dotenv()  # picks up ANTHROPIC_API_KEY from the repo's .env
+
     parser = argparse.ArgumentParser(description="Export messy-drive bottlenecks as UI cases")
     parser.add_argument("--profile", required=True, choices=sorted(config.MESSY_PROFILES))
+    parser.add_argument("--offline", action="store_true",
+                        help="skip the RAG diagnosis; authored templates only")
     args = parser.parse_args()
 
-    n, workflow = export(args.profile)
+    n, workflow = export(args.profile, offline=args.offline)
     print(f"Exported {n} {args.profile} UI cases to {config.UI_CASES_PATH.relative_to(config.ROOT)}")
     print(f"Exported workflow ({len(workflow['nodes'])} stages, "
           f"{len(workflow['edges'])} transitions) to {config.UI_WORKFLOW_PATH.relative_to(config.ROOT)}")
