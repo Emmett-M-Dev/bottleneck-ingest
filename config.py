@@ -199,3 +199,16 @@ AUDIT_SAMPLE_ROWS   = 5
 AUDIT_MAX_SHEETS    = 15
 AUDIT_CELL_MAX_CHARS = 80
 AUDIT_MODEL_DEFAULT = "claude-opus-4-8"
+
+# ── RAG diagnosis (resolution corpus + diagnosis agent) ──────────────────────
+# The past-resolution knowledge base lives in its OWN Chroma collection so that
+# ingest.py's reset_collection() (which wipes only sme_ops) never touches it.
+RESOLUTIONS_COLLECTION = "sme_resolutions"
+DIAGNOSE_MODEL_DEFAULT = "claude-opus-4-8"
+# Gate-2 (fix approval) decisions are appended by the dashboard to the
+# hitl-interface repo's log; the agent's resume step reads them from there.
+DECISIONS_LOG_DEFAULT = ROOT.parent / "hitl-interface" / "logs" / "decisions.jsonl"
+
+
+def resolutions_path(profile: str) -> Path:
+    return DATA_SYNTHETIC / f"resolutions_{profile}.json"
