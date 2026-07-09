@@ -24,7 +24,11 @@ This file tells an agent **exactly** what is done, what is next, and in what ord
 - [x] **Mapping eval** — `eval/score_mapping.py`. Baseline vs LLM vs human-approved F1. Results in `outputs/eval_mapping_<profile>.json`.
 - [x] **Joinery profile (SME #2)** — identical pipeline, zero new code. Proved generalisability.
 - [x] **Per-profile caching + active pointer** — `outputs/ui_cases_<p>.json`, `ui_workflow_<p>.json`, `active_profile.txt`. Instant re-switch.
-- [x] **Tests green** — 25+ tests pass (`pytest -q`).
+- [x] **Resolution corpus (RAG knowledge base)** — `synthetic/generate_resolutions.py` → `data/synthetic/resolutions_<profile>.json`. 26 seeded, PII-free past resolutions per profile (6 per bottleneck type + 8 distractors so retrieval is non-trivial). Embedded into the **separate** `sme_resolutions` Chroma collection by `pipeline/embed_resolutions.py` (survives ingest resets; re-run only when the corpus JSON changes).
+- [x] **RAG diagnosis agent** — `pipeline/diagnose.py`. Per bottleneck: top-3 resolutions from `sme_resolutions` → scrubbed evidence payload → `claude-opus-4-8` via `messages.parse` (adaptive thinking, no temperature) → `DiagnosisResult`. `offline_diagnosis()` is the deterministic fallback. Zero-PII + no-network tests in `tests/test_diagnose.py`.
+- [x] **LangGraph agent** — `pipeline/agent.py`. `detect → retrieve → diagnose → gate → execute` StateGraph; Gate 2 is a conditional edge. Fresh run pauses `awaiting_gate` + writes `outputs/agent_run_<profile>_<ts>.json`; `--resume <run_id>` reads dashboard decisions and re-enters at the gate. Execute shells `remediate.run --apply` as its own process. Tests in `tests/test_agent.py`.
+- [x] **Export via RAG diagnosis** — `bridge/export_messy.py` calls `diagnose()` per bottleneck (LLM supplies description / suggested_fix / confidence / retrieved_resolutions); authored `_TEMPLATES` remain the fallback on failure or offline. `ui_cases.json` keyset unchanged — dashboard untouched.
+- [x] **Tests green** — 90+ tests pass (`pytest -q`).
 
 ### Dashboard (hitl-react)
 
@@ -47,18 +51,19 @@ Work through these **top to bottom**. Do not skip ahead. Mark [x] as you go.
 
 ### 🔴 Priority 1 — Dissertation integrity (must resolve before write-up)
 
-- [ ] **Reconcile LangGraph/Ollama claim vs build.**
-  The original design stated LangGraph for orchestration and Ollama as the local dev LLM.
-  **Neither is in the codebase.** The report cannot assert these while the repo has neither.
-  Choose one path and implement it:
-  - **Option A (recommended, zero build cost):** Update the write-up framing. Describe what's
-    actually built: sequential Python pipeline + Claude API mapping agent + HITL gates. Reframe
-    the privacy story around the zero-PII scrub (implemented + tested) rather than local inference.
-  - **Option B:** Implement a LangGraph wrapper over the existing detect/diagnose/fix cycle if
-    the "stateful agentic graph" claim is load-bearing for the contribution.
-  - **Option C:** Wire Ollama as an alternative inference backend for the mapping agent (only if
-    the "no sensitive data to external APIs" argument is a stated ethics commitment — the zero-PII
-    scrub already mitigates this even with the Claude API).
+- [x] **Reconcile LangGraph claim vs build — RESOLVED via Option B.**
+  `pipeline/agent.py` now implements the stateful LangGraph graph
+  (`detect → retrieve → diagnose → gate → execute`, langgraph 1.2.8 pinned).
+  Run: `python -m pipeline.agent --profile foyle [--offline]`, then approve in the
+  dashboard's Fixes tab and `python -m pipeline.agent --resume <run_id>`.
+  Write-up note: the HITL gate is a *conditional edge* that terminates the run until a
+  human decision artifact exists; resume re-enters the graph at the gate (two-phase run,
+  no checkpointer — the run-state JSON is the auditable artifact).
+
+- [ ] **Reconcile the Ollama claim (still open).**
+  Ollama remains absent. Recommended: reframe the privacy story around the zero-PII scrub
+  (implemented + tested for BOTH agents — `audit/` and `pipeline/diagnose.py`) rather than
+  local inference, per the old Option A/C analysis.
 
 - [ ] **Gate numbering — align code comments to doc.**
   CLAUDE.md + HANDOVER.md use chronological numbering: mapping = Gate 1, fixes = Gate 2.
@@ -69,7 +74,10 @@ Work through these **top to bottom**. Do not skip ahead. Mark [x] as you go.
 
 - [ ] **Phase 2 build report** — Detection + RAG diagnosis write-up. Template = `PHASE1_REPORT.md`.
   Cover: `detect_generic` design, 3 bottleneck types, precision/recall vs ground truth, RAG retrieval
-  (ChromaDB, MRR/NDCG), honest limitation (retrieved_resolutions = corpus chunks, not curated resolutions).
+  (ChromaDB `sme_resolutions`, MRR/NDCG — ground-truth relevance = profile AND bottleneck_type match),
+  the diagnosis agent (scrubbed payload → `DiagnosisResult`), the LangGraph loop, and the
+  template fallback story. The old limitation (retrieved_resolutions were corpus chunks, not
+  curated resolutions) is now FIXED — cite the curated corpus instead.
 
 - [ ] **Phase 3 build report** — Mapping-inference agent + HITL Gate 1.
   Cover: audit pipeline design, zero-PII guarantee (with test), offline vs LLM mode, F1 eval table
@@ -112,8 +120,8 @@ Work through these **top to bottom**. Do not skip ahead. Mark [x] as you go.
 
 ## ⚠️ Constraints — check before any change
 
-1. **No `temperature` on Opus 4.8** — 400 error. Only in `audit/infer.py`.
-2. **`audit/` and `remediate/` must NOT import chromadb / pyarrow / torch** — Windows segfault. They run as separate processes via `api/main.py → _run_pipeline()`.
+1. **No `temperature` on Opus 4.8** — 400 error. Applies to BOTH LLM callers: `audit/infer.py` and `pipeline/diagnose.py` (adaptive thinking instead).
+2. **`audit/` and `remediate/` must NOT import chromadb / pyarrow / torch** — Windows segfault. They run as separate processes via `api/main.py → _run_pipeline()`. Relatedly, `pipeline/diagnose.py` and `pipeline/agent.py` must never import chromadb/torch at **module scope** — retrieval imports live inside functions/nodes (a fresh-interpreter test in `tests/test_agent.py` enforces it), and the agent's execute node shells `remediate.run` as its own process.
 3. **fastparquet, not pyarrow** — pinned in `requirements.txt`. Do not swap.
 4. **`PYTHONIOENCODING=utf-8`** — required for `✔` in status values (cp1252 default crashes).
 5. **`.venv/Scripts/python.exe` explicitly** — bare `python` hits the Windows Store stub.
@@ -121,3 +129,5 @@ Work through these **top to bottom**. Do not skip ahead. Mark [x] as you go.
 7. **`ANTHROPIC_API_KEY` in `.env`** — gitignored. **Rotate before submission** (key was pasted in a dev chat session).
 8. **Bottleneck count is fixed at 3** — by design (3 detectors). More data = higher affected counts, not new types.
 9. **Drive = 5 reproducible files** — do not add ad-hoc test files to `data/synthetic/messy_foyle/`. The ground-truth test asserts an exact file list.
+10. **`sme_resolutions` is independent of ingest resets** — `reset_collection()` wipes only `sme_ops`. Re-run `python -m pipeline.embed_resolutions --profile <p>` only when `resolutions_<profile>.json` changes.
+11. **Dashboard-triggered exports now attempt 3 Claude diagnosis calls** (~30–90 s per export). Set `DIAGNOSE_OFFLINE=1` in the hitl-react API server env (or pass `--offline`) to force the authored templates without code changes.
