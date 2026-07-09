@@ -34,4 +34,11 @@ google-auth-oauthlib==1.2.1
 # this pinned stack; brings pydantic 2.x, used only inside audit/.
 anthropic==0.116.0
 
+# LangGraph orchestration (pipeline/agent.py: detect -> retrieve -> diagnose ->
+# gate -> execute). Pure-Python graph runtime; its only native transitives are
+# ormsgpack/xxhash/zstandard wheels — no pyarrow/torch/chroma interaction.
+# Deliberately NOT langgraph-checkpoint-sqlite: the HITL gate pauses via a
+# run-state JSON + --resume (two-phase run), so no checkpointer native DLLs.
+langgraph==1.2.8
+
 pytest==8.3.4
