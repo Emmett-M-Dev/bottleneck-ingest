@@ -178,7 +178,8 @@ def read_gate_decisions(run_started_at: str, case_ids: list[str],
         return {}
     wanted = set(case_ids)
     decisions: dict[str, str] = {}
-    for line in log_path.read_text(encoding="utf-8").splitlines():
+    # utf-8-sig: tolerate a BOM (Windows tools like PowerShell's Out-File add one)
+    for line in log_path.read_text(encoding="utf-8-sig").splitlines():
         line = line.strip()
         if not line:
             continue
@@ -229,11 +230,15 @@ def main() -> None:
         if not path.exists():
             raise SystemExit(f"[agent] no saved run at {path} — run --profile first")
         saved = json.loads(path.read_text(encoding="utf-8"))
-        decisions = read_gate_decisions(saved["started_at"],
+        started_at = saved["started_at"]
+        decisions = read_gate_decisions(started_at,
                                         list(saved.get("diagnoses", {})),
                                         args.decisions)
         saved["gate_decisions"] = decisions
+        # graph.invoke returns only AgentState channels — re-attach the run
+        # metadata so repeated resumes keep working.
         final = dict(graph.invoke(saved))
+        final["started_at"] = started_at
         final["resumed_at"] = datetime.now(timezone.utc).isoformat()
         out = _write_run_state(args.resume, final)
         print(f"[agent] resume: {len(decisions)} decision(s) read -> "
