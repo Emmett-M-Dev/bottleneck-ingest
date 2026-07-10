@@ -3,18 +3,29 @@
     python -m bridge.export_messy --profile foyle              # RAG diagnosis
     python -m bridge.export_messy --profile foyle --offline    # templates only
 
-Same output contract as the other exporters (ui_cases.json + ui_workflow.json)
-so the dashboard consumes it unchanged. Detection is the generic
-delay/repetition/rework detector parametrised by the profile's marker stages
-(config.MESSY_PROFILES) — the whole point: onboarding a second SME adds a
-config block and a template dict here, zero new reader or detector code.
+Detection is DYNAMIC (detection.dynamic.detect_dynamic): every stage is
+scanned for outlier delays, duplicate entries and backward loops, so the
+export carries 0..N bottleneck cases — the count is a property of the data.
+On top, an advisory LLM anomaly pass (local Ollama model, detection.anomaly)
+can add "AI-spotted — unverified" cards; it is skipped silently when offline
+or when no local model is running.
 
-Per bottleneck the RAG diagnosis agent (pipeline/diagnose.py) supplies the
-description, suggested fix, confidence and the retrieved past resolutions;
-title/workflow_area/severity stay authored (stable UI enums). On any
-diagnosis failure — or offline (--offline flag, DIAGNOSE_OFFLINE=1 env, or a
-missing API key) — the case falls back to the authored _TEMPLATES below, so
-the export never breaks and the JSON keyset never changes.
+Per bottleneck the RAG diagnosis agent (pipeline/diagnose.py, Claude) supplies
+the description, suggested fix, confidence and retrieved past resolutions;
+type-generic templates below are the fallback on any failure or offline
+(--offline flag, DIAGNOSE_OFFLINE=1 env, or a missing API key), so the export
+never breaks.
+
+Every case also carries:
+  estimated_cost — the profile's cost model (config MESSY_PROFILES[p]["costs"])
+                   applied to the detected metric, with the basis spelled out
+  llm_payload    — the EXACT scrubbed payload the diagnosis agent sends (built
+                   even offline; no API call needed) — the dashboard's
+                   "what the AI saw" evidence
+  type / stage   — so the UI can badge cards and the eval can calibrate
+
+Each export appends a snapshot to outputs/history_<profile>.jsonl — the
+honest time series behind the dashboard's impact sparklines.
 """
 
 from __future__ import annotations
@@ -22,178 +33,173 @@ from __future__ import annotations
 import argparse
 import json
 import os
+from datetime import datetime, timezone
 
 import config
-from bridge.export_cases import (
-    _evidence,
-    _load_record_texts,
-    _retrieved_resolutions,
-    _utc_now_iso,
-)
-from detection.detect import detect_generic, load_event_log
+from bridge.export_cases import _evidence, _load_record_texts, _utc_now_iso
+from detection.detect import load_event_log
+from detection.dynamic import detect_dynamic
 
-_TEMPLATES: dict[tuple[str, str], dict] = {
-    ("foyle", "delay"): {
-        "title": "Bookings stall before confirmation",
-        "workflow_area": "Booking pipeline",
-        "severity": "high",
-        "confidence": 0.85,
+# Type-generic fallbacks — stage is interpolated, so they cover ANY stage the
+# dynamic detector flags (the old per-profile template dict could not).
+_TYPE_FALLBACKS: dict[str, dict] = {
+    "delay": {
+        "title": "Cases stall entering {stage}",
         "description": (
-            "Bookings sit an average of {metric:.0f} days between the previous "
-            "step and Booking Confirmed — {count} bookings crossed the "
-            "week-long mark while a host was being found."
+            "{count} cases waited an average of {metric:.0f} days to reach "
+            "{stage} — far beyond the workflow's normal rhythm."
         ),
         "fix": {
-            "summary": "Work host-matching to a confirmation SLA",
+            "summary": "Set an entry SLA for {stage}",
             "steps": [
-                "Set a target of confirming every booking within a week of the placement offer.",
-                "Flag bookings still unconfirmed inside that window on the tracker.",
-                "Keep a standby pool of hosts to absorb late fall-throughs.",
+                "Agree a target number of days for work to reach {stage}.",
+                "Flag cases still short of {stage} inside that window on the tracker.",
+                "Review flagged cases weekly and clear the blocker behind each one.",
             ],
             "rationale": (
-                "The gap into confirmation is where bookings quietly stall. A stated "
-                "SLA plus a visible flag turns the stall into a routine checkpoint."
+                "The gap into {stage} is where cases quietly stall. A stated "
+                "target plus a visible flag turns the stall into a routine checkpoint."
             ),
         },
     },
-    ("foyle", "repetition"): {
-        "title": "Student documents requested twice",
-        "workflow_area": "Document collection",
-        "severity": "medium",
-        "confidence": 0.85,
+    "repetition": {
+        "title": "{stage} done twice",
         "description": (
-            "{count} bookings show a Document Re-request — the same CVs and "
-            "letters collected again because the first copies were lost between "
-            "seasonal spreadsheets."
+            "{count} cases passed through {stage} more than once — the same "
+            "step is being redone instead of carried forward."
         ),
         "fix": {
-            "summary": "Single document checklist per booking, carried across seasons",
+            "summary": "Make the first {stage} the only one",
             "steps": [
-                "Track received documents on the booking row itself, not in a per-season sheet.",
-                "Carry open bookings forward into the new season's sheet instead of re-entering them.",
-                "Only re-request a document when its checklist entry is genuinely empty.",
+                "Use a fixed checklist for {stage} so the first pass captures everything.",
+                "Record the outcome of {stage} on the case row itself, visible to everyone.",
+                "Only repeat {stage} when its recorded outcome is genuinely missing.",
             ],
             "rationale": (
-                "Re-requests happen because each seasonal fork starts blind. One "
-                "checklist that travels with the booking removes the reason to ask twice."
+                "Repeats happen because the first pass isn't trusted or isn't "
+                "visible. One recorded, checklisted pass removes the reason to redo it."
             ),
         },
     },
-    ("foyle", "rework"): {
-        "title": "Placements re-allocated after confirmation",
-        "workflow_area": "Placement & hosting",
-        "severity": "medium",
-        "confidence": 0.8,
+    "rework": {
+        "title": "Cases loop back to {stage}",
         "description": (
-            "{count} bookings looped back through Placement Re-allocation — a "
-            "host or company fell through after the student was already matched."
+            "{count} cases returned to {stage} after having moved past it — "
+            "earlier work is being redone under time pressure."
         ),
         "fix": {
-            "summary": "Confirm host availability before matching, hold a reserve",
+            "summary": "Confirm before leaving {stage}, hold a reserve",
             "steps": [
-                "Re-confirm host availability at the point of matching, not just at signup.",
-                "Keep a small reserve of vetted hosts per season for re-allocations.",
-                "Record the fall-through reason so repeat offenders are spotted early.",
+                "Re-confirm the inputs to {stage} at the point of completion, not just at the start.",
+                "Keep a small reserve (people, slots or stock) to absorb fall-throughs.",
+                "Record the reason for every loop-back so repeat causes are spotted early.",
             ],
             "rationale": (
-                "Each re-allocation redoes matching work under time pressure. Checking "
-                "availability up front and holding a reserve absorbs the churn."
-            ),
-        },
-    },
-    ("joinery", "delay"): {
-        "title": "Jobs waiting on materials before site work",
-        "workflow_area": "Materials & scheduling",
-        "severity": "high",
-        "confidence": 0.85,
-        "description": (
-            "Site work starts an average of {metric:.0f} days after materials "
-            "are ordered — {count} jobs sat over a week waiting on suppliers "
-            "while fitters were booked elsewhere."
-        ),
-        "fix": {
-            "summary": "Order long-lead materials at quote acceptance, track lead times",
-            "steps": [
-                "Order known long-lead items (glass, spray finishing) the day the quote is accepted.",
-                "Keep supplier lead times on the materials sheet and schedule site work against them.",
-                "Flag any job whose materials are outstanding a week after ordering.",
-            ],
-            "rationale": (
-                "The wait between ordering and starting is dead time the client sees. "
-                "Ordering earlier and scheduling against real lead times closes the gap."
-            ),
-        },
-    },
-    ("joinery", "repetition"): {
-        "title": "Sites measured twice before ordering",
-        "workflow_area": "Surveying & quoting",
-        "severity": "medium",
-        "confidence": 0.85,
-        "description": (
-            "{count} jobs needed a Re-measure — the original survey didn't "
-            "capture what the workshop needed, so someone drove back out."
-        ),
-        "fix": {
-            "summary": "One survey checklist so the first measure is the last",
-            "steps": [
-                "Use a fixed measure checklist (openings, services, access) on the first visit.",
-                "Photograph every opening alongside the measurements.",
-                "Have the workshop confirm the cutting list from the survey before ordering.",
-            ],
-            "rationale": (
-                "A second site visit costs half a day each time. A checklist plus photos "
-                "gives the workshop what it needs from visit one."
-            ),
-        },
-    },
-    ("joinery", "rework"): {
-        "title": "Snagging call-backs after handover",
-        "workflow_area": "Fitting & handover",
-        "severity": "medium",
-        "confidence": 0.8,
-        "description": (
-            "{count} jobs looped back through a Snagging Revisit — defects "
-            "found after the fitter had left, forcing an unbilled return trip."
-        ),
-        "fix": {
-            "summary": "Walk the snag list with the client before leaving site",
-            "steps": [
-                "Do a joint walk-through against the job spec at the end of the fit.",
-                "Fix same-day snags before leaving; book anything bigger there and then.",
-                "Sign off the walk-through so the invoice can go out immediately.",
-            ],
-            "rationale": (
-                "A revisit costs travel and an unbillable half-day. Catching snags while "
-                "still on site turns the call-back into a ten-minute fix."
+                "Each loop-back redoes finished work. Confirming up front and "
+                "holding a reserve absorbs the churn instead of re-planning it."
             ),
         },
     },
 }
 
 
+def _severity(bn, total_cases: int) -> str:
+    share = bn.affected_count / total_cases if total_cases else 0.0
+    if bn.type == "delay":
+        return "high" if (share >= 0.25 or bn.metric_value >= 12) else "medium"
+    if share >= 0.25:
+        return "high"
+    return "medium" if share >= 0.1 else "low"
+
+
+def _estimated_cost(bn, profile: str) -> dict | None:
+    costs = config.MESSY_PROFILES[profile].get("costs")
+    if not costs:
+        return None
+    cur = costs["currency"]
+    if bn.type == "delay":
+        amount = round(bn.affected_count * bn.metric_value * costs["delay_day_cost"])
+        basis = (f"{bn.affected_count} cases × {bn.metric_value:.0f} days × "
+                 f"{cur}{costs['delay_day_cost']}/day")
+    elif bn.type == "repetition":
+        amount = bn.affected_count * costs["repetition_event_cost"]
+        basis = f"{bn.affected_count} repeated steps × {cur}{costs['repetition_event_cost']}"
+    else:  # rework
+        amount = bn.affected_count * costs["rework_loop_cost"]
+        basis = f"{bn.affected_count} loop-backs × {cur}{costs['rework_loop_cost']}"
+    return {"amount": int(amount), "currency": cur, "basis": basis}
+
+
+def _anomaly_cases(df, profile: str, detected_at: str) -> list[dict]:
+    """Advisory cards from the local-LLM anomaly pass. [] when unavailable."""
+    from detection.anomaly import build_stage_stats, propose_anomalies
+
+    stage_order = config.MESSY_PROFILES[profile]["stage_order"]
+    domain = config.MESSY_PROFILES[profile].get("ui", {}).get(
+        "domain", "small business operations")
+    stats = build_stage_stats(df, stage_order)
+    findings = propose_anomalies(stats, domain=domain)
+    labels = {s.strip().lower(): s for s in stage_order}
+    return [{
+        "case_id": f"AN{i:03d}",
+        "type": "anomaly",
+        "stage": labels.get(f.stage, f.stage.title()),
+        "detected_at": detected_at,
+        "title": f.title,
+        "workflow_area": labels.get(f.stage, f.stage.title()),
+        "severity": f.severity,
+        "confidence": None,
+        "description": f.narrative,
+        "evidence": [],
+        "suggested_fix": None,
+        "retrieved_resolutions": [],
+        "estimated_cost": None,
+        "llm_payload": None,
+        "status": "advisory",
+    } for i, f in enumerate(findings, start=1)]
+
+
 def build_cases(profile: str, offline: bool = False, client=None) -> list[dict]:
-    markers = config.MESSY_PROFILES[profile]["markers"]
+    from pipeline.diagnose import _build_payload  # loads spaCy for the scrub
+
     texts = _load_record_texts()
-    detected = detect_generic(load_event_log(), **markers)
+    df = load_event_log()
+    stage_order = config.MESSY_PROFILES[profile]["stage_order"]
+    detected = detect_dynamic(df, stage_order)
+    total_cases = int(df["case_id"].nunique())
     detected_at = _utc_now_iso()
     offline = offline or os.environ.get("DIAGNOSE_OFFLINE") == "1"
 
     cases: list[dict] = []
     for bn in detected:
-        tpl = _TEMPLATES[(profile, bn.type)]
+        tpl = _TYPE_FALLBACKS[bn.type]
         evidence = _evidence(bn, texts)
+        bn_dict = {"id": bn.id, "type": bn.type, "stage": bn.stage,
+                   "metric_label": bn.metric_label, "metric_value": bn.metric_value,
+                   "affected_count": bn.affected_count,
+                   "evidence_excerpts": [e["excerpt"] for e in evidence]}
         # Template-built case first — the guaranteed-valid fallback shape.
+        fmt = {"stage": bn.stage, "count": bn.affected_count,
+               "metric": bn.metric_value}
         case = {
             "case_id": bn.id,
+            "type": bn.type,
+            "stage": bn.stage,
             "detected_at": detected_at,
-            "title": tpl["title"],
-            "workflow_area": tpl["workflow_area"],
-            "severity": tpl["severity"],
-            "confidence": tpl["confidence"],
-            "description": tpl["description"].format(metric=bn.metric_value, count=bn.affected_count),
+            "title": tpl["title"].format(**fmt),
+            "workflow_area": bn.stage,
+            "severity": _severity(bn, total_cases),
+            "confidence": 0.8,
+            "description": tpl["description"].format(**fmt),
             "evidence": evidence,
-            "suggested_fix": dict(tpl["fix"]),
-            "retrieved_resolutions": _retrieved_resolutions(bn),
+            "suggested_fix": {
+                "summary": tpl["fix"]["summary"].format(**fmt),
+                "steps": [s.format(**fmt) for s in tpl["fix"]["steps"]],
+                "rationale": tpl["fix"]["rationale"].format(**fmt),
+            },
+            "retrieved_resolutions": [],
+            "estimated_cost": _estimated_cost(bn, profile),
+            "llm_payload": _build_payload(bn_dict, profile, []),
             "status": "pending",
         }
         if not offline:
@@ -201,13 +207,8 @@ def build_cases(profile: str, offline: bool = False, client=None) -> list[dict]:
                 from pipeline.diagnose import diagnose, retrieve_resolutions
 
                 retrieved = retrieve_resolutions(
-                    f"{bn.stage} {bn.type} bottleneck: {tpl['title']}", profile)
-                result = diagnose(
-                    {"id": bn.id, "type": bn.type, "stage": bn.stage,
-                     "metric_label": bn.metric_label, "metric_value": bn.metric_value,
-                     "affected_count": bn.affected_count,
-                     "evidence_excerpts": [e["excerpt"] for e in evidence]},
-                    profile, retrieved=retrieved, client=client)
+                    f"{bn.stage} {bn.type} bottleneck: {case['title']}", profile)
+                result = diagnose(bn_dict, profile, retrieved=retrieved, client=client)
                 case["description"] = f"{result.diagnosis} Root cause: {result.root_cause}"
                 case["suggested_fix"] = result.suggested_fix.model_dump()
                 case["confidence"] = round(min(1.0, max(0.0, result.confidence)), 2)
@@ -215,19 +216,28 @@ def build_cases(profile: str, offline: bool = False, client=None) -> list[dict]:
                     {k: r[k] for k in ("resolution_id", "source",
                                        "similarity_score", "summary")}
                     for r in retrieved]
+                # The payload the model ACTUALLY saw (with the retrieval).
+                case["llm_payload"] = _build_payload(bn_dict, profile, retrieved)
             except Exception as exc:
                 print(f"[diagnose] {bn.id}: fell back to the authored template ({exc})")
         cases.append(case)
+
+    if not offline:
+        cases.extend(_anomaly_cases(df, profile, detected_at))
     return cases
 
 
 def build_workflow(profile: str) -> dict:
     stage_order = config.MESSY_PROFILES[profile]["stage_order"]
-    markers = config.MESSY_PROFILES[profile]["markers"]
     df = load_event_log()
-    detected = detect_generic(df, **markers)
+    detected = detect_dynamic(df, stage_order)
 
-    stage_to_bn = {bn.stage: bn for bn in detected if bn.affected_count > 0}
+    # Several bottlenecks can now share a stage — the node shows the biggest.
+    stage_to_bn: dict[str, object] = {}
+    for bn in detected:
+        cur = stage_to_bn.get(bn.stage)
+        if cur is None or bn.affected_count > cur.affected_count:
+            stage_to_bn[bn.stage] = bn
     canon_to_label = {s.lower(): s for s in stage_order}
 
     # Which drive sheet(s) feed each stage — the source_ref is "<file>:<sheet>:<row>".
@@ -260,15 +270,57 @@ def build_workflow(profile: str) -> dict:
     edges = [{"from": a, "to": b, "count": c} for (a, b), c in sorted(transitions.items())]
 
     affected_cases = {c for bn in detected for c in bn.affected_cases}
+    total_cost = sum((_estimated_cost(bn, profile) or {}).get("amount", 0)
+                     for bn in detected)
+    currency = config.MESSY_PROFILES[profile].get("costs", {}).get("currency", "£")
     kpis = {
         "cases": int(df["case_id"].nunique()),
         "events": int(len(df)),
-        "open_bottlenecks": sum(1 for bn in detected if bn.affected_count > 0),
+        "open_bottlenecks": len(detected),
         "cases_affected": len(affected_cases),
+        "total_estimated_cost": int(total_cost),
+        "currency": currency,
     }
     # Stamp the active SME so the dashboard's branding/KPIs adapt to it.
     ui = config.MESSY_PROFILES[profile].get("ui", {})
     return {"profile": profile, "ui": ui, "nodes": nodes, "edges": edges, "kpis": kpis}
+
+
+def history_path(profile: str):
+    return config.OUTPUTS / f"history_{profile}.jsonl"
+
+
+def _messy_cells(profile: str) -> int | None:
+    """Cells still needing normalisation, from the last remediation scan."""
+    plan_path = config.OUTPUTS / f"ui_remediation_{profile}.json"
+    if not plan_path.exists():
+        return None
+    plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    return sum(v["count"] for f in plan.get("files", [])
+               for v in f.get("value_map", [])
+               if v["original"].strip() != v["canonical"])
+
+
+def append_history(profile: str, cases: list[dict], workflow: dict,
+                   event: str = "export") -> None:
+    """One honest snapshot per pipeline run — the impact sparklines' data."""
+    row = {
+        "ts": datetime.now(timezone.utc).isoformat(),
+        "event": event,
+        "kpis": workflow["kpis"],
+        "bottlenecks": [
+            {"case_id": c["case_id"], "type": c["type"], "stage": c["stage"],
+             "severity": c["severity"],
+             "estimated_cost": (c.get("estimated_cost") or {}).get("amount")}
+            for c in cases if c["type"] != "anomaly"
+        ],
+        "anomaly_count": sum(1 for c in cases if c["type"] == "anomaly"),
+        "messy_cells": _messy_cells(profile),
+    }
+    path = history_path(profile)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(json.dumps(row, ensure_ascii=False) + "\n")
 
 
 def export(profile: str, cases_path=None, workflow_path=None,
@@ -282,6 +334,7 @@ def export(profile: str, cases_path=None, workflow_path=None,
     cases_path.parent.mkdir(parents=True, exist_ok=True)
     cases_path.write_text(json.dumps(cases, ensure_ascii=False, indent=2), encoding="utf-8")
     workflow_path.write_text(json.dumps(workflow, ensure_ascii=False, indent=2), encoding="utf-8")
+    append_history(profile, cases, workflow)
     return len(cases), workflow
 
 
@@ -292,7 +345,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Export messy-drive bottlenecks as UI cases")
     parser.add_argument("--profile", required=True, choices=sorted(config.MESSY_PROFILES))
     parser.add_argument("--offline", action="store_true",
-                        help="skip the RAG diagnosis; authored templates only")
+                        help="skip the RAG diagnosis + anomaly pass; templates only")
     args = parser.parse_args()
 
     n, workflow = export(args.profile, offline=args.offline)
