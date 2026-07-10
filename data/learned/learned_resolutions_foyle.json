@@ -1,0 +1,14 @@
+[
+  {
+    "resolution_id": "RES-LRN-FOY-001",
+    "profile": "foyle",
+    "bottleneck_type": "delay",
+    "stage": "Booking Confirmed",
+    "problem_description": "5 cases waited an average of 15 days to reach Booking Confirmed.",
+    "action_taken": "Set an entry SLA for Booking Confirmed: Agree a target number of days.; Flag overdue cases.",
+    "outcome": "Approved at HITL Gate 2 on 2026-07-10.",
+    "days_to_resolve": null,
+    "source": "learned",
+    "decision_id": "BN001-approve-test1"
+  }
+]
