@@ -18,7 +18,14 @@ This file tells an agent **exactly** what is done, what is next, and in what ord
 - [x] **Mapping-inference agent (`audit/`)** — Claude API (`claude-opus-4-8`), `messages.parse`, no temperature. `scan.py` (headers + scrubbed samples) → `infer.py` (LLM) → `propose.py` (offline fallback) → `run.py` (CLI). Writes `outputs/ui_mapping_proposal_<profile>.json`.
 - [x] **Mapped reader** — `readers/mapped_reader.py`. Approved mapping + messy folder → canonical event rows. Dedup on (case_id, activity, timestamp) keep-first.
 - [x] **Ingest (`--source messy --profile <p>`)** — hard errors if no approved mapping (enforces Gate 1). Writes `records.jsonl → ChromaDB → event_log.parquet`.
-- [x] **Bottleneck detection** — `detection/detect_generic()`. Exactly 3 types: delay / repetition / rework. Parametrised by `MESSY_PROFILES[p]["markers"]`.
+- [x] **Bottleneck detection — DYNAMIC** — `detection/dynamic.py::detect_dynamic()`. Statistical scan of EVERY stage, no marker config: delay = entry gaps beyond the log's own Q3+1.5×IQR threshold, repetition = a stage re-entered with no later stage in between, rework = a genuine backward transition vs `stage_order`. Returns 0..N bottlenecks ordered by impact. `detect_generic()` + `MESSY_PROFILES[p]["markers"]` remain **eval-only** (the baseline the dynamic detector is scored against).
+- [x] **LLM anomaly pass** — `detection/anomaly.py`. Aggregate per-stage stats (stage names + numbers ONLY — a leak test enforces it) → local Ollama model proposes up to 3 advisory findings → `type="anomaly"` cards badged "AI-spotted — unverified". Skipped silently when Ollama is absent.
+- [x] **Local-LLM provider layer** — `pipeline/llm.py`. Ollama `/api/chat` JSON mode, schema-in-prompt, pydantic validation + 1 retry, None on any failure. Claude keeps the precision tasks (mapping, diagnosis); Ollama takes the exploratory pass — resolves the §6a Ollama claim.
+- [x] **Detection eval** — `eval/score_detection.py`. Marker baseline vs dynamic, P/R/F1 per type vs seeded ground truth. Results: baseline macro-F1 0.524 (foyle) / 0.523 (joinery) — presence-based markers collapse on structural patterns — vs dynamic **1.000 / 1.000**.
+- [x] **Cost model** — `MESSY_PROFILES[p]["costs"]` → per-case `estimated_cost` with the basis spelled out ("5 cases × 15 days × £35/day"); total in the workflow KPIs.
+- [x] **Learning loop** — `pipeline/learn.py`. Approved/modified Gate-2 fixes append to `data/learned/learned_resolutions_<p>.json` (RES-LRN-…, source="learned") and upsert into `sme_resolutions` — the next diagnosis retrieves the SME's own approved fixes. Fired by the API on POST /api/decisions (own process). Idempotent on decision_id.
+- [x] **Impact history** — every export appends a snapshot to `outputs/history_<p>.jsonl`; a remediation apply appends one too (messy_cells → 0). Served by GET /api/history/{p}; Dashboard ImpactPanel sparklines + a badged PROJECTION line.
+- [x] **Zero-PII payload viewer** — every case carries `llm_payload` (the exact scrubbed diagnosis payload, built even offline); the dashboard's "what the AI saw" modal highlights the anonymisation placeholders.
 - [x] **Export** — `bridge/export_messy.py`. Writes `ui_cases.json` + `ui_workflow.json`. Nodes carry `sources` (which sheets feed each stage).
 - [x] **Remediation executor (`remediate/`)** — status freetext → `{Complete, Open, N/A}`. Cleaned copies to `messy_<profile>_cleaned/` (originals untouched). CLI: `python -m remediate.run --profile <p> [--apply]`.
 - [x] **Mapping eval** — `eval/score_mapping.py`. Baseline vs LLM vs human-approved F1. Results in `outputs/eval_mapping_<profile>.json`.
@@ -60,10 +67,12 @@ Work through these **top to bottom**. Do not skip ahead. Mark [x] as you go.
   human decision artifact exists; resume re-enters the graph at the gate (two-phase run,
   no checkpointer — the run-state JSON is the auditable artifact).
 
-- [ ] **Reconcile the Ollama claim (still open).**
-  Ollama remains absent. Recommended: reframe the privacy story around the zero-PII scrub
-  (implemented + tested for BOTH agents — `audit/` and `pipeline/diagnose.py`) rather than
-  local inference, per the old Option A/C analysis.
+- [x] **Reconcile the Ollama claim — RESOLVED (hybrid local/cloud).**
+  `pipeline/llm.py` + `detection/anomaly.py`: the exploratory anomaly pass runs on a
+  local Ollama model (`qwen2.5:7b` default, `OLLAMA_MODEL`/`OLLAMA_URL` env to change);
+  Claude keeps the two precision tasks (mapping inference, RAG diagnosis). Write-up
+  framing: local inference for zero-cost exploratory analysis + the zero-PII scrub for
+  the cloud calls — both privacy controls implemented and tested.
 
 - [ ] **Gate numbering — align code comments to doc.**
   CLAUDE.md + HANDOVER.md use chronological numbering: mapping = Gate 1, fixes = Gate 2.
@@ -127,7 +136,9 @@ Work through these **top to bottom**. Do not skip ahead. Mark [x] as you go.
 5. **`.venv/Scripts/python.exe` explicitly** — bare `python` hits the Windows Store stub.
 6. **Mapping drift** — browser approval overwrites `mappings/approved_<profile>.json`. If eval shifts: `git checkout mappings/approved_*.json`.
 7. **`ANTHROPIC_API_KEY` in `.env`** — gitignored. **Rotate before submission** (key was pasted in a dev chat session).
-8. **Bottleneck count is fixed at 3** — by design (3 detectors). More data = higher affected counts, not new types.
+8. **Bottleneck count is DYNAMIC** — `detect_dynamic()` returns 0..N findings; the seeded drives currently yield 3 per profile plus optional anomaly cards. `markers` in config are eval-only (baseline detector) — do not wire them back into the pipeline. The seeded patterns are STRUCTURAL (duplicate stage entries, backward transitions); regenerating drives with marker-named stages would break `eval/score_detection.py`'s story.
 9. **Drive = 5 reproducible files** — do not add ad-hoc test files to `data/synthetic/messy_foyle/`. The ground-truth test asserts an exact file list.
 10. **`sme_resolutions` is independent of ingest resets** — `reset_collection()` wipes only `sme_ops`. Re-run `python -m pipeline.embed_resolutions --profile <p>` only when `resolutions_<profile>.json` changes.
-11. **Dashboard-triggered exports now attempt 3 Claude diagnosis calls** (~30–90 s per export). Set `DIAGNOSE_OFFLINE=1` in the hitl-react API server env (or pass `--offline`) to force the authored templates without code changes.
+11. **Dashboard-triggered exports attempt one Claude diagnosis call per bottleneck** (~30–90 s per export) plus one local Ollama anomaly call. Set `DIAGNOSE_OFFLINE=1` in the hitl-react API server env (or pass `--offline`) to force templates + skip the anomaly pass without code changes.
+12. **Ollama is optional** — no local model = anomaly pass silently absent, nothing breaks. For the demo: install Ollama for Windows + `ollama pull qwen2.5:7b`.
+13. **`sme_resolutions` now also holds learned entries** (`RES-LRN-…`, source="learned", from `data/learned/`). `pipeline.embed_resolutions --reset` wipes them from the collection — re-run `python -m pipeline.learn`'s embed (or re-approve) after a reset, or just re-run `python -c "from pipeline.learn import embed_learned; embed_learned('<p>')"`.

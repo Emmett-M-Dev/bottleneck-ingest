@@ -64,7 +64,10 @@ generalisability argument.
 - `config.py` — `MESSY_PROFILES` (markers, stage_order, ground-truth paths, `ui` branding block per SME).
 - `audit/` — `scan.py` (headers + ≤5 scrubbed sample rows), `infer.py` (only module touching the Anthropic SDK; `messages.parse`, no temperature — 400s on Opus 4.8), `propose.py` (heuristic baseline + LLM), `run.py` (CLI).
 - `readers/mapped_reader.py` — generic connector: approved mapping + drive → canonical rows; dedup on (case_id, activity, timestamp) keep-first (neutralises overlapping seasonal fork).
-- `detection/detect.py` — `detect_generic(df, delay_stage, repetition_stage, rework_stage, delay_threshold_days)`. **Exactly 3 detector types.**
+- `detection/dynamic.py` — `detect_dynamic(df, stage_order)`: statistical scan of every stage (outlier gaps / duplicate entries / backward loops), **0..N findings, no marker config**. `detection/detect.py`'s `detect_generic` is now the eval-only baseline.
+- `detection/anomaly.py` + `pipeline/llm.py` — advisory anomaly pass on a local Ollama model (aggregate stats only; skips silently when Ollama absent).
+- `pipeline/learn.py` — learning loop: approved Gate-2 fixes → `data/learned/` + the `sme_resolutions` collection (fired by the API on POST /api/decisions).
+- `eval/score_detection.py` — marker baseline vs dynamic detector P/R/F1 (macro-F1 0.52 → 1.00 both profiles).
 - `bridge/export_messy.py` — builds `ui_cases.json` + `ui_workflow.json`; nodes carry `sources` (which sheets feed each stage).
 - `remediate/` — `scan.py`/`propose.py`/`apply.py`/`run.py`; status freetext → controlled vocab `{Complete, Open, N/A}`; cleaned copies to `messy_<profile>_cleaned/`.
 - `eval/score_mapping.py` — baseline vs LLM vs human-approved scoring.

@@ -81,9 +81,11 @@ Think of it like an **electrical plug adapter**: the appliance (the pipeline cor
               │
    ┌──────────▼───────────┐
    │  FIXED PIPELINE CORE  │  ← IDENTICAL across SMEs. The academic constant.
-   │  1. Bottleneck detection (detect_generic: delay / repetition / rework)
-   │  2. RAG diagnosis (over the resolution store)
-   │  3. Fix suggestion
+   │  1. Bottleneck detection (detect_dynamic: statistical scan of EVERY
+   │     stage, 0..N findings — delay / repetition / rework, no marker config)
+   │     + advisory local-LLM anomaly pass (Ollama, "AI-spotted" cards)
+   │  2. RAG diagnosis (over the resolution store, incl. LEARNED fixes)
+   │  3. Fix suggestion (+ per-profile cost model)
    └──────────┬───────────┘
               │  [HITL GATE 2 — Fixes: human approves / rejects / modifies each fix]
    ┌──────────▼───────────┐
@@ -131,8 +133,10 @@ The word "audit" previously conflated three things. They are now separated:
 
 | Layer | Tool | Notes |
 |---|---|---|
-| Pipeline orchestration | **Plain sequential Python** | ingest → detect → export, driven by `ingest.py` + CLI modules. See §6a re: LangGraph. |
+| Pipeline orchestration | **LangGraph** (`pipeline/agent.py`) + sequential CLI modules | `detect → retrieve → diagnose → gate → execute` StateGraph; the CLI modules (`ingest.py` etc.) remain the per-step entry points. |
 | Mapping-inference agent | **Claude API — `claude-opus-4-8`** | `audit/infer.py` only. `messages.parse` with a Pydantic schema. **No `temperature`** (400s on Opus 4.8). Zero raw PII in the payload (scrubbed first). |
+| RAG diagnosis agent | **Claude API — `claude-opus-4-8`** | `pipeline/diagnose.py`. Same call pattern; scrubbed payload; template fallback. |
+| Anomaly pass (exploratory) | **Ollama — local, `qwen2.5:7b`** | `pipeline/llm.py` + `detection/anomaly.py`. Aggregate stats only; skips silently when absent. |
 | Vector store | **ChromaDB** | Powers the RAG resolution store. |
 | Embeddings | **sentence-transformers** | |
 | HITL UI (current) | **React** (`hitl-react`) | Vite + Tailwind + `@xyflow/react`. FastAPI backend in `hitl-react/api/` acts as a thin orchestrator — shells out to the pipeline venv. |
@@ -148,32 +152,46 @@ Arrow C++ runtime, which **segfaults in-process** with chroma/hnswlib + torch on
 Pinned intentionally — do not "helpfully" swap it. Relatedly, `audit/` and `remediate/`
 run as **separate processes** and must **never import chromadb / pyarrow / torch**.
 
-### 6a. ⚠️ LangGraph & Ollama — claim vs build (RESOLVE BEFORE WRITE-UP)
+### 6a. ✅ LangGraph & Ollama — claim vs build (RESOLVED)
 
-The original design named **LangGraph** (orchestration) and **Ollama** (local dev LLM,
-with cloud APIs reserved for eval only). **Neither is in the current codebase.** As built:
-orchestration is sequential Python, and the one LLM call (the mapping agent) is **Claude
-API**, used as a core runtime dependency — not eval-only.
+Both original design claims are now implemented — the write-up can assert them:
 
-This must be reconciled so the dissertation matches the artifact. Options:
-1. **Update the framing** to describe what's built (sequential pipeline + Claude mapping
-   agent) — lowest risk, honest.
-2. **Implement LangGraph** as a thin orchestration wrapper if the "stateful graph" claim
-   is load-bearing for the contribution — costs build time near freeze.
-3. If Ollama/local-LLM privacy is a stated ethics point, either wire a local model for
-   the mapping agent or re-frame the privacy story around the **zero-PII scrub** (which
-   IS implemented) instead of local inference.
+- **LangGraph** — `pipeline/agent.py`: `detect → retrieve → diagnose → gate → execute`
+  StateGraph (langgraph 1.2.8 pinned). Gate 2 is a conditional edge; a fresh run pauses
+  `awaiting_gate` and writes `outputs/agent_run_<profile>_<ts>.json`; `--resume` reads
+  the dashboard's decisions and re-enters at the gate (two-phase run, no checkpointer).
+- **Ollama** — hybrid local/cloud division of labour (`pipeline/llm.py`):
+  the exploratory **anomaly pass** (`detection/anomaly.py`) runs on a local model
+  (`qwen2.5:7b` default; `OLLAMA_MODEL`/`OLLAMA_URL` env), zero marginal cost, payload
+  never leaves the machine; **Claude keeps the two precision tasks** (mapping inference,
+  RAG diagnosis) with the zero-PII scrub as their privacy control. No local model
+  running = the pass silently skips; nothing breaks.
 
-Do not let the report assert LangGraph/Ollama while the repo has neither.
+Write-up framing: local inference for exploratory analysis, cloud + scrub for
+precision tasks — both privacy controls implemented and tested.
 
 ---
 
 ## 7. Data Strategy — synthetic-first, ground-truth-by-design
 
 - Datasets are **synthetic**, one messy drive per SME profile (`messy_foyle`, `messy_joinery`).
-- **3 bottleneck types** (delay / repetition / rework), **injected by design**, so ground truth is known before detection runs. The count is fixed by the 3 detectors — more data raises affected-counts, it does not spawn new bottleneck *types*.
-- **Circularity guard:** generating *and* evaluating on data designed by the same person is a validity risk. Injection logic (`synthetic/generate_messy_*.py`) and detection logic (`detection/detect.py`) are cleanly separated; the detector does not know the injection rules.
-- Detection metrics: precision / recall against the known injected bottlenecks.
+- **3 bottleneck pattern types** (delay / repetition / rework), **injected by design** as
+  STRUCTURAL patterns (outlier gaps, literal duplicate stage entries, genuine backward
+  transitions), so ground truth is known before detection runs. Detection is **dynamic**
+  (`detection/dynamic.py`) — 0..N findings per run, no marker config; the count is a
+  property of the data. An advisory local-LLM anomaly pass can add "AI-spotted" cards
+  on top (not evaluated against ground truth).
+- **Circularity guard:** generating *and* evaluating on data designed by the same person is a validity risk. Injection logic (`synthetic/generate_messy_*.py`) and detection logic (`detection/dynamic.py`) are cleanly separated; the detector does not know the injection rules.
+- **Detection metrics (`eval/score_detection.py`):** P/R/F1 per pattern type, marker
+  baseline vs dynamic detector, against the seeded ground truth:
+
+  | Profile | baseline macro-F1 | dynamic macro-F1 |
+  |---|---|---|
+  | foyle | 0.524 | 1.000 |
+  | joinery | 0.523 | 1.000 |
+
+  The presence-based marker baseline collapses on structural repetition/rework — the
+  argument for statistical detection, mirroring the mapping eval's baseline→LLM gap.
 - **Mapping-agent metrics (the headline eval):** role/column accuracy + column **F1** across three conditions — heuristic baseline → LLM → human-approved. Current results (`outputs/eval_mapping_<profile>.json`):
 
   | Profile | baseline F1 | LLM F1 | human F1 |
@@ -225,16 +243,21 @@ ingest path.
 
 ---
 
-## 11. Current Status (2026-07-09)
+## 11. Current Status (2026-07-10)
 
-- **Re-architecture milestones M0–M6 all shipped.** Mapping-inference agent + second HITL gate + two SME profiles, end-to-end.
-- **Generalisability demonstrated:** foyle + joinery through one pipeline, zero new reader/detector code for SME #2.
-- **Eval numbers produced** (F1 table in §7); `outputs/eval_mapping_*.json` committed.
-- **React dashboard (hitl-react) live** — Mapping Review (Gate 1), workflow DAG with per-stage source-sheet hover, Bottlenecks, Fixes (Gate 2) + remediation, SME profile switcher.
-- Both repos committed & clean on `master`. `HANDOVER.md` written.
-- Foyle drive at its reproducible 5-file state; tests green (`pytest -q`).
-- Dissertation Word draft exists (`Murray_B00810618_Dissertation_Draft.docx`) — Sections 1–4 written, later phases scaffolded.
+- **Re-architecture milestones M0–M6 all shipped**, plus the product-grade upgrade:
+  RAG diagnosis agent, LangGraph loop, **dynamic detection** (statistical, 0..N
+  findings, no markers), local-LLM anomaly pass (Ollama), **learning loop** (approved
+  Gate-2 fixes → `sme_resolutions`), cost model, impact history + sparklines,
+  zero-PII payload viewer.
+- **Generalisability demonstrated:** foyle + joinery through one pipeline, zero new reader/detector code for SME #2 — and the dynamic detector removed the last per-SME detection config (markers are eval-only now).
+- **Eval numbers produced:** mapping F1 table (§7), detection baseline-vs-dynamic table (§7), `eval/score_detection.py` + `eval/score_mapping.py` regenerate them.
+- **§6a resolved** — LangGraph and Ollama are both in the artifact; write-up can assert them.
+- **React dashboard (hitl-react) live** — Mapping Review (Gate 1), pipeline stepper, workflow DAG, Bottlenecks (incl. anomaly cards + RAG grounding), Fixes (Gate 2) + remediation diff, HITL metrics strip, ImpactPanel, SME switch moment, "what the AI saw" modal.
+- Both repos committed on `master`; tests green (`pytest -q`, 107 tests).
+- Dissertation Word draft exists (`Murray_B00810618_Dissertation_Draft.docx`) — Sections 1–4 written, later phases scaffolded. **Sections describing detection/eval need updating for the dynamic detector.**
 
-**On the horizon:** reconcile §6a (LangGraph/Ollama claim vs build) before write-up;
-Phase 2–5 build reports; supervisor sign-off on the consented Foyle export; final
-dissertation refinement pass. Feature-complete otherwise — default is to pivot to writing.
+**On the horizon:** Phase 2–5 build reports; re-run + re-cite `eval.score_mapping`
+after the drive reseed; supervisor sign-off on the consented Foyle export; final
+dissertation refinement pass. [YOU] install Ollama + `ollama pull qwen2.5:7b` for the
+anomaly-pass demo.
