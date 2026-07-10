@@ -82,9 +82,9 @@ def test_backward_loop_found() -> None:
     assert len(rework) == 1
     assert rework[0].stage == "Placement Offer"
     assert set(rework[0].affected_cases) == {"W1", "W2"}
-    # The revisit also counts as a within-case repeat — both readings are true.
-    reps = [b for b in found if b.type == "repetition"]
-    assert {b.stage for b in reps} <= {"Placement Offer"}
+    # Disjoint semantics: the backward revisit is rework ONLY — it must not
+    # double-report as repetition even though the stage occurs twice.
+    assert [b for b in found if b.type == "repetition"] == []
 
 
 def test_clean_log_yields_nothing() -> None:

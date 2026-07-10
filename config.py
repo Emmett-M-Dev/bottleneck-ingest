@@ -144,15 +144,18 @@ MAPPINGS_DIR = ROOT / "mappings"
 MESSY_PROFILES = {
     "foyle": {
         "dir": DATA_SYNTHETIC / "messy_foyle",
+        # markers are EVAL-ONLY: the baseline detector (detect_generic) the
+        # dynamic detector is scored against. The pipeline itself runs
+        # detection.dynamic.detect_dynamic, which needs no markers.
         "markers": {
             "delay_stage": "Booking Confirmed",
-            "repetition_stage": "Document Re-request",
-            "rework_stage": "Placement Re-allocation",
+            "repetition_stage": "Document Collection",
+            "rework_stage": "Placement Offer",
             "delay_threshold_days": 7,
         },
         "stage_order": [
-            "Request Received", "Placement Offer", "Placement Re-allocation",
-            "Booking Confirmed", "Invoice Issued", "Document Re-request",
+            "Request Received", "Placement Offer", "Booking Confirmed",
+            "Invoice Issued", "Document Collection",
             "Pre-Arrival Logistics", "Arrival",
         ],
         "gt_mapping": DATA_SYNTHETIC / "ground_truth_mapping_foyle.json",
@@ -160,27 +163,35 @@ MESSY_PROFILES = {
         # Drives the dashboard's SME-adaptive branding (header wordmark/context).
         "ui": {"brand": "Foyle International", "context": "Placement Ops",
                "domain": "international education placement", "initials": "FI"},
+        # Demo cost model for the dashboard's "what this costs you" figures:
+        # a stalled booking ties up a host + risks the placement fee; every
+        # duplicated collection or re-match is staff hours.
+        "costs": {"currency": "£", "delay_day_cost": 35,
+                  "repetition_event_cost": 90, "rework_loop_cost": 250},
     },
     # The contrasting SME: a joinery firm's job pipeline. Different workflow
     # vocabulary, same canonical schema, zero new reader code — the
     # generalisability claim in one config block.
     "joinery": {
         "dir": DATA_SYNTHETIC / "messy_joinery",
+        # markers are EVAL-ONLY — see the foyle note above.
         "markers": {
             "delay_stage": "Site Work Started",      # materials lead time
-            "repetition_stage": "Re-measure",        # site measured twice
-            "rework_stage": "Snagging Revisit",      # post-handover call-back
+            "repetition_stage": "Site Survey",       # site measured twice
+            "rework_stage": "Site Work Started",     # post-handover call-back
             "delay_threshold_days": 7,
         },
         "stage_order": [
-            "Quote Sent", "Quote Accepted", "Re-measure", "Materials Ordered",
-            "Site Work Started", "Snagging", "Snagging Revisit",
-            "Invoice Sent", "Payment Received",
+            "Quote Sent", "Quote Accepted", "Site Survey", "Materials Ordered",
+            "Site Work Started", "Snagging", "Invoice Sent", "Payment Received",
         ],
         "gt_mapping": DATA_SYNTHETIC / "ground_truth_mapping_joinery.json",
         "gt_bottlenecks": DATA_SYNTHETIC / "ground_truth_messy_joinery.json",
         "ui": {"brand": "McCrossan Joinery", "context": "Job Ops",
                "domain": "joinery & fit-out", "initials": "MJ"},
+        # A wasted trip is half a fitter-day; a stalled job is idle capacity.
+        "costs": {"currency": "£", "delay_day_cost": 60,
+                  "repetition_event_cost": 180, "rework_loop_cost": 320},
     },
 }
 

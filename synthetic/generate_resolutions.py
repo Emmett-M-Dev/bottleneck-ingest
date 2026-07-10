@@ -80,7 +80,7 @@ CORPUS: dict[str, dict] = {
              "Subsequent withdrawals were re-covered within two days without "
              "breaching the target."),
         ]),
-        "repetition": ("Document Re-request", [
+        "repetition": ("Document Collection", [
             ("Student CVs and consent letters were requested a second time "
              "after the spring sheet was forked for summer bookings.",
              "Added a received-documents checklist to the booking row and "
@@ -116,7 +116,7 @@ CORPUS: dict[str, dict] = {
              "Dropped after one season — hosts found verification awkward "
              "and copies went back to being collected at booking."),
         ]),
-        "rework": ("Placement Re-allocation", [
+        "rework": ("Placement Offer", [
             ("Confirmed placements were re-allocated when host families "
              "dropped out within a fortnight of arrival.",
              "Re-confirmed host availability at the point of matching rather "
@@ -232,7 +232,7 @@ CORPUS: dict[str, dict] = {
              "Abandoned after a month — the delivery savings were not worth "
              "the tracking overhead, and per-job ordering returned."),
         ]),
-        "repetition": ("Re-measure", [
+        "repetition": ("Site Survey", [
             ("Fitters drove back to site to re-measure because the first "
              "survey missed service positions.",
              "Used a fixed survey checklist covering openings, services and "
@@ -268,7 +268,7 @@ CORPUS: dict[str, dict] = {
              "with changes quoted separately.",
              "Changes still happened but were billed rather than absorbed."),
         ]),
-        "rework": ("Snagging Revisit", [
+        "rework": ("Site Work Started", [
             ("Fitters were called back for snagging after handover on nearly "
              "a third of fits.",
              "Walked the snag list with the client against the job spec "

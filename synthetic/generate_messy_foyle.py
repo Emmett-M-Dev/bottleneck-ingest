@@ -19,11 +19,16 @@ methodology) so the audit agent has a grounded mess to untangle:
 
 Seeded bottlenecks span BOTH bookings forks (mirrored into
 ground_truth_messy_foyle.json — proving the approved mapping unlocks
-detection across the fork is the point):
+detection across the fork is the point). All three are STRUCTURAL — patterns
+in the event sequence itself, not helpfully-named marker stages — so the
+dynamic detector must find them from the data alone:
 
-    delay       — gap into Booking Confirmed >= 7 days
-    repetition  — Document Re-request present
-    rework      — Placement Re-allocation present
+    delay       — a long gap into Booking Confirmed (vs the log's own
+                  gap distribution)
+    repetition  — Document Collection entered twice (papers lost between
+                  seasonal sheets, collected again)
+    rework      — the case drops BACK to Placement Offer after Booking
+                  Confirmed (host fell through post-confirmation)
 
 ground_truth_mapping_foyle.json records the true per-file role + column map
 the audit agent must rediscover. EVERYTHING is synthetic.
@@ -86,20 +91,28 @@ def _case_events(cid: str, start: datetime, *, delay: bool, rework: bool,
     add("Request Received")
     t += timedelta(days=random.randint(1, 3))
     add("Placement Offer")
-    if rework:
-        t += timedelta(days=random.randint(2, 5))
-        add("Placement Re-allocation", random.choice(OPEN_ISH))
     # The delay signal: a long gap from the prior event into Booking Confirmed.
-    t += timedelta(days=random.randint(10, 16) if delay else random.randint(1, 3))
+    # 12-18 days sits safely above the worst-case dynamic outlier threshold
+    # (normal gaps top out at 6 days, so Q3+1.5*IQR cannot reach 12).
+    t += timedelta(days=random.randint(12, 18) if delay else random.randint(1, 3))
     add("Booking Confirmed")
+    if rework:
+        # Host fell through AFTER confirmation — the case drops back to
+        # Placement Offer. A genuine backward transition against stage_order.
+        t += timedelta(days=random.randint(2, 5))
+        add("Placement Offer", random.choice(OPEN_ISH))
     t += timedelta(days=random.randint(1, 4))
     add("Invoice Issued")
+    t += timedelta(days=random.randint(1, 3))
+    add("Document Collection")
     if repetition:
+        # Papers lost between seasonal sheets — the same collection step is
+        # entered a second time. A literal duplicate occurrence.
         t += timedelta(days=random.randint(1, 3))
-        add("Document Re-request", random.choice(OPEN_ISH))
+        add("Document Collection", random.choice(OPEN_ISH))
     t += timedelta(days=random.randint(2, 6))
     add("Pre-Arrival Logistics")
-    t += timedelta(days=random.randint(3, 7))
+    t += timedelta(days=random.randint(3, 6))
     add("Arrival")
     return events
 

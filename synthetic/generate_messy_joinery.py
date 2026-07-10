@@ -14,11 +14,16 @@ zero new reader code — that is the generalisability claim.
     materials orders.xlsx       reference data (suppliers, no event structure)
     old quotes 2024.xlsx        stale, irrelevant to the 2026 workflow
 
-Seeded bottlenecks (mirrored into ground_truth_messy_joinery.json):
+Seeded bottlenecks (mirrored into ground_truth_messy_joinery.json). All
+three are STRUCTURAL — patterns in the event sequence, not marker stages —
+so the dynamic detector must find them from the data alone:
 
-    delay       — gap into Site Work Started >= 7 days (materials lead time)
-    repetition  — Re-measure present (site measured twice)
-    rework      — Snagging Revisit present (post-handover call-back)
+    delay       — a long materials lead time into Site Work Started (vs the
+                  log's own gap distribution)
+    repetition  — Site Survey entered twice (first measure missed what the
+                  workshop needed)
+    rework      — the job drops BACK to Site Work Started after Snagging
+                  (post-handover call-back)
 
 EVERYTHING is synthetic. Run:  python synthetic/generate_messy_joinery.py
 """
@@ -69,24 +74,32 @@ def _job_events(cid: str, start: datetime, *, delay: bool, rework: bool,
                        "status": status or random.choice(DONE_ISH)})
 
     add("Quote Sent")
-    t += timedelta(days=random.randint(2, 6))
+    t += timedelta(days=random.randint(2, 5))
     add("Quote Accepted")
+    t += timedelta(days=random.randint(1, 3))
+    add("Site Survey")
     if repetition:
+        # First measure missed what the workshop needed — the survey step is
+        # entered a second time. A literal duplicate occurrence.
         t += timedelta(days=random.randint(1, 3))
-        add("Re-measure", random.choice(OPEN_ISH))
+        add("Site Survey", random.choice(OPEN_ISH))
     t += timedelta(days=random.randint(1, 3))
     add("Materials Ordered")
-    # The delay signal: materials lead time into Site Work Started.
-    t += timedelta(days=random.randint(10, 16) if delay else random.randint(1, 3))
+    # The delay signal: materials lead time into Site Work Started. 12-18
+    # days sits safely above the worst-case dynamic outlier threshold
+    # (normal gaps top out at 7 days).
+    t += timedelta(days=random.randint(12, 18) if delay else random.randint(1, 3))
     add("Site Work Started")
     t += timedelta(days=random.randint(2, 5))
     add("Snagging")
     if rework:
-        t += timedelta(days=random.randint(3, 8))
-        add("Snagging Revisit", random.choice(OPEN_ISH))
+        # Post-handover call-back: the job drops BACK to site work after
+        # snagging. A genuine backward transition against stage_order.
+        t += timedelta(days=random.randint(3, 6))
+        add("Site Work Started", random.choice(OPEN_ISH))
     t += timedelta(days=random.randint(1, 3))
     add("Invoice Sent")
-    t += timedelta(days=random.randint(5, 20))
+    t += timedelta(days=random.randint(3, 7))
     add("Payment Received")
     return events
 

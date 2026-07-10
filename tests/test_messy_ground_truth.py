@@ -88,36 +88,37 @@ def test_foyle_june_is_a_gap() -> None:
     assert (ts < "2026-06-01").any() and (ts >= "2026-07-01").any()
 
 
-def test_seeded_patterns_are_detectable_with_the_true_mapping(profile: str) -> None:
-    markers = config.MESSY_PROFILES[profile]["markers"]
+def _detected_by_type(df: pd.DataFrame, profile: str) -> dict[str, set[str]]:
+    """Union of affected cases per pattern type from the dynamic detector."""
+    from detection.dynamic import detect_dynamic
+
+    out: dict[str, set[str]] = {"delay": set(), "repetition": set(), "rework": set()}
+    for bn in detect_dynamic(df, config.MESSY_PROFILES[profile]["stage_order"]):
+        out[bn.type] |= set(bn.affected_cases)
+    return out
+
+
+def test_seeded_patterns_are_structurally_detectable(profile: str) -> None:
+    """The seeded bottlenecks are STRUCTURAL (outlier gaps, duplicate stage
+    entries, backward transitions) — the dynamic detector recovers exactly
+    the ground-truth case sets from the data alone, no marker config."""
     gt = _gt_bottlenecks(profile)["bottlenecks"]
     frames = [_events_frame(profile, f) for f in _events_files(profile, include_only=True)]
     df = (pd.concat(frames, ignore_index=True)
           .drop_duplicates(subset=["case_id", "stage", "ts"]))
+    df["source_ref"] = "gt"  # detector carries refs; the raw frames have none
     assert df["case_id"].nunique() == _gt_bottlenecks(profile)["cases"]
 
-    # delay: the gap into the marker stage crosses the threshold iff seeded
-    delay_stage = markers["delay_stage"].lower()
-    for case_id, g in df.sort_values("ts").groupby("case_id"):
-        g = g.reset_index(drop=True)
-        idx = g.index[g["stage"] == delay_stage]
-        assert len(idx) == 1 and idx[0] > 0
-        gap = (g["ts"][idx[0]] - g["ts"][idx[0] - 1]).days
-        assert (gap >= markers["delay_threshold_days"]) == (case_id in gt["delay"]), case_id
-
-    # repetition / rework: marker presence iff seeded
-    for kind, marker in (("repetition", markers["repetition_stage"].lower()),
-                         ("rework", markers["rework_stage"].lower())):
-        flagged = set(df[df["stage"] == marker]["case_id"])
-        assert flagged == set(gt[kind]), kind
+    detected = _detected_by_type(df, profile)
+    for kind in ("delay", "repetition", "rework"):
+        assert detected[kind] == set(gt[kind]), kind
 
 
 def test_end_to_end_rediscovery_via_mapped_reader(profile: str) -> None:
     """The full loop the thesis claims, identical for every profile:
     ground-truth mapping as the approved mapping -> mapped reader (incl.
-    dedup) -> generic detector with the profile's markers == seeded truth."""
+    dedup) -> DYNAMIC detector (no markers) == seeded truth."""
     from audit.schemas import ApprovedFileMapping, ApprovedMapping
-    from detection.detect import detect_generic
     from readers.mapped_reader import read_mapped
 
     gt_map = _gt_mapping(profile)
@@ -134,9 +135,8 @@ def test_end_to_end_rediscovery_via_mapped_reader(profile: str) -> None:
     df = pd.DataFrame(event_rows)
     df["stage"] = df["activity"].str.strip().str.lower()
     df["ts"] = pd.to_datetime(df["timestamp"], errors="coerce")
-    markers = config.MESSY_PROFILES[profile]["markers"]
-    detected = {b.type: b for b in detect_generic(df, **markers)}
+    detected = _detected_by_type(df, profile)
 
     gt = _gt_bottlenecks(profile)["bottlenecks"]
     for kind in ("delay", "repetition", "rework"):
-        assert detected[kind].affected_cases == sorted(gt[kind]), kind
+        assert detected[kind] == set(gt[kind]), kind

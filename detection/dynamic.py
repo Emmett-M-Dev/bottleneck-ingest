@@ -6,9 +6,15 @@ detector derives everything from the event log itself:
     delay       — a stage whose entry gaps are outliers against the log's own
                   gap distribution (threshold = Q3 + 1.5*IQR over all
                   transition gaps, floored at 1 day)
-    repetition  — a stage that occurs two or more times within a case
+    repetition  — a stage entered again with NO later stage in between
+                  (duplicate data entry / done-twice)
     rework      — a stage a case RETURNS to after having progressed past it
                   (a backward transition against the profile's stage_order)
+
+Repetition and rework are deliberately disjoint: a backward revisit also puts
+a second occurrence in the case, but it is counted as rework only — otherwise
+every rework case would double-report as repetition and the eval's per-type
+precision would be meaningless.
 
 A stage is reported only when at least `min_affected` cases show the pattern,
 so one odd row doesn't become a bottleneck. The result is 0..N bottlenecks —
@@ -70,17 +76,30 @@ def _delay_stages(df: pd.DataFrame, threshold: float) -> dict[str, dict]:
     return out
 
 
-def _repetition_stages(df: pd.DataFrame) -> dict[str, dict]:
-    """stage -> cases in which that stage occurs 2+ times."""
+def _repetition_stages(df: pd.DataFrame, stage_order: list[str]) -> dict[str, dict]:
+    """stage -> cases in which that stage re-occurs WITHOUT the case having
+    progressed past it in between (a duplicate entry, not a loop-back — the
+    loop-back reading belongs to _rework_stages)."""
+    index = {_canon(s): i for i, s in enumerate(stage_order)}
     out: dict[str, dict] = {}
-    counts = df.groupby(["case_id", "stage"]).agg(
-        n=("stage", "size"), ref=("source_ref", "last")).reset_index()
-    for _, row in counts[counts["n"] >= 2].iterrows():
-        d = out.setdefault(row["stage"], {"cases": [], "repeats": [], "refs": []})
-        d["cases"].append(row["case_id"])
-        d["repeats"].append(int(row["n"]))
-        if len(d["refs"]) < 3:
-            d["refs"].append(row["ref"])
+    for case_id, g in df.sort_values("ts").groupby("case_id"):
+        g = g.reset_index(drop=True)
+        max_seen = -1
+        seen_counts: dict[str, int] = {}
+        flagged: set[str] = set()
+        for i in range(len(g)):
+            stage = g["stage"][i]
+            idx = index.get(stage)
+            backward = idx is not None and idx < max_seen
+            seen_counts[stage] = seen_counts.get(stage, 0) + 1
+            if seen_counts[stage] >= 2 and not backward and stage not in flagged:
+                flagged.add(stage)
+                d = out.setdefault(stage, {"cases": [], "refs": []})
+                d["cases"].append(case_id)
+                if len(d["refs"]) < 3:
+                    d["refs"].append(g["source_ref"][i])
+            if idx is not None:
+                max_seen = max(max_seen, idx)
     return out
 
 
@@ -131,7 +150,7 @@ def detect_dynamic(df: pd.DataFrame, stage_order: list[str], *,
             example_refs=d["refs"],
         ))
 
-    for stage, d in _repetition_stages(df).items():
+    for stage, d in _repetition_stages(df, stage_order).items():
         if len(d["cases"]) < min_affected:
             continue
         found.append(DetectedBottleneck(
