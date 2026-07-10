@@ -205,9 +205,11 @@ AUDIT_MODEL_DEFAULT = "claude-opus-4-8"
 # ingest.py's reset_collection() (which wipes only sme_ops) never touches it.
 RESOLUTIONS_COLLECTION = "sme_resolutions"
 DIAGNOSE_MODEL_DEFAULT = "claude-opus-4-8"
-# Gate-2 (fix approval) decisions are appended by the dashboard to the
-# hitl-interface repo's log; the agent's resume step reads them from there.
-DECISIONS_LOG_DEFAULT = ROOT.parent / "hitl-interface" / "logs" / "decisions.jsonl"
+# Gate-2 (fix approval) decisions are appended by the React dashboard's API
+# (hitl-react/api/main.py -> _DECISIONS_LOG); the agent's resume step reads
+# them from there. The legacy Streamlit log (hitl-interface/logs/) is NOT the
+# live one — pass --decisions to pipeline.agent to override if needed.
+DECISIONS_LOG_DEFAULT = ROOT.parent / "hitl-react" / "api" / "decisions.jsonl"
 
 
 def resolutions_path(profile: str) -> Path:
