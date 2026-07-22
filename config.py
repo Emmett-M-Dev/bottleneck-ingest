@@ -225,3 +225,25 @@ DECISIONS_LOG_DEFAULT = ROOT.parent / "hitl-react" / "api" / "decisions.jsonl"
 
 def resolutions_path(profile: str) -> Path:
     return DATA_SYNTHETIC / f"resolutions_{profile}.json"
+
+
+# ── Stream replay (longitudinal eval — eval/replay.py) ───────────────────────
+# The replay harness treats the drive as it looked each week: synthetic/
+# generate_stream.py writes cumulative snapshots stream_<profile>/tick_NN/
+# plus a per-tick ground truth, and eval/replay.py replays them through the
+# UNCHANGED pipeline core, logging metrics per tick. Evaluation-side only —
+# nothing in the pipeline core reads these.
+STREAM_TICKS     = 9   # weekly snapshots; week 9 lets late-arriving patterns land
+STREAM_TICK_DAYS = 7
+
+
+def stream_dir(profile: str) -> Path:
+    return DATA_SYNTHETIC / f"stream_{profile}"
+
+
+def stream_gt_path(profile: str) -> Path:
+    return DATA_SYNTHETIC / f"ground_truth_stream_{profile}.json"
+
+
+def replay_log_path(profile: str) -> Path:
+    return OUTPUTS / f"replay_{profile}.jsonl"

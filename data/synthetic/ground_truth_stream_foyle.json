@@ -1,0 +1,304 @@
+{
+  "generated_at": "2026-07-19T10:43:30.732501",
+  "seed": 23,
+  "profile": "foyle",
+  "tick_days": 7,
+  "start": "2026-03-02",
+  "mapping": {
+    "profile": "foyle",
+    "files": [
+      {
+        "filename": "bookings tracker 2026.xlsx",
+        "sheet": "Sheet1",
+        "role": "events",
+        "include": true,
+        "columns": {
+          "Booking Ref": "case_id",
+          "Stage": "activity",
+          "Date": "timestamp",
+          "Handled By": "actor",
+          "Status": "status"
+        }
+      },
+      {
+        "filename": "bookings tracker - summer copy.xlsx",
+        "sheet": "Sheet1",
+        "role": "events",
+        "include": true,
+        "columns": {
+          "Ref #": "case_id",
+          "Step": "activity",
+          "Updated On": "timestamp",
+          "Staff Member": "actor",
+          "Payment status": "status"
+        }
+      },
+      {
+        "filename": "host families 2026.xlsx",
+        "sheet": "Sheet1",
+        "role": "reference",
+        "include": true,
+        "columns": {}
+      },
+      {
+        "filename": "staff phone list.xlsx",
+        "sheet": "Sheet1",
+        "role": "ignore",
+        "include": false,
+        "columns": {}
+      }
+    ]
+  },
+  "schedule": [
+    {
+      "cid": "B-26S-001",
+      "week": 1,
+      "injected": "delay"
+    },
+    {
+      "cid": "B-26S-002",
+      "week": 1,
+      "injected": "rework"
+    },
+    {
+      "cid": "B-26S-003",
+      "week": 1,
+      "injected": "delay"
+    },
+    {
+      "cid": "B-26S-004",
+      "week": 2,
+      "injected": "repetition"
+    },
+    {
+      "cid": "B-26S-005",
+      "week": 2,
+      "injected": "rework"
+    },
+    {
+      "cid": "B-26S-006",
+      "week": 3,
+      "injected": "repetition"
+    },
+    {
+      "cid": "B-26S-007",
+      "week": 3,
+      "injected": null
+    },
+    {
+      "cid": "B-26S-008",
+      "week": 4,
+      "injected": "delay"
+    },
+    {
+      "cid": "B-26S-009",
+      "week": 4,
+      "injected": null
+    },
+    {
+      "cid": "B-26S-010",
+      "week": 5,
+      "injected": "repetition"
+    },
+    {
+      "cid": "B-26S-011",
+      "week": 5,
+      "injected": "rework"
+    },
+    {
+      "cid": "B-26S-012",
+      "week": 5,
+      "injected": "delay"
+    },
+    {
+      "cid": "B-26S-013",
+      "week": 6,
+      "injected": null
+    },
+    {
+      "cid": "B-26S-014",
+      "week": 6,
+      "injected": null
+    }
+  ],
+  "ticks": [
+    {
+      "tick": 1,
+      "cutoff": "2026-03-09",
+      "cases_visible": 3,
+      "events_visible": 7,
+      "bottlenecks": {
+        "delay": [],
+        "repetition": [],
+        "rework": []
+      }
+    },
+    {
+      "tick": 2,
+      "cutoff": "2026-03-16",
+      "cases_visible": 6,
+      "events_visible": 16,
+      "bottlenecks": {
+        "delay": [],
+        "repetition": [],
+        "rework": [
+          "B-26S-002"
+        ]
+      }
+    },
+    {
+      "tick": 3,
+      "cutoff": "2026-03-23",
+      "cases_visible": 7,
+      "events_visible": 34,
+      "bottlenecks": {
+        "delay": [
+          "B-26S-001",
+          "B-26S-003"
+        ],
+        "repetition": [
+          "B-26S-004"
+        ],
+        "rework": [
+          "B-26S-002",
+          "B-26S-005"
+        ]
+      }
+    },
+    {
+      "tick": 4,
+      "cutoff": "2026-03-30",
+      "cases_visible": 11,
+      "events_visible": 54,
+      "bottlenecks": {
+        "delay": [
+          "B-26S-001",
+          "B-26S-003"
+        ],
+        "repetition": [
+          "B-26S-004",
+          "B-26S-006"
+        ],
+        "rework": [
+          "B-26S-002",
+          "B-26S-005"
+        ]
+      }
+    },
+    {
+      "tick": 5,
+      "cutoff": "2026-04-06",
+      "cases_visible": 13,
+      "events_visible": 69,
+      "bottlenecks": {
+        "delay": [
+          "B-26S-001",
+          "B-26S-003"
+        ],
+        "repetition": [
+          "B-26S-004",
+          "B-26S-006"
+        ],
+        "rework": [
+          "B-26S-002",
+          "B-26S-005"
+        ]
+      }
+    },
+    {
+      "tick": 6,
+      "cutoff": "2026-04-13",
+      "cases_visible": 14,
+      "events_visible": 84,
+      "bottlenecks": {
+        "delay": [
+          "B-26S-001",
+          "B-26S-003",
+          "B-26S-012"
+        ],
+        "repetition": [
+          "B-26S-004",
+          "B-26S-006",
+          "B-26S-010"
+        ],
+        "rework": [
+          "B-26S-002",
+          "B-26S-005",
+          "B-26S-011"
+        ]
+      }
+    },
+    {
+      "tick": 7,
+      "cutoff": "2026-04-20",
+      "cases_visible": 14,
+      "events_visible": 95,
+      "bottlenecks": {
+        "delay": [
+          "B-26S-001",
+          "B-26S-003",
+          "B-26S-008",
+          "B-26S-012"
+        ],
+        "repetition": [
+          "B-26S-004",
+          "B-26S-006",
+          "B-26S-010"
+        ],
+        "rework": [
+          "B-26S-002",
+          "B-26S-005",
+          "B-26S-011"
+        ]
+      }
+    },
+    {
+      "tick": 8,
+      "cutoff": "2026-04-27",
+      "cases_visible": 14,
+      "events_visible": 103,
+      "bottlenecks": {
+        "delay": [
+          "B-26S-001",
+          "B-26S-003",
+          "B-26S-008",
+          "B-26S-012"
+        ],
+        "repetition": [
+          "B-26S-004",
+          "B-26S-006",
+          "B-26S-010"
+        ],
+        "rework": [
+          "B-26S-002",
+          "B-26S-005",
+          "B-26S-011"
+        ]
+      }
+    },
+    {
+      "tick": 9,
+      "cutoff": "2026-05-04",
+      "cases_visible": 14,
+      "events_visible": 104,
+      "bottlenecks": {
+        "delay": [
+          "B-26S-001",
+          "B-26S-003",
+          "B-26S-008",
+          "B-26S-012"
+        ],
+        "repetition": [
+          "B-26S-004",
+          "B-26S-006",
+          "B-26S-010"
+        ],
+        "rework": [
+          "B-26S-002",
+          "B-26S-005",
+          "B-26S-011"
+        ]
+      }
+    }
+  ]
+}

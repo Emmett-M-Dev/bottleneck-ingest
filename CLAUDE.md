@@ -2,8 +2,8 @@
 
 Context file for AI coding assistants working on this project. Read this first, every session.
 
-> **Companion docs:** `HANDOVER.md` (current build state + how to run), `PHASE1_REPORT.md`,
-> and the per-phase build reports. This file is the *why*; HANDOVER.md is the *what/how now*.
+> **Companion docs:** `HANDOVER.md` (current build state + how to run) and
+> `TASKLIST.md` (what's done, what's next). This file is the *why*; HANDOVER.md is the *what/how now*.
 
 ---
 
@@ -200,6 +200,17 @@ precision tasks — both privacy controls implemented and tested.
   | joinery | 0.308 | 0.909 | 1.000 |
 
   Baseline collapses on joinery's renamed-header fork — that gap is the argument for the LLM audit; the human gate closes the residual.
+- **Longitudinal replay (the "dynamic system" eval):** `synthetic/generate_stream.py`
+  writes 9 cumulative weekly snapshots per profile (`stream_<p>/tick_NN/`) + a
+  per-tick ground truth; `eval/replay.py` replays them through the unchanged
+  pipeline core with a **simulated oracle Gate-2 approver** feeding the learning
+  loop (the write-up must state the approver is an oracle, not a human). Two
+  curves out (`eval/plot_replay.py` → `outputs/replay_*_<p>.png`): detection F1
+  tracking a moving truth (incl. an honest gap-threshold wobble at joinery tick 6
+  — precision dips, the gate rejects the FPs, F1 recovers), and learned-fix
+  retrieval climbing 0 → 1 as approved fixes enter `sme_resolutions`. Eval-side
+  only: replay-learned entries are RES-RPL-prefixed in `outputs/`, dashboard
+  state untouched; default `--fresh` reset keeps runs reproducible.
 - RAG metrics: retrieval relevance (MRR or NDCG).
 - Qualitative: structured expert walkthrough (2–3 people) on trust, usability, recommendation quality.
 
@@ -243,7 +254,7 @@ ingest path.
 
 ---
 
-## 11. Current Status (2026-07-10)
+## 11. Current Status (2026-07-19)
 
 - **Re-architecture milestones M0–M6 all shipped**, plus the product-grade upgrade:
   RAG diagnosis agent, LangGraph loop, **dynamic detection** (statistical, 0..N
@@ -252,6 +263,7 @@ ingest path.
   zero-PII payload viewer.
 - **Generalisability demonstrated:** foyle + joinery through one pipeline, zero new reader/detector code for SME #2 — and the dynamic detector removed the last per-SME detection config (markers are eval-only now).
 - **Eval numbers produced:** mapping F1 table (§7), detection baseline-vs-dynamic table (§7), `eval/score_detection.py` + `eval/score_mapping.py` regenerate them.
+- **Longitudinal replay shipped (2026-07-19):** the system is now evaluated *over time*, not on one snapshot — 9 weekly stream ticks per profile, per-tick detection F1 vs a moving truth, oracle-approver Gate 2 driving the learning loop, learned-hit rate 0 → 1 curves + gate/detection figures in `outputs/` (§7). 116 tests green.
 - **§6a resolved** — LangGraph and Ollama are both in the artifact; write-up can assert them.
 - **React dashboard (hitl-react) live** — Mapping Review (Gate 1), pipeline stepper, workflow DAG, Bottlenecks (incl. anomaly cards + RAG grounding), Fixes (Gate 2) + remediation diff, HITL metrics strip, ImpactPanel, SME switch moment, "what the AI saw" modal.
 - Both repos committed on `master`; tests green (`pytest -q`, 107 tests).

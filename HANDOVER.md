@@ -95,6 +95,21 @@ $env:PYTHONIOENCODING="utf-8"           # ✔ chars in status values are cp1252-
 ```
 Swap `--profile joinery` — **zero new code** — for the second SME (the thesis point).
 
+**Longitudinal replay (the "dynamic system" eval — eval-side only, pipeline core untouched):**
+```
+.venv/Scripts/python.exe synthetic/generate_stream.py --profile foyle   # 9 weekly snapshots + per-tick GT
+.venv/Scripts/python.exe -m eval.replay --profile foyle [--llm]         # tick loop; default offline + fresh reset
+.venv/Scripts/python.exe -m eval.plot_replay --profile foyle            # 3 PNGs -> outputs/
+```
+Replays the drive as it looked each week through the unchanged core: detection is
+re-scored per tick against a *moving* ground truth, and a **simulated (oracle)
+Gate-2 approver** feeds approvals to the learning loop so tick t+1 retrieves the
+fix approved at tick t (learned-hit rate 0 → 1 over the run — the learning-loop
+curve). Replay-learned entries live in `outputs/replay_learned_<p>.json`
+(RES-RPL ids) and its gate log in `outputs/replay_decisions_<p>.jsonl` — the
+dashboard's real learned file and decisions.jsonl are never touched. The default
+fresh reset rebuilds `sme_resolutions` from the seeded corpora for reproducibility.
+
 **Dashboard (hitl-react):**
 ```
 # terminal 1 — API

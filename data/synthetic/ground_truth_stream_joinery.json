@@ -1,0 +1,291 @@
+{
+  "generated_at": "2026-07-19T10:43:33.174006",
+  "seed": 23,
+  "profile": "joinery",
+  "tick_days": 7,
+  "start": "2026-03-02",
+  "mapping": {
+    "profile": "joinery",
+    "files": [
+      {
+        "filename": "jobs tracker 2026.xlsx",
+        "sheet": "Sheet1",
+        "role": "events",
+        "include": true,
+        "columns": {
+          "Job No": "case_id",
+          "Stage": "activity",
+          "Date": "timestamp",
+          "Fitter": "actor",
+          "Notes": "status"
+        }
+      },
+      {
+        "filename": "jobs tracker - Marks copy.xlsx",
+        "sheet": "Sheet1",
+        "role": "events",
+        "include": true,
+        "columns": {
+          "Job #": "case_id",
+          "Phase": "activity",
+          "When": "timestamp",
+          "Who": "actor",
+          "Comments": "status"
+        }
+      },
+      {
+        "filename": "materials orders.xlsx",
+        "sheet": "Sheet1",
+        "role": "reference",
+        "include": true,
+        "columns": {}
+      },
+      {
+        "filename": "old quotes 2024.xlsx",
+        "sheet": "Sheet1",
+        "role": "ignore",
+        "include": false,
+        "columns": {}
+      }
+    ]
+  },
+  "schedule": [
+    {
+      "cid": "J-26S-001",
+      "week": 1,
+      "injected": "repetition"
+    },
+    {
+      "cid": "J-26S-002",
+      "week": 1,
+      "injected": "delay"
+    },
+    {
+      "cid": "J-26S-003",
+      "week": 2,
+      "injected": "delay"
+    },
+    {
+      "cid": "J-26S-004",
+      "week": 2,
+      "injected": "rework"
+    },
+    {
+      "cid": "J-26S-005",
+      "week": 2,
+      "injected": null
+    },
+    {
+      "cid": "J-26S-006",
+      "week": 3,
+      "injected": "rework"
+    },
+    {
+      "cid": "J-26S-007",
+      "week": 3,
+      "injected": "repetition"
+    },
+    {
+      "cid": "J-26S-008",
+      "week": 4,
+      "injected": "delay"
+    },
+    {
+      "cid": "J-26S-009",
+      "week": 4,
+      "injected": "delay"
+    },
+    {
+      "cid": "J-26S-010",
+      "week": 5,
+      "injected": "repetition"
+    },
+    {
+      "cid": "J-26S-011",
+      "week": 5,
+      "injected": "rework"
+    },
+    {
+      "cid": "J-26S-012",
+      "week": 5,
+      "injected": null
+    },
+    {
+      "cid": "J-26S-013",
+      "week": 6,
+      "injected": null
+    },
+    {
+      "cid": "J-26S-014",
+      "week": 6,
+      "injected": null
+    }
+  ],
+  "ticks": [
+    {
+      "tick": 1,
+      "cutoff": "2026-03-09",
+      "cases_visible": 4,
+      "events_visible": 5,
+      "bottlenecks": {
+        "delay": [],
+        "repetition": [],
+        "rework": []
+      }
+    },
+    {
+      "tick": 2,
+      "cutoff": "2026-03-16",
+      "cases_visible": 5,
+      "events_visible": 18,
+      "bottlenecks": {
+        "delay": [],
+        "repetition": [
+          "J-26S-001"
+        ],
+        "rework": []
+      }
+    },
+    {
+      "tick": 3,
+      "cutoff": "2026-03-23",
+      "cases_visible": 7,
+      "events_visible": 32,
+      "bottlenecks": {
+        "delay": [],
+        "repetition": [
+          "J-26S-001"
+        ],
+        "rework": []
+      }
+    },
+    {
+      "tick": 4,
+      "cutoff": "2026-03-30",
+      "cases_visible": 9,
+      "events_visible": 47,
+      "bottlenecks": {
+        "delay": [],
+        "repetition": [
+          "J-26S-001",
+          "J-26S-007"
+        ],
+        "rework": [
+          "J-26S-004"
+        ]
+      }
+    },
+    {
+      "tick": 5,
+      "cutoff": "2026-04-06",
+      "cases_visible": 13,
+      "events_visible": 67,
+      "bottlenecks": {
+        "delay": [
+          "J-26S-002",
+          "J-26S-003"
+        ],
+        "repetition": [
+          "J-26S-001",
+          "J-26S-007"
+        ],
+        "rework": [
+          "J-26S-004"
+        ]
+      }
+    },
+    {
+      "tick": 6,
+      "cutoff": "2026-04-13",
+      "cases_visible": 14,
+      "events_visible": 91,
+      "bottlenecks": {
+        "delay": [
+          "J-26S-002",
+          "J-26S-003"
+        ],
+        "repetition": [
+          "J-26S-001",
+          "J-26S-007",
+          "J-26S-010"
+        ],
+        "rework": [
+          "J-26S-004",
+          "J-26S-006"
+        ]
+      }
+    },
+    {
+      "tick": 7,
+      "cutoff": "2026-04-20",
+      "cases_visible": 14,
+      "events_visible": 106,
+      "bottlenecks": {
+        "delay": [
+          "J-26S-002",
+          "J-26S-003",
+          "J-26S-008",
+          "J-26S-009"
+        ],
+        "repetition": [
+          "J-26S-001",
+          "J-26S-007",
+          "J-26S-010"
+        ],
+        "rework": [
+          "J-26S-004",
+          "J-26S-006",
+          "J-26S-011"
+        ]
+      }
+    },
+    {
+      "tick": 8,
+      "cutoff": "2026-04-27",
+      "cases_visible": 14,
+      "events_visible": 116,
+      "bottlenecks": {
+        "delay": [
+          "J-26S-002",
+          "J-26S-003",
+          "J-26S-008",
+          "J-26S-009"
+        ],
+        "repetition": [
+          "J-26S-001",
+          "J-26S-007",
+          "J-26S-010"
+        ],
+        "rework": [
+          "J-26S-004",
+          "J-26S-006",
+          "J-26S-011"
+        ]
+      }
+    },
+    {
+      "tick": 9,
+      "cutoff": "2026-05-04",
+      "cases_visible": 14,
+      "events_visible": 118,
+      "bottlenecks": {
+        "delay": [
+          "J-26S-002",
+          "J-26S-003",
+          "J-26S-008",
+          "J-26S-009"
+        ],
+        "repetition": [
+          "J-26S-001",
+          "J-26S-007",
+          "J-26S-010"
+        ],
+        "rework": [
+          "J-26S-004",
+          "J-26S-006",
+          "J-26S-011"
+        ]
+      }
+    }
+  ]
+}

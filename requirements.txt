@@ -41,4 +41,8 @@ anthropic==0.116.0
 # run-state JSON + --resume (two-phase run), so no checkpointer native DLLs.
 langgraph==1.2.8
 
+# Longitudinal replay figures (eval/plot_replay.py) only — no interaction with
+# the chroma/torch/fastparquet native stack.
+matplotlib==3.9.3
+
 pytest==8.3.4
