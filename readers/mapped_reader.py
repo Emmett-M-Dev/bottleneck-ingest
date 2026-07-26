@@ -40,6 +40,27 @@ def _to_iso(value) -> str:
     return str(value) if pd.isna(ts) else ts.isoformat()
 
 
+def _to_money(value) -> float | None:
+    """Parse a spreadsheet money cell. SMEs type "£4,200", "4200.00", "12k" and
+    blanks into the same column, so anything unreadable becomes None rather
+    than poisoning the ranking with a wrong number."""
+    if value is None:
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    cleaned = "".join(ch for ch in text if ch.isdigit() or ch in ".-")
+    if cleaned in ("", "-", ".", "-."):
+        return None
+    try:
+        amount = float(cleaned)
+    except ValueError:
+        return None
+    if text.lower().rstrip().endswith("k"):
+        amount *= 1000
+    return amount
+
+
 def _read_file(drive: Path, file: ApprovedFileMapping) -> pd.DataFrame:
     path = drive / file.filename
     if not path.exists():
@@ -69,7 +90,8 @@ def _event_rows(drive: Path, file: ApprovedFileMapping) -> list[dict]:
             continue
         rows.append({"case_id": case_id, "activity": activity.strip(),
                      "timestamp": _to_iso(timestamp), "actor": get("actor"),
-                     "status": get("status"), "source_ref": source_ref})
+                     "status": get("status"), "source_ref": source_ref,
+                     "value": _to_money(get("value"))})
     return rows
 
 

@@ -24,7 +24,13 @@ from pydantic import BaseModel
 
 # The canonical Event fields a source column can map to. Closed vocabulary —
 # the whole point of the canonical layer is that this list never grows per SME.
-CanonicalField = Literal["case_id", "activity", "timestamp", "actor", "status"]
+# "value" is the one addition since the original five: an optional monetary
+# size for the case, which lets the action layer rank findings by revenue at
+# risk without any SME-specific code. It is deliberately absent from
+# config.COLUMN_MAP, so the heuristic baseline condition in the mapping eval is
+# unchanged by its introduction.
+CanonicalField = Literal["case_id", "activity", "timestamp", "actor", "status",
+                         "value"]
 
 # What a file is for. "events" feeds the event log; "reference" is context
 # (RAG corpus only); "notes" is freetext (RAG corpus only); "ignore" is noise.

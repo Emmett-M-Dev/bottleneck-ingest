@@ -128,6 +128,7 @@ def normalise_foyle_events(event_rows: list[dict], source_type: str = "foyle") -
         status = raw.get("status")
         actor, actor_reps = scrub_actor(raw.get("actor"))
         source_ref = raw.get("source_ref", "foyle")
+        value = raw.get("value")
 
         idx = seq.get(source_ref, 0)
         seq[source_ref] = idx + 1
@@ -141,10 +142,11 @@ def normalise_foyle_events(event_rows: list[dict], source_type: str = "foyle") -
             ingested_at=ingested_at,
             text=text,
             structured={"case_id": case_id, "activity": activity,
-                        "timestamp": timestamp, "actor": actor, "status": status},
+                        "timestamp": timestamp, "actor": actor, "status": status,
+                        "value": value},
             events=[Event(case_id=str(case_id), activity=str(activity),
                           timestamp=str(timestamp), actor=actor, status=status,
-                          source_ref=source_ref)],
+                          source_ref=source_ref, value=value)],
             scrubbed_entities=actor_reps,
         ))
     return records

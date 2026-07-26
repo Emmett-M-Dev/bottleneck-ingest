@@ -1,6 +1,6 @@
 {
   "profile": "foyle",
-  "approved_at": "2026-07-17T13:54:33.119Z",
+  "approved_at": "2026-07-23T10:14:27.156Z",
   "source_proposal_generated_at": "2026-07-09T08:11:13.824399+00:00",
   "files": [
     {
@@ -32,21 +32,21 @@
     {
       "filename": "bookings summer OLD do not use.xlsx",
       "sheet": "Sheet1",
-      "role": "events",
+      "role": "ignore",
       "include": false,
       "columns": {
-        "Booking Ref": "case_id",
-        "Stage": "activity",
-        "Date": "timestamp",
-        "Handled By": "actor",
-        "Status": "status"
+        "Booking Ref": null,
+        "Stage": null,
+        "Date": null,
+        "Handled By": null,
+        "Status": null
       }
     },
     {
       "filename": "host families 2026.xlsx",
       "sheet": "Sheet1",
-      "role": "ignore",
-      "include": false,
+      "role": "notes",
+      "include": true,
       "columns": {
         "Family Name": null,
         "Address": null,
@@ -58,8 +58,8 @@
     {
       "filename": "staff phone list.xlsx",
       "sheet": "Sheet1",
-      "role": "notes",
-      "include": true,
+      "role": "ignore",
+      "include": false,
       "columns": {
         "Name": null,
         "Role": null,

@@ -1,0 +1,41 @@
+[
+  {
+    "resolution_id": "RES-PND-FOY-001",
+    "profile": "foyle",
+    "bottleneck_type": "delay",
+    "stage": "Booking Confirmed",
+    "problem_description": "5 cases waited an average of 15 days to reach Booking Confirmed.",
+    "action_taken": "Set an entry SLA for Booking Confirmed: Agree a target number of days.; Flag overdue cases.",
+    "outcome": "Approved at HITL Gate 2 on 2026-07-10. Demoted: approval alone is not evidence of effect.",
+    "days_to_resolve": null,
+    "source": "pending",
+    "decision_id": "BN001-approve-test1",
+    "status": "approved_unmeasured"
+  },
+  {
+    "resolution_id": "RES-PND-FOY-002",
+    "profile": "foyle",
+    "bottleneck_type": "repetition",
+    "stage": "Document Collection",
+    "problem_description": "3 cases passed through Document Collection more than once — the same step is being redone instead of carried forward.",
+    "action_taken": "Make the first Document Collection the only one: Use a fixed checklist for Document Collection so the first pass captures everything.; Record the outcome of Document Collection on the case row itself, visible to everyone.; Only repeat Document Collection when its recorded outcome is genuinely missing.",
+    "outcome": "Approved at HITL Gate 2 on 2026-07-11. Demoted: approval alone is not evidence of effect.",
+    "days_to_resolve": null,
+    "source": "pending",
+    "decision_id": "BN002-approve-1783757538079",
+    "status": "approved_unmeasured"
+  },
+  {
+    "resolution_id": "RES-PND-FOY-003",
+    "profile": "foyle",
+    "bottleneck_type": "rework",
+    "stage": "Placement Offer",
+    "problem_description": "3 cases returned to Placement Offer after having moved past it — earlier work is being redone under time pressure.",
+    "action_taken": "Confirm before leaving Placement Offer, hold a reserve: Re-confirm the inputs to Placement Offer at the point of completion, not just at the start.; Keep a small reserve (people, slots or stock) to absorb fall-throughs.; Record the reason for every loop-back so repeat causes are spotted early.",
+    "outcome": "Approved at HITL Gate 2 on 2026-07-11. Demoted: approval alone is not evidence of effect.",
+    "days_to_resolve": null,
+    "source": "pending",
+    "decision_id": "BN003-approve-1783757541807",
+    "status": "approved_unmeasured"
+  }
+]

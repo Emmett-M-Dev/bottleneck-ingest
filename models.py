@@ -22,6 +22,11 @@ class Event:
     actor:      str | None    # scrubbed to placeholder
     status:     str | None
     source_ref: str           # filename or "sheets:{sheet_id}:{row}"
+    # Optional monetary size of the case (a booking fee, a job quote, a project
+    # fee). Carries no PII. Optional and defaulted so every existing reader,
+    # stored record and parquet file predating it still round-trips; the action
+    # layer falls back to the profile's average case value when it is absent.
+    value:      float | None = None
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -35,6 +40,7 @@ class Event:
             actor=d.get("actor"),
             status=d.get("status"),
             source_ref=d["source_ref"],
+            value=d.get("value"),
         )
 
 

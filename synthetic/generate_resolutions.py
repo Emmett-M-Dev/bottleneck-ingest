@@ -340,9 +340,167 @@ CORPUS: dict[str, dict] = {
              "Interruptions stopped."),
         ],
     },
+    "advisory": {
+        "delay": ("Proposal", [
+            ("Proposals sat with the partners for over a fortnight because "
+             "sign-off happened whenever two of them were free at the same "
+             "time.",
+             "Booked a fixed thirty-minute proposal review every Tuesday and "
+             "gave one partner authority to sign anything under twenty "
+             "thousand alone.",
+             "Time from qualification to proposal issued fell from eighteen "
+             "days to four."),
+            ("Every proposal was written from scratch, so drafting alone took "
+             "a week before anyone had read it.",
+             "Built three costed templates covering the work the firm "
+             "actually sells and reduced drafting to filling in scope and "
+             "rates.",
+             "Drafting dropped to under a day; the review meeting became the "
+             "only real wait."),
+            ("Proposals for public-sector clients stalled waiting on "
+             "insurance and accreditation paperwork nobody kept to hand.",
+             "Assembled a standing bid pack of certificates and policies and "
+             "diarised its renewal dates.",
+             "The paperwork stopped being on the critical path."),
+            ("Work qualified in one week was still unpriced three weeks "
+             "later because the consultant who scoped it was on client site.",
+             "Made scoping notes a required field at qualification so anyone "
+             "could price the work.",
+             "Pricing no longer waited on one person's availability, though "
+             "quality varied until the notes template settled."),
+            ("A run of proposals waited on the client's own procurement "
+             "process and the firm had no visibility of it.",
+             "Asked at qualification who signs and by when, and recorded the "
+             "answer on the engagement row.",
+             "Partly effective: the wait was unchanged but it stopped being "
+             "counted against the firm's own turnaround."),
+            ("Proposals were revised repeatedly before issue because pricing "
+             "assumptions were argued after drafting rather than before.",
+             "Agreed a rate card and a discount ceiling once, in advance.",
+             "Revision rounds fell from three to one."),
+        ]),
+        "repetition": ("Client Review", [
+            ("Client reviews ran twice on most engagements because the first "
+             "one surfaced questions the team could have answered up front.",
+             "Sent a short findings summary two days before the review so "
+             "the meeting confirmed rather than discovered.",
+             "Second reviews became the exception rather than the norm."),
+            ("Review sessions repeated because the client sent different "
+             "attendees each time and each set asked the same questions.",
+             "Agreed a fixed review panel at onboarding and required "
+             "delegates to be briefed by their own side.",
+             "Repeat sessions stopped for the clients who agreed to it."),
+            ("The same review was logged twice on the tracker because both "
+             "the consultant and the practice manager recorded it.",
+             "Made the consultant the only person who advances a delivery "
+             "milestone.",
+             "Duplicate entries stopped immediately."),
+            ("Reviews were rerun because feedback arrived by email after the "
+             "meeting and nobody could tell what had been agreed.",
+             "Wrote decisions into a single shared action log at the end of "
+             "each review and had the client confirm it in the room.",
+             "Post-meeting drift largely stopped."),
+            ("A large engagement went through four review rounds because "
+             "scope had never been written down precisely.",
+             "Rewrote the scope as a numbered list of deliverables and "
+             "reviewed against it.",
+             "Rounds fell to two; the client still asked for one extra."),
+            ("Reviews repeated on retainer clients because the same standing "
+             "issues were raised every month.",
+             "Split the standing items into a separate quarterly session.",
+             "Monthly reviews shortened and stopped recycling."),
+        ]),
+        "rework": ("Delivery", [
+            ("Delivery reopened after sign-off because the client's finance "
+             "team had never seen the assumptions the model was built on.",
+             "Added a finance walkthrough before the analysis phase closes.",
+             "Reopened engagements fell to almost none the following "
+             "quarter."),
+            ("Work went back into delivery after review because the brief "
+             "changed mid-engagement and nobody re-priced it.",
+             "Introduced a change note that pauses delivery until the "
+             "revised scope and fee are agreed.",
+             "Scope changes stopped being absorbed silently."),
+            ("An engagement was redone because the data the client supplied "
+             "turned out to be a stale extract.",
+             "Made the client confirm the extract date and source in writing "
+             "before analysis starts.",
+             "Rework from bad inputs stopped."),
+            ("Delivery reopened repeatedly on one account because the "
+             "sponsor kept adding stakeholders who each wanted something "
+             "different.",
+             "Named a single decision-maker at onboarding and routed all "
+             "requests through them.",
+             "Effective on that account; harder to enforce with public-sector "
+             "clients."),
+            ("Findings were reworked after review because the consultant and "
+             "the client had different definitions of the key metric.",
+             "Agreed metric definitions in writing during onboarding.",
+             "Definitional rework disappeared."),
+            ("Work was redone because the draft went out before an internal "
+             "quality read.",
+             "Made a second-consultant read mandatory before anything "
+             "reaches a client.",
+             "Client-visible errors fell sharply, at the cost of a day per "
+             "engagement."),
+        ]),
+        "near_miss": [
+            ("Onboarding",
+             "New engagements started without a signed contract because "
+             "onboarding began as soon as the client said yes verbally.",
+             "Made a countersigned contract a precondition for opening the "
+             "project code.",
+             "Unsigned work stopped."),
+            ("Invoice",
+             "Invoices were raised late because the practice manager waited "
+             "for the consultant to confirm the work was finished.",
+             "Set a standing rule that a completed milestone is invoiced on "
+             "the Friday of that week.",
+             "Billing lag fell from three weeks to under one."),
+            ("Lead",
+             "Inbound enquiries went unanswered for days because they landed "
+             "in a shared inbox nobody owned.",
+             "Rotated a named duty person for the inbox each week.",
+             "First response time fell to under a day."),
+            ("Qualification",
+             "Time was spent qualifying enquiries the firm would never take.",
+             "Wrote down three disqualifying criteria and applied them on "
+             "first contact.",
+             "Wasted qualification effort roughly halved."),
+            ("Paid",
+             "Payments arrived late because invoices were emailed to the "
+             "engagement contact rather than accounts payable.",
+             "Captured the accounts-payable address at onboarding.",
+             "Debtor days improved by about a fortnight."),
+        ],
+        "irrelevant": [
+            ("General",
+             "The firm's shared drive had no folder convention, so files "
+             "were saved wherever.",
+             "Agreed a client/year/engagement folder structure and moved "
+             "everything once.",
+             "Files became findable."),
+            ("General",
+             "Laptops were replaced ad hoc, so two consultants were running "
+             "unsupported software.",
+             "Put the fleet on a three-year replacement cycle.",
+             "Support issues stopped."),
+            ("General",
+             "Nobody was trained on the accounting package except the "
+             "practice manager.",
+             "Trained a second person and documented the month-end steps.",
+             "Cover exists for holidays."),
+        ],
+    },
 }
 
-_ID_PREFIX = {"foyle": "RES-FOY", "joinery": "RES-JOI"}
+_ID_PREFIX = {"foyle": "RES-FOY", "joinery": "RES-JOI", "advisory": "RES-ADV"}
+
+# Profiles are generated in the order they were ADDED, not alphabetically, so
+# that a new profile cannot shift the seeded random sequence for the existing
+# ones — their corpus files (and therefore the retrieval eval) stay
+# byte-identical.
+_GENERATION_ORDER = ["foyle", "joinery", "advisory"]
 
 
 def build_profile(profile: str) -> list[dict]:
@@ -377,7 +535,9 @@ def build_profile(profile: str) -> list[dict]:
 
 def main() -> None:
     random.seed(SEED)
-    for profile in sorted(config.MESSY_PROFILES):
+    order = [p for p in _GENERATION_ORDER if p in config.MESSY_PROFILES]
+    order += [p for p in sorted(config.MESSY_PROFILES) if p not in order]
+    for profile in order:
         entries = build_profile(profile)
         out = config.resolutions_path(profile)
         out.parent.mkdir(parents=True, exist_ok=True)

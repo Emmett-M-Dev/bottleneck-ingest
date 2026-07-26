@@ -168,6 +168,28 @@ MESSY_PROFILES = {
         # duplicated collection or re-match is staff hours.
         "costs": {"currency": "£", "delay_day_cost": 35,
                   "repetition_event_cost": 90, "rework_loop_cost": 250},
+        # Action-layer settings: the labels, monetary assumptions and working
+        # rhythm the generic action/intervention layer reads. Nothing here is
+        # code — a new SME supplies its own block and the core is untouched.
+        "actions": {
+            "workflow": "Placement pipeline", "case_noun": "booking",
+            "default_owner": "Placement coordinator",
+            "impact": {"avg_case_value": 1_850, "hourly_rate": 26,
+                       "hours_per_repetition": 2.0, "hours_per_rework": 5.0,
+                       "owner_load_limit": 6},
+        },
+        "case_rules": {
+            "stage_sla_days": {"Request Received": 5, "Placement Offer": 7,
+                               "Booking Confirmed": 7, "Invoice Issued": 30,
+                               "Document Collection": 10},
+            "default_stalled_days": 21,
+            "terminal_stages": ["Arrival"],
+            "revenue_stages": ["Invoice Issued"],
+            "owner_load_limit": 6,
+            "key_person_min_share": 0.6,
+            "key_person_min_events": 6,
+            "min_affected": 1,
+        },
     },
     # The contrasting SME: a joinery firm's job pipeline. Different workflow
     # vocabulary, same canonical schema, zero new reader code — the
@@ -192,6 +214,79 @@ MESSY_PROFILES = {
         # A wasted trip is half a fitter-day; a stalled job is idle capacity.
         "costs": {"currency": "£", "delay_day_cost": 60,
                   "repetition_event_cost": 180, "rework_loop_cost": 320},
+        "actions": {
+            "workflow": "Job pipeline", "case_noun": "job",
+            "default_owner": "Workshop manager",
+            "impact": {"avg_case_value": 5200, "hourly_rate": 32,
+                       "hours_per_repetition": 3.0, "hours_per_rework": 8.0,
+                       "owner_load_limit": 4},
+        },
+        "case_rules": {
+            "stage_sla_days": {"Quote Sent": 7, "Quote Accepted": 5,
+                               "Materials Ordered": 14, "Snagging": 7,
+                               "Invoice Sent": 30},
+            "default_stalled_days": 21,
+            "terminal_stages": ["Payment Received"],
+            "revenue_stages": ["Payment Received"],
+            "owner_load_limit": 4,
+            "key_person_min_share": 0.6,
+            "key_person_min_events": 6,
+            "min_affected": 1,
+        },
+    },
+    # SME #3: a 12-20 person professional-services firm running a lead-to-cash
+    # workflow on spreadsheets. The most commercially recognisable of the three
+    # — money, capacity and client-delivery risk are all explicit in the data —
+    # and it required no new reader, detector or action code: this config block,
+    # a synthetic drive and an approved mapping.
+    "advisory": {
+        "dir": DATA_SYNTHETIC / "messy_advisory",
+        # markers are EVAL-ONLY — the baseline detector, as for the others.
+        "markers": {
+            "delay_stage": "Proposal",          # proposals stuck in internal approval
+            "repetition_stage": "Client Review",  # review loops
+            "rework_stage": "Delivery",         # work reopened after review
+            "delay_threshold_days": 7,
+        },
+        "stage_order": [
+            "Lead", "Qualification", "Proposal", "Won", "Onboarding",
+            "Delivery", "Client Review", "Invoice", "Paid",
+        ],
+        "gt_mapping": DATA_SYNTHETIC / "ground_truth_mapping_advisory.json",
+        "gt_bottlenecks": DATA_SYNTHETIC / "ground_truth_messy_advisory.json",
+        "ui": {"brand": "Northstar Advisory", "context": "Lead-to-cash",
+               "domain": "professional services consultancy", "initials": "NA"},
+        # A consultant day is the unit of everything here: a stalled engagement
+        # is an unbilled day, a repeated review is a day redone, reopened
+        # delivery is several.
+        "costs": {"currency": "£", "delay_day_cost": 120,
+                  "repetition_event_cost": 420, "rework_loop_cost": 1400},
+        "actions": {
+            "workflow": "Lead-to-cash", "case_noun": "engagement",
+            "default_owner": "Managing partner",
+            "owner_by_category": {"case_action": "Engagement lead",
+                                  "data_quality": "Practice manager",
+                                  "process_intervention": "Managing partner"},
+            "due_days": {"case_action": 2, "data_quality": 7,
+                         "process_intervention": 21},
+            "impact": {"avg_case_value": 18_000, "hourly_rate": 95,
+                       "hours_per_repetition": 4.0, "hours_per_rework": 12.0,
+                       "minutes_per_messy_cell": 0.75, "owner_load_limit": 4},
+        },
+        # The operational rhythm of a consultancy: leads go cold in days,
+        # proposals in a week, invoices in a month.
+        "case_rules": {
+            "stage_sla_days": {"Lead": 3, "Qualification": 5, "Proposal": 7,
+                               "Won": 5, "Onboarding": 7, "Delivery": 21,
+                               "Client Review": 10, "Invoice": 30},
+            "default_stalled_days": 21,
+            "terminal_stages": ["Paid"],
+            "revenue_stages": ["Paid"],
+            "owner_load_limit": 4,
+            "key_person_min_share": 0.6,
+            "key_person_min_events": 6,
+            "min_affected": 1,
+        },
     },
 }
 

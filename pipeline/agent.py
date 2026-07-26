@@ -17,10 +17,13 @@ so detection and the Claude diagnosis are never repeated.
                 gate ──approved──> execute -> END
                 gate ──otherwise──────────-> END   (awaiting_gate | rejected)
 
-Execute shells out to `remediate.run --apply` as a SEPARATE process — the
-repo-wide rule: remediation never shares a process with chromadb/torch, which
-this graph's retrieve/diagnose nodes load. For the same reason every heavy
-import here is lazy, inside its node: `import pipeline.agent` stays light.
+Execute routes each approval by its action category (actions/templates.py):
+only a machine-safe DATA-QUALITY fix reaches the remediation executor, and it
+does so as a SEPARATE process — the repo-wide rule: remediation never shares a
+process with chromadb/torch, which this graph's retrieve/diagnose nodes load.
+Approved case actions and process interventions are tracked, never executed.
+For the same reason every heavy import here is lazy, inside its node:
+`import pipeline.agent` stays light.
 """
 
 from __future__ import annotations
@@ -36,8 +39,6 @@ os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
 
 import argparse
 import json
-import subprocess
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable, TypedDict
@@ -65,10 +66,14 @@ class AgentState(TypedDict, total=False):
 def detect_node(state: AgentState) -> dict:
     from dataclasses import asdict
 
-    from detection.detect import detect_generic, load_event_log
+    from detection.detect import load_event_log
+    from detection.dynamic import detect_dynamic
 
-    markers = config.MESSY_PROFILES[state["profile"]]["markers"]
-    detected = detect_generic(load_event_log(), **markers)
+    # The dynamic detector, same as the export path. `markers` in config are
+    # eval-only (the baseline detect_generic is scored against) and must not
+    # drive a live run.
+    stage_order = config.MESSY_PROFILES[state["profile"]]["stage_order"]
+    detected = detect_dynamic(load_event_log(), stage_order)
     return {
         "event_log_path": str(config.EVENT_LOG_PATH),
         "bottlenecks": [{**asdict(bn), "affected_count": bn.affected_count}
@@ -118,20 +123,53 @@ def gate_node(state: AgentState) -> dict:
 
 
 def execute_node(state: AgentState) -> dict:
-    """Run the remediation executor in its own process (the repo rule: it must
-    never share a process with the chroma/torch this graph has loaded)."""
-    cmd = [sys.executable, "-m", "remediate.run",
-           "--profile", state["profile"], "--apply"]
-    proc = subprocess.run(cmd, capture_output=True, text=True,
-                          cwd=str(config.ROOT),
-                          env={**os.environ, "PYTHONIOENCODING": "utf-8"})
-    def _tail(text: str) -> str:
-        return "\n".join((text or "").strip().splitlines()[-5:])
-    return {"status": "executed",
-            "executed": {"command": " ".join(cmd[1:]),
-                         "returncode": proc.returncode,
-                         "stdout_tail": _tail(proc.stdout),
-                         "stderr_tail": _tail(proc.stderr)}}
+    """Carry out what the approvals actually authorise — routed by category.
+
+    This node used to run `remediate.run --apply` for ANY approval, so
+    approving a "chase the overdue cases" fix silently rewrote status columns
+    in the drive. Routing now goes through actions.execute:
+
+        approved data-quality fix on the machine-safe list -> the remediation
+            executor runs, in its own process, writing cleaned copies
+        every other approval -> a tracked intervention; nothing is executed
+
+    The remediation subprocess stays a subprocess for the repo's usual reason:
+    it must never share an interpreter with the chroma/torch this graph loads.
+    """
+    from actions import execute as ax
+    from actions.models import MACHINE_EXECUTABLE_TEMPLATES as MACHINE_SAFE
+    from actions.templates import template_for
+
+    profile = state["profile"]
+    decisions = state.get("gate_decisions") or {}
+    approved_ids = [cid for cid, action in decisions.items()
+                    if action in ("approve", "modify")]
+    by_id = {bn["id"]: bn for bn in state.get("bottlenecks", [])}
+
+    routed: list[dict] = []
+    run_remediation = False
+    for case_id in sorted(approved_ids):
+        bn = by_id.get(case_id, {})
+        finding_type = bn.get("type", "")
+        tpl = template_for(profile, finding_type)
+        category = tpl["category"]
+        machine = (category == "data_quality"
+                   and tpl.get("template_id") in MACHINE_SAFE)
+        run_remediation = run_remediation or machine
+        routed.append({"case_id": case_id, "finding_type": finding_type,
+                       "category": category,
+                       "route": "machine" if machine else "tracked"})
+
+    result: dict = {"routed": routed,
+                    "remediation_invoked": run_remediation,
+                    "tracked": sum(1 for r in routed if r["route"] == "tracked")}
+    if run_remediation:
+        result["remediation"] = ax.run_remediation(profile, apply=True)
+    else:
+        result["reason"] = ("No approved item was a machine-safe data-quality "
+                            "fix, so no files were touched. The approved work "
+                            "is tracked for a person to do.")
+    return {"status": "executed", "executed": result}
 
 
 # ── Graph ────────────────────────────────────────────────────────────────────

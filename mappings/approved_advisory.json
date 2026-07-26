@@ -1,0 +1,109 @@
+{
+  "profile": "advisory",
+  "approved_at": "2026-07-23T09:00:00.000Z",
+  "source_proposal_generated_at": "2026-07-23T08:55:00.000Z",
+  "files": [
+    {
+      "filename": "leads.xlsx",
+      "sheet": "Sheet1",
+      "role": "events",
+      "include": true,
+      "columns": {
+        "Lead Ref": "case_id",
+        "Stage": "activity",
+        "Date": "timestamp",
+        "Owner": "actor",
+        "Status": "status",
+        "Est. Value": "value"
+      }
+    },
+    {
+      "filename": "projects.xlsx",
+      "sheet": "Sheet1",
+      "role": "events",
+      "include": true,
+      "columns": {
+        "Project Code": "case_id",
+        "Milestone": "activity",
+        "Updated": "timestamp",
+        "Consultant": "actor",
+        "Notes": "status",
+        "Fee (\u00a3)": "value"
+      }
+    },
+    {
+      "filename": "projects - final NEW.xlsx",
+      "sheet": "Sheet1",
+      "role": "events",
+      "include": true,
+      "columns": {
+        "Project Code": "case_id",
+        "Milestone": "activity",
+        "Updated": "timestamp",
+        "Consultant": "actor",
+        "Notes": "status",
+        "Fee (\u00a3)": "value"
+      }
+    },
+    {
+      "filename": "clients.xlsx",
+      "sheet": "Sheet1",
+      "role": "reference",
+      "include": true,
+      "columns": {
+        "Client": null,
+        "Sector": null,
+        "Account Manager": null,
+        "Retainer": null
+      }
+    },
+    {
+      "filename": "timesheets.xlsx",
+      "sheet": "Sheet1",
+      "role": "reference",
+      "include": true,
+      "columns": {
+        "Consultant": null,
+        "Project Code": null,
+        "Week Ending": null,
+        "Hours": null,
+        "Billable": null
+      }
+    },
+    {
+      "filename": "team_capacity.xlsx",
+      "sheet": "Sheet1",
+      "role": "reference",
+      "include": true,
+      "columns": {
+        "Consultant": null,
+        "Role": null,
+        "Weekly Hours": null,
+        "Specialism": null
+      }
+    },
+    {
+      "filename": "invoices.xlsx",
+      "sheet": "Sheet1",
+      "role": "reference",
+      "include": true,
+      "columns": {
+        "Invoice No": null,
+        "Project Code": null,
+        "Client": null,
+        "Net": null,
+        "Issued": null,
+        "Due": null,
+        "Paid On": null
+      }
+    }
+  ],
+  "dedup": {
+    "keys": [
+      "case_id",
+      "activity",
+      "timestamp"
+    ],
+    "keep": "first"
+  }
+}

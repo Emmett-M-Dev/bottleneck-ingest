@@ -17,15 +17,20 @@ Context file for AI coding assistants working on this project. Read this first, 
 
 **One line:** A lightweight, locally-run agentic pipeline that ingests messy SME data, detects operational bottlenecks, diagnoses them with RAG-grounded suggestions, and executes approved fixes — with a human approving every consequential action.
 
-**Deadlines (hard):**
-| Milestone | Date |
-|---|---|
-| Feature freeze | 1 Aug 2026 |
-| Report submission | 24 Aug 2026 |
-| Slides submission | 28 Aug 2026 |
-| Viva | 31 Aug 2026 |
+**Product promise (the worker-facing framing):** an operational action queue for
+spreadsheet-run SMEs that identifies what needs attention today, explains the
+evidence behind it, helps staff take the action, and measures whether the action
+worked. The worker loop is:
 
-After feature freeze, no new features — only bug-fixing, evaluation, and writing.
+```
+evidence → constraint → affected cases → recommended action → owner
+        → due date → completion → measured outcome
+```
+
+Charts and aggregate bottleneck summaries are **supporting evidence** for that
+queue, not the product.
+
+
 
 ---
 
@@ -47,6 +52,12 @@ spreadsheets per profile: `data/synthetic/messy_<profile>/*.xlsx`, ingested via
 `ingest.py --source messy --profile <p>`. Older sources (`foyle`, `foyle-tracker`,
 `sheets`, `all`) still exist but are legacy.
 
+`ingest.py --drive <path>` re-analyses a **later snapshot of the same drive**
+through the same approved mapping (no second trip through Gate 1). That is what
+makes outcome measurement possible end-to-end:
+`data/synthetic/messy_advisory_followup/` is the advisory drive a fortnight on,
+after the action queue was worked.
+
 ---
 
 ## 3. Academic Framing (why the design choices exist)
@@ -54,11 +65,22 @@ spreadsheets per profile: `data/synthetic/messy_<profile>/*.xlsx`, ingested via
 The contribution is **democratising intelligent process automation for SMEs**, in deliberate contrast to AI consolidating around large enterprises. OECD data: ~40% of large firms use AI vs ~12% of small firms — the gap is driven by resource constraints (ROI uncertainty, no AI-ready data, skills gaps), not technical sophistication. So the system must be **lightweight and runnable without a specialist team**.
 
 **The generalisability claim now rests on demonstrated evidence, not assertion.**
-Two contrasting SMEs — **foyle** (educational placement) and **joinery** (trades /
-fit-out) — run through the **identical** pipeline core. Onboarding the second SME
-added a config block + an approved mapping and **zero new reader or detector code**.
-That is the thesis payoff (see §4, §7). Any code that hard-codes SME-specific logic
-into the pipeline core undermines it.
+Three contrasting SMEs run through the **identical** pipeline core:
+
+| Profile id | Fictional SME | Workflow |
+|---|---|---|
+| `foyle` | Foyle International | educational-tourism placement |
+| `joinery` | McCrossan Joinery | trades / fit-out job pipeline |
+| `advisory` | **Northstar Advisory** | professional services, lead-to-cash |
+
+Onboarding SME #2 and SME #3 each added a **config block + synthetic drive +
+approved mapping** and **zero new reader, detector or action code**. That is the
+thesis payoff (see §4, §7). Any code that hard-codes SME-specific logic into the
+pipeline core undermines it.
+
+`advisory` is the commercially recognisable demo (money, capacity and delivery
+risk are explicit in the data); `foyle` and `joinery` remain the contrasting
+evidence that the same core works on very different workflows.
 
 ---
 
@@ -89,8 +111,29 @@ Think of it like an **electrical plug adapter**: the appliance (the pipeline cor
    └──────────┬───────────┘
               │  [HITL GATE 2 — Fixes: human approves / rejects / modifies each fix]
    ┌──────────▼───────────┐
-   │  REMEDIATION EXECUTOR │  ← Carries out the approved data-remediation. Logged + timestamped.
-   └──────────────────────┘
+   │  ACTION LAYER         │  ← GENERIC (actions/). Findings + case rules become
+   │  (actions/)           │     ActionItems: evidence, affected cases, impact,
+   │                       │     owner, due date, lifecycle. Ranked deterministically.
+   └──────────┬───────────┘
+              │  [HITL GATE 2 — approve / reject / dismiss, with owner + due date]
+   ┌──────────▼───────────┐
+   │  ROUTING BY CATEGORY  │  ← The ONLY door to automated execution.
+   │  (actions/execute.py) │
+   └────┬─────────────┬────┘
+        │             │
+   data_quality    case_action / process_intervention
+   + machine-safe        │
+        │                ▼
+        ▼          TRACKED INTERVENTION (nothing is executed)
+   REMEDIATION EXECUTOR        │
+   (cleaned copies)            ▼
+        │            completed → measured against a LATER analysis
+        └──────────────┬───────┘
+                       ▼
+              validated | ineffective   ← only `validated` + effective
+                       │                  becomes trusted RAG knowledge
+                       ▼
+              LEARNING LOOP (pipeline/learn.py)
 ```
 
 **Two HITL gates, not one** — numbered in chronological order:
@@ -115,6 +158,48 @@ plus a before→after diff. Note the distinction: the *bottleneck fixes* themsel
 - **Canonical data store** — the operational data, normalised (`event_log.parquet` — the "what is happening" data).
 - **RAG knowledge / resolution store** — the searchable index of past resolutions (the "how similar problems were fixed" knowledge). This is the ChromaDB vector store the diagnosis layer retrieves against.
 
+### 4a. The three kinds of recommendation — never conflate them
+
+This distinction is load-bearing: it is what stops an approved "chase the
+overdue invoices" from rewriting spreadsheet status columns.
+
+| Kind | Examples | What approving does |
+|---|---|---|
+| **`data_quality`** | normalise inconsistent statuses, flag duplicate/stale copies, repair a mapping | *Some* are machine-executable: only templates on `actions.models.MACHINE_EXECUTABLE_TEMPLATES` (currently `normalise_status_values`) reach the remediation executor, writing **cleaned copies**. The rest are tracked human work. |
+| **`case_action`** | follow up an overdue lead, chase a client approval, assign an unowned job, raise an invoice | **Never** machine-executed. Becomes a tracked ActionItem + Intervention with an owner and a due date. |
+| **`process_intervention`** | change an approval rule, rebalance capacity, cross-train, add a WIP limit, weekly invoicing checkpoint | Becomes a **measurable experiment**: baseline metric, expected improvement (a projection), owner, review date, success metric. |
+
+Routing lives in `actions/execute.py::route`; the category comes from
+`actions/templates.py`. `ActionItem.is_machine_executable` is the single
+predicate and nothing else may authorise a file write.
+
+### 4b. Approval is not proof — the intervention lifecycle
+
+```
+proposed → approved → assigned → in_progress → completed
+         → outcome_review → validated | ineffective
+         (rejected / dismissed are terminal off-ramps, kept in the audit trail)
+```
+
+Only `Intervention.is_trusted_knowledge` — status `validated`, an outcome
+measured against a **later** analysis showing real improvement, AND a human
+confirming that reading — promotes a fix into the retrievable resolution store.
+
+Two learned stores, and the gap between them is the point:
+- `data/learned/pending_resolutions_<p>.json` — every approval, forever. The
+  audit trail. **Never embedded, never retrievable as advice.**
+- `data/learned/learned_resolutions_<p>.json` — validated-effective only.
+  Embedded into `sme_resolutions`.
+
+`python -m pipeline.learn --profile <p> --migrate-legacy` demotes entries
+written under the old approval-is-proof rule (already run for foyle: 3 demoted).
+
+**Projections vs observations are different fields everywhere they meet** —
+`BusinessImpact.is_projection`, `Intervention.expected_improvement_pct` vs
+`InterventionOutcome.observed_value`. The UI labels them differently and the
+effectiveness verdict never reads a projection. `effective` is tri-state:
+`None` means "not enough evidence yet", which is the honest answer most often.
+
 ---
 
 ## 5. What's IN scope vs OUT (the "audit" trap)
@@ -133,6 +218,7 @@ The word "audit" previously conflated three things. They are now separated:
 
 | Layer | Tool | Notes |
 |---|---|---|
+| Action layer | **pure Python + pydantic** (`actions/`) | Models, lifecycle, ranking, JSON store, category routing. Deliberately free of chroma/pyarrow/torch so it can run inside the light processes. |
 | Pipeline orchestration | **LangGraph** (`pipeline/agent.py`) + sequential CLI modules | `detect → retrieve → diagnose → gate → execute` StateGraph; the CLI modules (`ingest.py` etc.) remain the per-step entry points. |
 | Mapping-inference agent | **Claude API — `claude-opus-4-8`** | `audit/infer.py` only. `messages.parse` with a Pydantic schema. **No `temperature`** (400s on Opus 4.8). Zero raw PII in the payload (scrubbed first). |
 | RAG diagnosis agent | **Claude API — `claude-opus-4-8`** | `pipeline/diagnose.py`. Same call pattern; scrubbed payload; template fallback. |
@@ -174,7 +260,9 @@ precision tasks — both privacy controls implemented and tested.
 
 ## 7. Data Strategy — synthetic-first, ground-truth-by-design
 
-- Datasets are **synthetic**, one messy drive per SME profile (`messy_foyle`, `messy_joinery`).
+- Datasets are **synthetic**, one messy drive per SME profile (`messy_foyle`,
+  `messy_joinery`, `messy_advisory`, plus `messy_advisory_followup` — the same
+  advisory drive a fortnight later, which is what outcomes are measured against).
 - **3 bottleneck pattern types** (delay / repetition / rework), **injected by design** as
   STRUCTURAL patterns (outlier gaps, literal duplicate stage entries, genuine backward
   transitions), so ground truth is known before detection runs. Detection is **dynamic**
@@ -189,17 +277,39 @@ precision tasks — both privacy controls implemented and tested.
   |---|---|---|
   | foyle | 0.524 | 1.000 |
   | joinery | 0.523 | 1.000 |
+  | advisory | 0.471 | 1.000 |
 
   The presence-based marker baseline collapses on structural repetition/rework — the
   argument for statistical detection, mirroring the mapping eval's baseline→LLM gap.
+- **Case-level rules (`detection/case_rules.py`)** sit alongside the structural
+  detector and answer the worker's question rather than the analyst's: which
+  individual cases need attention. Six generic rules — `stage_sla_breach`,
+  `stalled_case`, `unowned_case`, `unrealised_value`, `overloaded_owner`,
+  `key_person_dependency` — all driven by `MESSY_PROFILES[<p>]["case_rules"]`,
+  no SME vocabulary in the rule code. `as_of` defaults to the newest event in
+  the log, so runs stay reproducible on synthetic data.
+  Circularity guard again: the advisory generator records only *where it parked
+  each engagement*; the rules decide independently whether that breaches an SLA
+  (and they flag strictly fewer engagements than were parked — a test asserts it).
 - **Mapping-agent metrics (the headline eval):** role/column accuracy + column **F1** across three conditions — heuristic baseline → LLM → human-approved. Current results (`outputs/eval_mapping_<profile>.json`):
 
   | Profile | baseline F1 | LLM F1 | human F1 |
   |---|---|---|---|
   | foyle | 0.846 | 0.968 | 1.000 |
   | joinery | 0.308 | 0.909 | 1.000 |
+  | advisory | 0.500 | *(not yet run online)* | 1.000 |
 
   Baseline collapses on joinery's renamed-header fork — that gap is the argument for the LLM audit; the human gate closes the residual.
+
+  ⚠️ **Two live caveats on this table.**
+  1. `advisory`'s proposal was generated `--offline`, so its baseline and "LLM"
+     conditions are the same heuristic. Run `python -m audit.run --profile
+     advisory` (online, costs one API call) to fill the middle column.
+  2. `foyle`'s **approved** mapping was re-approved in the browser and now
+     scores 0.800, not 1.000 — the documented mapping-drift hazard (§10).
+     `git checkout mappings/approved_foyle.json` restores the 1.000 figure.
+     Also, `outputs/ui_mapping_proposal_foyle.json` is currently an *offline*
+     proposal; the committed LLM one lives in `eval/results/`.
 - **Longitudinal replay (the "dynamic system" eval):** `synthetic/generate_stream.py`
   writes 9 cumulative weekly snapshots per profile (`stream_<p>/tick_NN/`) + a
   per-tick ground truth; `eval/replay.py` replays them through the unchanged
@@ -208,9 +318,23 @@ precision tasks — both privacy controls implemented and tested.
   curves out (`eval/plot_replay.py` → `outputs/replay_*_<p>.png`): detection F1
   tracking a moving truth (incl. an honest gap-threshold wobble at joinery tick 6
   — precision dips, the gate rejects the FPs, F1 recovers), and learned-fix
-  retrieval climbing 0 → 1 as approved fixes enter `sme_resolutions`. Eval-side
+  retrieval climbing as *validated* fixes enter `sme_resolutions`. Eval-side
   only: replay-learned entries are RES-RPL-prefixed in `outputs/`, dashboard
   state untouched; default `--fresh` reset keeps runs reproducible.
+
+  **The replay is now outcome-gated too.** The oracle approves, "does" the work,
+  and at a later tick the intervention is measured against that tick's analysis;
+  only a measured improvement is validated and embedded. Each tick record
+  carries both curves — `lifecycle.validated` (what the outcome-gated loop
+  trusts) and `lifecycle.approved_unmeasured` (what the old approval-gated loop
+  would have trusted by the same tick) — so the behaviour change is a *result*
+  rather than a silent regression. **Re-run `eval.replay` for both profiles and
+  re-cite; the learning curve is expected to shift right and may be lower.**
+
+  Second honesty note for the write-up: the stream is a *recording*, not a
+  counterfactual. An intervention approved at tick t cannot change what tick
+  t+1 contains, so a validated outcome there evidences the *measurement
+  machinery*, not causation.
 - RAG metrics: retrieval relevance (MRR or NDCG).
 - Qualitative: structured expert walkthrough (2–3 people) on trust, usability, recommendation quality.
 
@@ -254,22 +378,38 @@ ingest path.
 
 ---
 
-## 11. Current Status (2026-07-19)
+## 11. Current Status (2026-07-23)
 
 - **Re-architecture milestones M0–M6 all shipped**, plus the product-grade upgrade:
   RAG diagnosis agent, LangGraph loop, **dynamic detection** (statistical, 0..N
-  findings, no markers), local-LLM anomaly pass (Ollama), **learning loop** (approved
-  Gate-2 fixes → `sme_resolutions`), cost model, impact history + sparklines,
-  zero-PII payload viewer.
-- **Generalisability demonstrated:** foyle + joinery through one pipeline, zero new reader/detector code for SME #2 — and the dynamic detector removed the last per-SME detection config (markers are eval-only now).
-- **Eval numbers produced:** mapping F1 table (§7), detection baseline-vs-dynamic table (§7), `eval/score_detection.py` + `eval/score_mapping.py` regenerate them.
-- **Longitudinal replay shipped (2026-07-19):** the system is now evaluated *over time*, not on one snapshot — 9 weekly stream ticks per profile, per-tick detection F1 vs a moving truth, oracle-approver Gate 2 driving the learning loop, learned-hit rate 0 → 1 curves + gate/detection figures in `outputs/` (§7). 116 tests green.
-- **§6a resolved** — LangGraph and Ollama are both in the artifact; write-up can assert them.
-- **React dashboard (hitl-react) live** — Mapping Review (Gate 1), pipeline stepper, workflow DAG, Bottlenecks (incl. anomaly cards + RAG grounding), Fixes (Gate 2) + remediation diff, HITL metrics strip, ImpactPanel, SME switch moment, "what the AI saw" modal.
-- Both repos committed on `master`; tests green (`pytest -q`, 107 tests).
-- Dissertation Word draft exists (`Murray_B00810618_Dissertation_Draft.docx`) — Sections 1–4 written, later phases scaffolded. **Sections describing detection/eval need updating for the dynamic detector.**
+  findings, no markers), local-LLM anomaly pass (Ollama), learning loop, cost
+  model, impact history + sparklines, zero-PII payload viewer.
+- **Action layer shipped (2026-07-23)** — `actions/`: ActionItem / Intervention /
+  InterventionOutcome / BusinessImpact / EvidenceReference / AnalysisSnapshot,
+  a shared lifecycle, deterministic explainable ranking, JSON persistence, and
+  `detection/case_rules.py` for case-level findings. The dashboard's primary
+  view is now **Today** (an action queue), with the workflow map and bottleneck
+  cards demoted to supporting evidence.
+- **Two behavioural corrections landed** (§4a, §4b): execution is routed by
+  action category so an approved operational fix can no longer trigger status
+  normalisation, and the learning loop is outcome-gated so approval alone no
+  longer creates trusted RAG guidance.
+- **Generalisability demonstrated on three SMEs:** foyle + joinery + **advisory**
+  (Northstar Advisory) through one pipeline, zero new reader/detector/action code
+  for SME #3.
+- **Eval numbers produced:** mapping F1 table (§7, with two live caveats),
+  detection baseline-vs-dynamic across all three profiles (§7).
+- **§6a resolved** — LangGraph and Ollama are both in the artifact.
+- **React dashboard (hitl-react) live** — **Today** (action queue, expandable
+  evidence, owner/due-date, progress + outcome-review controls, "what was sent
+  to the AI"), Mapping Review (Gate 1), pipeline stepper, workflow DAG,
+  Bottlenecks, Fixes + remediation diff, SME switch, payload modal.
+- Tests green: **193 passed** (`pytest -q`).
+- Dissertation Word draft exists (`Murray_B00810618_Dissertation_Draft.docx`) — Sections 1–4 written, later phases scaffolded. **Sections describing detection/eval need updating for the dynamic detector AND for the action layer.**
 
-**On the horizon:** Phase 2–5 build reports; re-run + re-cite `eval.score_mapping`
-after the drive reseed; supervisor sign-off on the consented Foyle export; final
-dissertation refinement pass. [YOU] install Ollama + `ollama pull qwen2.5:7b` for the
-anomaly-pass demo.
+**On the horizon:** re-run `eval.replay` for foyle + joinery under the
+outcome-gated learning loop and re-cite the curves; run `audit.run --profile
+advisory` online to fill the LLM column of the mapping table; decide whether to
+restore `mappings/approved_foyle.json` from git (see §7 caveat 2); Phase 2–5
+build reports; supervisor sign-off on the consented Foyle export.
+[YOU] install Ollama + `ollama pull qwen2.5:7b` for the anomaly-pass demo.

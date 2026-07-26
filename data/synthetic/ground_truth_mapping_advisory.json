@@ -1,0 +1,89 @@
+{
+  "profile": "advisory",
+  "seed": 29,
+  "files": [
+    {
+      "filename": "leads.xlsx",
+      "sheet": "Sheet1",
+      "role": "events",
+      "include": true,
+      "columns": {
+        "Lead Ref": "case_id",
+        "Stage": "activity",
+        "Date": "timestamp",
+        "Owner": "actor",
+        "Status": "status",
+        "Est. Value": "value"
+      }
+    },
+    {
+      "filename": "projects.xlsx",
+      "sheet": "Sheet1",
+      "role": "events",
+      "include": true,
+      "columns": {
+        "Project Code": "case_id",
+        "Milestone": "activity",
+        "Updated": "timestamp",
+        "Consultant": "actor",
+        "Notes": "status",
+        "Fee (\u00a3)": "value"
+      }
+    },
+    {
+      "filename": "projects - final NEW.xlsx",
+      "sheet": "Sheet1",
+      "role": "events",
+      "include": true,
+      "columns": {
+        "Project Code": "case_id",
+        "Milestone": "activity",
+        "Updated": "timestamp",
+        "Consultant": "actor",
+        "Notes": "status",
+        "Fee (\u00a3)": "value"
+      }
+    },
+    {
+      "filename": "clients.xlsx",
+      "sheet": "Sheet1",
+      "role": "reference",
+      "include": true,
+      "columns": {}
+    },
+    {
+      "filename": "timesheets.xlsx",
+      "sheet": "Sheet1",
+      "role": "reference",
+      "include": true,
+      "columns": {}
+    },
+    {
+      "filename": "team_capacity.xlsx",
+      "sheet": "Sheet1",
+      "role": "reference",
+      "include": true,
+      "columns": {}
+    },
+    {
+      "filename": "invoices.xlsx",
+      "sheet": "Sheet1",
+      "role": "reference",
+      "include": true,
+      "columns": {}
+    }
+  ],
+  "expected_issues": {
+    "duplicates": [
+      "'projects - final NEW.xlsx' repeats rows of projects.xlsx under the same project codes"
+    ],
+    "overlaps": [
+      "projects.xlsx and 'projects - final NEW.xlsx' both cover the same delivery milestones",
+      "leads.xlsx and projects.xlsx share engagement references across the sales/delivery handover"
+    ],
+    "gaps": [
+      "invoices.xlsx has three date columns and no single activity column \u2014 it cannot drive an event log"
+    ],
+    "irrelevant": []
+  }
+}

@@ -1,6 +1,33 @@
 # Handover — SME Bottleneck Detection with Human-in-the-Loop
 
-_Last updated: 2026-07-09 · feature-freeze target ~2026-08-01 · dissertation due 2026-08-24_
+_Last updated: 2026-07-23. Feature development is deliberately continuing; the
+earlier feature-freeze note no longer applies._
+
+> **Start here for a demo:** `DEMO.md` has the full copy-pasteable walkthrough
+> across all three SMEs, including the outcome-measurement loop.
+
+## 0. What changed most recently (2026-07-23)
+
+The system grew an **action layer**. The product is no longer "upload
+spreadsheets → read an AI interpretation → approve a recommendation"; it is an
+operational action queue: what needs attention today, which cases, why, what it
+costs, what to do, who owns it, by when — and, after a later analysis, whether
+it worked.
+
+Three things to know before touching anything:
+
+1. **`actions/`** is the new generic layer (models, lifecycle, ranking, store,
+   category routing). It is SME-agnostic and imports nothing heavy.
+2. **Execution is routed by action category.** Only a machine-safe
+   *data-quality* fix reaches the remediation executor. Approving a case action
+   or a process change creates tracked work and touches no files. This
+   corrected a real bug where any approval ran status normalisation.
+3. **Approval no longer creates trusted knowledge.** An approved fix becomes an
+   Intervention with a baseline; it must be completed, measured against a
+   *later* analysis, and confirmed by a human before it enters the RAG store.
+
+A third SME profile, **`advisory` (Northstar Advisory)** — a professional-services
+lead-to-cash workflow — is the new commercial demo.
 
 ## 1. What this is
 
@@ -61,7 +88,23 @@ generalisability argument.
 ## 4. Key files
 
 **bottleneck-ingest**
-- `config.py` — `MESSY_PROFILES` (markers, stage_order, ground-truth paths, `ui` branding block per SME).
+- `actions/` — the generic action layer. `models.py` (ActionItem, Intervention,
+  InterventionOutcome, BusinessImpact, EvidenceReference, AnalysisSnapshot),
+  `lifecycle.py` (the state machine + `is_trusted` gate), `build.py`
+  (findings → evidence-backed items), `impact.py` (money/time/capacity, with the
+  arithmetic in words), `templates.py` (per-finding-type recommendation + its
+  CATEGORY — the routing decision), `rank.py` (deterministic, explainable),
+  `execute.py` (approval, routing, the narrow machine-execution path),
+  `outcome.py` (baseline vs observed, human validation), `store.py` (JSON
+  persistence + merge that preserves a worker's edits), `cli.py` (the API's
+  entry point; one JSON object per command).
+- `detection/case_rules.py` — six generic case-level rules (SLA breach, stalled,
+  unowned, unrealised value, overloaded owner, key-person dependency), all
+  driven by `MESSY_PROFILES[<p>]["case_rules"]`.
+- `bridge/export_actions.py` — builds + ranks the queue, writes the dashboard
+  read model, appends the analysis snapshot, optionally runs the outcome review.
+- `config.py` — `MESSY_PROFILES` (markers, stage_order, ground-truth paths, `ui`
+  branding, `costs`, and the new `actions` + `case_rules` blocks per SME).
 - `audit/` — `scan.py` (headers + ≤5 scrubbed sample rows), `infer.py` (only module touching the Anthropic SDK; `messages.parse`, no temperature — 400s on Opus 4.8), `propose.py` (heuristic baseline + LLM), `run.py` (CLI).
 - `readers/mapped_reader.py` — generic connector: approved mapping + drive → canonical rows; dedup on (case_id, activity, timestamp) keep-first (neutralises overlapping seasonal fork).
 - `detection/dynamic.py` — `detect_dynamic(df, stage_order)`: statistical scan of every stage (outlier gaps / duplicate entries / backward loops), **0..N findings, no marker config**. `detection/detect.py`'s `detect_generic` is now the eval-only baseline.
@@ -74,7 +117,12 @@ generalisability argument.
 - `synthetic/generate_messy_foyle.py`, `generate_messy_joinery.py` — seeded synthetic drives + ground truth.
 
 **hitl-react**
-- `api/main.py` — endpoints: `/api/cases`, `/api/workflow`, `/api/mapping-proposals`, `/api/mapping-approvals`, `/api/remediation/{p}` (+`/apply`), `/api/profiles` (+`/{p}/activate`). Per-profile export cache + `active_profile.txt` pointer → instant SME switch. Remediation plan auto-regenerates when event log / mapping newer than plan.
+- `api/main.py` — endpoints: `/api/cases`, `/api/workflow`, `/api/mapping-proposals`, `/api/mapping-approvals`, `/api/remediation/{p}` (+`/apply`), `/api/profiles` (+`/{p}/activate`), and the action loop: `GET /api/actions/{p}`, `POST /api/actions/{p}/{id}/decision`, `POST /api/actions/{p}/{id}/progress`, `POST /api/actions/{p}/review`, `GET /api/interventions/{p}`, `POST /api/interventions/{p}/{id}/validate`. Per-profile export cache + `active_profile.txt` pointer → instant SME switch. Remediation plan auto-regenerates when event log / mapping newer than plan.
+- `src/components/today/` — **TodayTab** (the primary view), **ActionCard**
+  (expandable evidence, owner/due-date, approve/reject/dismiss, progress),
+  **InterventionBoard** (baseline vs projected vs now, outcome validation),
+  **ImpactStrip**. `src/hooks/useActionQueue.js` fetches the queue; refresh is
+  explicit so it never moves under a worker mid-decision.
 - `src/App.jsx` — top-level state; `approvedMap` keyed by proposal `generated_at` (fresh audit reopens the gate).
 - `src/components/mapping/` — MappingTab, MappingCard (gate #2 editor).
 - `src/components/dashboard/WorkflowDAG.jsx` — hover a stage → source sheet(s).
@@ -93,7 +141,24 @@ $env:PYTHONIOENCODING="utf-8"           # ✔ chars in status values are cp1252-
 .venv/Scripts/python.exe -m remediate.run --profile foyle [--apply]
 .venv/Scripts/python.exe -m eval.score_mapping --profile foyle
 ```
-Swap `--profile joinery` — **zero new code** — for the second SME (the thesis point).
+Swap `--profile joinery` or `--profile advisory` — **zero new code** — for the
+other two SMEs (the thesis point).
+
+**The action queue (the worker-facing loop):**
+```
+.venv/Scripts/python.exe -m bridge.export_actions --profile advisory [--review]
+.venv/Scripts/python.exe -m actions.cli decide   --profile advisory --action-id ACT-... --decision approve --owner "Niamh Foy" --due-date 2026-07-28
+.venv/Scripts/python.exe -m actions.cli progress --profile advisory --action-id ACT-... --status completed
+.venv/Scripts/python.exe ingest.py --source messy --profile advisory --drive data/synthetic/messy_advisory_followup
+.venv/Scripts/python.exe -m bridge.export_actions --profile advisory --review
+.venv/Scripts/python.exe -m actions.cli validate --profile advisory --intervention-id INT-... --effective yes
+.venv/Scripts/python.exe -m pipeline.learn --profile advisory --promote
+```
+Every `actions.cli` subcommand prints exactly one JSON object on stdout — that
+is the contract the FastAPI layer parses. Artefacts land in
+`outputs/actions_<p>.json` (the store the worker owns),
+`outputs/ui_actions_<p>.json` (the dashboard read model, disposable) and
+`outputs/snapshots_<p>.jsonl` (one measurable state per analysis).
 
 **Longitudinal replay (the "dynamic system" eval — eval-side only, pipeline core untouched):**
 ```
@@ -147,8 +212,15 @@ that gap is the argument for the LLM audit. Human gate closes the residual
 4. **Zero raw PII to the API** — every sample cell passes through `scrub.anonymise` before the audit payload. There is a test asserting this.
 5. **`ANTHROPIC_API_KEY` in `bottleneck-ingest/.env`** (gitignored). The key was pasted in chat during development — **rotate it** at the Anthropic console before submission.
 6. **Mapping drift** — approving in the browser overwrites `mappings/approved_<profile>.json`. If eval numbers shift unexpectedly, `git checkout mappings/approved_*.json` to restore the committed mappings.
-7. **Bottleneck count is fixed at 3 per profile by design** (delay / repetition / rework detectors). More data bumps `affected` counts; it does not spawn new bottleneck *types*. A 4th requires a new detector + seeded synthetic pattern.
+7. **Bottleneck count is DYNAMIC** — `detect_dynamic` returns 0..N structural findings; `detection/case_rules.py` adds 0..N case-level ones on top. `markers` in config are eval-only.
 8. **Windows `python` shim** — call `.venv/Scripts/python.exe` explicitly; bare `python` may hit the Store stub.
+9. **Subprocess stdout must be decoded as UTF-8 explicitly.** `subprocess.run(..., text=True)` decodes with the Windows ANSI codepage and raises `UnicodeDecodeError` on the `✔` in SME status values — which took down the API's action endpoints until fixed. Pass `encoding="utf-8", errors="replace"` alongside `PYTHONIOENCODING=utf-8` in the child env. Both are needed: the env var controls what the child *writes*, the encoding argument controls how the parent *reads*.
+10. **`actions/` must stay import-light** — no chromadb / pyarrow / torch. Promotion into the vector store is a separate command (`pipeline.learn --promote`) run in its own process for exactly that reason.
+11. **`outputs/event_log.parquet` is ONE global file that every profile overwrites.** Anything reading it must check whose data it holds. Ingestion stamps `outputs/event_log_profile.txt`; `bridge.export_actions` refuses to build a queue from a mismatched log, and the API re-ingests first. Without that guard the Today tab renders one SME's branding over another's findings — which is exactly what happened before the check existed.
+12. **Set `DIAGNOSE_OFFLINE=1` in the API server's env for demos.** Otherwise a dashboard-triggered profile activation runs one Claude diagnosis per bottleneck (~30–90 s each) and bills for it. Also set `OLLAMA_MODEL=qwen2.5:1.5b` on the 8 GB laptop.
+13. **Vite binds to IPv6.** `curl http://127.0.0.1:5173` fails; `http://localhost:5173` works. Only matters when smoke-testing from a shell.
+14. **Never leave two uvicorn instances on port 8000.** Uvicorn sets `SO_REUSEADDR`, so a second instance binds happily and Windows hands each connection to *either* one — so half the requests get served by whichever build that instance is running. The symptom is maddening: the dashboard shows correct data, then stale data, with no pattern. Check with `netstat -ano | Select-String ":8000\s+.*LISTENING"` and expect exactly one PID. A `--reload` parent killed from a wrapper can leave its worker alive, so kill by command line: `Get-CimInstance Win32_Process -Filter "Name='python.exe'" | Where-Object { $_.CommandLine -match 'uvicorn|multiprocessing-fork' } | Stop-Process -Force`.
+15. **A profile switch re-ingests, and that takes minutes.** The API's subprocess timeout is 900s for ingest-shaped work (`_TIMEOUT_INGEST`) and 180s for everything else; a timeout now returns a 504 with the command in it rather than dropping the connection. The dashboard clears the previous SME's queue on switch and says it is analysing — it must never render a queue whose `profile` differs from the one requested.
 
 ## 9. What's next (candidates, none blocking)
 

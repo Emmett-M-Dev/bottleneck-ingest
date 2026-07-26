@@ -121,6 +121,29 @@ def test_read_gate_decisions_missing_log(tmp_path: Path) -> None:
                                tmp_path / "nope.jsonl") == {}
 
 
+def test_execute_node_does_not_remediate_for_an_operational_fix() -> None:
+    """The behavioural correction: approving a delay fix (a process change)
+    must not run the status-normalising executor over the drive."""
+    from pipeline.agent import execute_node
+
+    result = execute_node({"profile": "foyle", "bottlenecks": [_BN],
+                           "gate_decisions": {"BN001": "approve"}})["executed"]
+    assert result["remediation_invoked"] is False
+    assert "remediation" not in result
+    assert result["routed"] == [{"case_id": "BN001", "finding_type": "delay",
+                                 "category": "process_intervention",
+                                 "route": "tracked"}]
+    assert result["tracked"] == 1
+
+
+def test_execute_node_reports_why_nothing_ran() -> None:
+    from pipeline.agent import execute_node
+
+    result = execute_node({"profile": "foyle", "bottlenecks": [_BN],
+                           "gate_decisions": {"BN001": "modify"}})["executed"]
+    assert "no files were touched" in result["reason"]
+
+
 def test_agent_import_is_light() -> None:
     """`import pipeline.agent` must not pull the heavy native stack — checked
     in a fresh interpreter so other tests' imports can't mask a violation."""

@@ -35,7 +35,48 @@ This file tells an agent **exactly** what is done, what is next, and in what ord
 - [x] **RAG diagnosis agent** — `pipeline/diagnose.py`. Per bottleneck: top-3 resolutions from `sme_resolutions` → scrubbed evidence payload → `claude-opus-4-8` via `messages.parse` (adaptive thinking, no temperature) → `DiagnosisResult`. `offline_diagnosis()` is the deterministic fallback. Zero-PII + no-network tests in `tests/test_diagnose.py`.
 - [x] **LangGraph agent** — `pipeline/agent.py`. `detect → retrieve → diagnose → gate → execute` StateGraph; Gate 2 is a conditional edge. Fresh run pauses `awaiting_gate` + writes `outputs/agent_run_<profile>_<ts>.json`; `--resume <run_id>` reads dashboard decisions and re-enters at the gate. Execute shells `remediate.run --apply` as its own process. Tests in `tests/test_agent.py`.
 - [x] **Export via RAG diagnosis** — `bridge/export_messy.py` calls `diagnose()` per bottleneck (LLM supplies description / suggested_fix / confidence / retrieved_resolutions); authored `_TEMPLATES` remain the fallback on failure or offline. `ui_cases.json` keyset unchanged — dashboard untouched.
-- [x] **Tests green** — 90+ tests pass (`pytest -q`).
+- [x] **Tests green** — 190 tests pass (`pytest -q`).
+
+### Action layer (2026-07-23) — the worker-facing product
+
+- [x] **Generic action/intervention models** — `actions/models.py`: ActionItem,
+  Intervention, InterventionOutcome, BusinessImpact, EvidenceReference,
+  AnalysisSnapshot. Nothing SME-specific; labels, stage order, monetary
+  assumptions and templates all come from `config.MESSY_PROFILES[<p>]`.
+- [x] **Lifecycle state machine** — `actions/lifecycle.py`.
+  `proposed → approved → assigned → in_progress → completed → outcome_review →
+  validated | ineffective`, with `rejected`/`dismissed` off-ramps. Illegal
+  transitions raise. Full history kept on every intervention, including the
+  ones that failed.
+- [x] **Case-level detection** — `detection/case_rules.py`: six generic rules
+  producing findings about individual cases rather than stages.
+- [x] **Findings → evidence-backed items** — `actions/build.py`. Two separate
+  confidences (detection vs data quality), evidence carrying spreadsheet row
+  references, per-case detail.
+- [x] **Deterministic explainable ranking** — `actions/rank.py`. Every point
+  scored comes with a sentence saying where it came from.
+- [x] **Execution routing corrected** — `actions/execute.py` + the rewritten
+  `pipeline.agent.execute_node`. Only `data_quality` items whose template is on
+  `MACHINE_EXECUTABLE_TEMPLATES` reach the remediation executor. Approving an
+  operational fix no longer runs status normalisation.
+- [x] **Outcome-gated learning** — `pipeline/learn.py` split into a pending
+  (audit-trail) store and a trusted store. Only validated-effective
+  interventions are embedded. `--migrate-legacy` demoted the 3 foyle entries
+  written under the old rule.
+- [x] **Outcome measurement** — `actions/outcome.py`. Baseline (measured),
+  expected (projected), observed (measured) kept as separate fields;
+  tri-state `effective` with a 10% noise band; human validation required.
+- [x] **Third SME profile** — `advisory` / Northstar Advisory. Config block,
+  `synthetic/generate_messy_advisory.py` (+ `--follow-up` for the later
+  snapshot), ground truth, approved mapping, RAG corpus. Zero new core code.
+- [x] **`ingest.py --drive`** — re-analyse a later snapshot of the same drive
+  through the same approved mapping.
+- [x] **Action queue export + API** — `bridge/export_actions.py`, `actions/cli.py`,
+  six new FastAPI endpoints.
+- [x] **React "Today" view** — `src/components/today/`. Primary tab; workflow
+  map and bottleneck cards demoted to supporting evidence.
+- [x] **UTF-8 subprocess decoding bug fixed** — `text=True` was decoding child
+  stdout as cp1252 and dying on `✔`.
 
 ### Dashboard (hitl-react)
 
@@ -55,6 +96,33 @@ This file tells an agent **exactly** what is done, what is next, and in what ord
 ## ❌ NOT DONE — Tasks in priority order
 
 Work through these **top to bottom**. Do not skip ahead. Mark [x] as you go.
+
+### 🔴 Priority 0 — Follow-ups created by the action-layer work (2026-07-23)
+
+- [ ] **Re-run + re-cite the longitudinal replay.** `eval/replay.py` is now
+  outcome-gated: the oracle approves, completes, and only a *measured*
+  improvement at a later tick is validated and embedded. Each tick logs both
+  `lifecycle.validated` and `lifecycle.approved_unmeasured`, so the write-up can
+  put the outcome-gated curve next to the old approval-gated one. Run for foyle
+  and joinery, regenerate the figures, and expect the learning curve to shift
+  right and possibly sit lower — that is the honest result, not a regression.
+
+- [ ] **Fill the LLM column for `advisory`.** Its mapping proposal was generated
+  `--offline`, so baseline == "LLM" (0.500) in the eval table. One online
+  `python -m audit.run --profile advisory` fixes it. Costs one API call.
+
+- [ ] **Decide what to do about `mappings/approved_foyle.json`.** It was
+  re-approved in the browser and now scores 0.800 rather than the documented
+  1.000 (host families ↔ staff phone list roles swapped, and the OLD bookings
+  file's columns nulled). `git checkout mappings/approved_foyle.json` restores
+  the committed mapping. Left as-is deliberately — it is an uncommitted user
+  change, not something to revert without asking.
+
+- [ ] **Seed operational patterns into foyle/joinery, or state why not.** Both
+  drives were built for structural bottlenecks, so every case reaches a terminal
+  stage and their action queues contain no case-level work. Honest, but it makes
+  the Today view thin for those two. Re-seeding would move their eval numbers,
+  so this is a deliberate decision, not a bug fix.
 
 ### 🔴 Priority 1 — Dissertation integrity (must resolve before write-up)
 

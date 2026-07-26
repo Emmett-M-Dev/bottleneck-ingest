@@ -48,6 +48,11 @@ def load_event_log(path=None) -> pd.DataFrame:
     df = pd.read_parquet(path or config.EVENT_LOG_PATH)
     df["stage"] = _canon(df["activity"])
     df["ts"] = pd.to_datetime(df["timestamp"], errors="coerce")
+    # `value` is the optional monetary column; a log written before it existed
+    # simply has none, and every consumer treats absent as unknown.
+    if "value" not in df.columns:
+        df["value"] = pd.NA
+    df["value"] = pd.to_numeric(df["value"], errors="coerce")
     return df
 
 

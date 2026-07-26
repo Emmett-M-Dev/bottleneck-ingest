@@ -94,19 +94,79 @@ def test_decision_id_stable_across_ticks() -> None:
                                    "2026-03-23")["action"] == "reject"
 
 
-def test_learn_approved_rpl_ids_and_dedup(tmp_path: Path, monkeypatch) -> None:
+def test_approvals_go_to_the_pending_store_not_the_learned_one(
+        tmp_path: Path, monkeypatch) -> None:
+    """The oracle approving is not the oracle proving. An approval lands in the
+    pending file, which is never embedded."""
+    monkeypatch.setattr(replay, "replay_pending_path",
+                        lambda p: tmp_path / f"pending_{p}.json")
     monkeypatch.setattr(replay, "replay_learned_path",
                         lambda p: tmp_path / f"learned_{p}.json")
     decision = replay._decision_record("foyle", _bn(["A"]), _Diag, True, 3,
                                        "2026-03-23")
-    entry = replay._learn_approved("foyle", decision)
-    assert entry is not None
-    assert entry["resolution_id"] == "RES-RPL-FOY-001"
-    assert entry["source"] == "learned"
-    assert replay._learn_approved("foyle", decision) is None  # decision replayed
-    other = replay._decision_record("foyle", _bn(["B"], "rework"), _Diag, True,
-                                    4, "2026-03-30")
-    assert replay._learn_approved("foyle", other)["resolution_id"] == "RES-RPL-FOY-002"
+    entry = replay._record_pending("foyle", decision)
+    assert entry["resolution_id"] == "RES-PND-FOY-001"
+    assert entry["source"] == "pending"
+    assert replay._record_pending("foyle", decision) is None  # decision replayed
+    assert not (tmp_path / "learned_foyle.json").exists()
+
+
+def _completed_intervention(baseline: float = 14.0):
+    from actions import lifecycle as lc
+    from actions.execute import create_intervention
+
+    bn = _bn(["A"])
+    item = replay._action_item("foyle", bn, _Diag)
+    snapshot = replay.tick_snapshot(
+        "foyle", 3, "2026-03-23", _empty_df(), [bn])
+    intervention = create_intervention(item, snapshot=snapshot, owner="oracle",
+                                       decision_id="d1", actor="oracle")
+    for status in ("assigned", "in_progress", "completed"):
+        lc.transition(intervention, status, actor="oracle")
+    return intervention
+
+
+def _empty_df():
+    import pandas as pd
+    return pd.DataFrame({"case_id": ["A"], "stage": ["x"]})
+
+
+def test_oracle_review_validates_only_on_measured_improvement(
+        tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(replay, "replay_learned_path",
+                        lambda p: tmp_path / f"learned_{p}.json")
+    intervention = _completed_intervention()
+    key = intervention.finding_key
+
+    # The finding is gone at the next tick — measured improvement.
+    gone = replay.AnalysisSnapshot(snapshot_id="SNAP-B", profile="foyle",
+                                   taken_at="2026-03-30", label="tick_04",
+                                   metrics={}, present_keys=[])
+    stats = replay.oracle_review("foyle", [intervention], gone,
+                                 at="2026-03-30T17:00:00+00:00")
+    assert stats["validated"] == 1
+    assert intervention.status == "validated"
+    assert intervention.is_trusted_knowledge is True
+    promoted = replay._promote_validated("foyle", intervention)
+    assert promoted["resolution_id"] == "RES-RPL-FOY-001"
+    assert promoted["source"] == "learned"
+    assert replay._promote_validated("foyle", intervention) is None  # idempotent
+
+
+def test_oracle_review_leaves_an_unchanged_metric_unvalidated(tmp_path: Path,
+                                                              monkeypatch) -> None:
+    monkeypatch.setattr(replay, "replay_learned_path",
+                        lambda p: tmp_path / f"learned_{p}.json")
+    intervention = _completed_intervention()
+    flat = replay.AnalysisSnapshot(
+        snapshot_id="SNAP-B", profile="foyle", taken_at="2026-03-30",
+        label="tick_04", metrics={intervention.finding_key: 14.0},
+        present_keys=[intervention.finding_key])
+    stats = replay.oracle_review("foyle", [intervention], flat,
+                                 at="2026-03-30T17:00:00+00:00")
+    assert stats["still_unclear"] == 1
+    assert intervention.status == "outcome_review"
+    assert replay._promote_validated("foyle", intervention) is None
 
 
 def _tick(t: int, f1: float, hit: float | None, corpus: int) -> dict:

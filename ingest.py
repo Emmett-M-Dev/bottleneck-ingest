@@ -129,7 +129,8 @@ def _read_foyle_sheets() -> tuple[list[NormalisedRecord], str]:
     return records, summary
 
 
-def _read_messy(profile: str, mapping_path=None) -> tuple[list[NormalisedRecord], str]:
+def _read_messy(profile: str, mapping_path=None,
+                drive=None) -> tuple[list[NormalisedRecord], str]:
     from audit.schemas import load_approved  # lazy: pydantic only on this path
     from readers.mapped_reader import read_mapped
 
@@ -143,7 +144,10 @@ def _read_messy(profile: str, mapping_path=None) -> tuple[list[NormalisedRecord]
             f"    3. re-run this command"
         )
     approved = load_approved(mapping_path)
-    drive = config.MESSY_PROFILES[profile]["dir"]
+    # A later snapshot of the same drive reuses the same approved mapping —
+    # that is what makes week-on-week re-analysis possible without a second
+    # trip through the mapping gate.
+    drive = Path(drive) if drive else config.MESSY_PROFILES[profile]["dir"]
     event_rows, doc_rows = read_mapped(drive, approved)
     records = (
         normalise_foyle_events(event_rows, source_type="messy")
@@ -152,7 +156,8 @@ def _read_messy(profile: str, mapping_path=None) -> tuple[list[NormalisedRecord]
     n_files = sum(1 for f in approved.files if f.include and f.role != "ignore")
     summary = (
         f"[messy:{profile}] Derived {len(event_rows)} events + {len(doc_rows)} snippets "
-        f"from {n_files} mapped files (approved {approved.approved_at[:19]})"
+        f"from {n_files} mapped files in {drive.name}/ "
+        f"(approved {approved.approved_at[:19]})"
     )
     return records, summary
 
@@ -172,20 +177,40 @@ def _write_records(records: list[NormalisedRecord]) -> int:
     return len(records)
 
 
+def event_log_owner_path():
+    """Which profile/source the current event log belongs to.
+
+    `outputs/event_log.parquet` is a single global file that every profile
+    overwrites in turn. Anything reading it downstream needs to know whose data
+    it is currently holding — without this marker a consumer happily builds a
+    joinery action queue out of advisory events."""
+    return config.OUTPUTS / "event_log_profile.txt"
+
+
+def _write_event_log_owner(source: str, profile: str | None) -> None:
+    config.OUTPUTS.mkdir(parents=True, exist_ok=True)
+    event_log_owner_path().write_text(profile or source, encoding="utf-8")
+
+
 def _write_event_log(records: list[NormalisedRecord]) -> int:
     # pyarrow's Arrow C++ runtime is loaded here (lazily, on to_parquet). It must run
     # AFTER the chroma/hnswlib embedding step — sharing the process with Arrow during
     # the HNSW index build segfaults on Windows. The caller orders this last.
     config.OUTPUTS.mkdir(parents=True, exist_ok=True)
     events = [e.to_dict() for rec in records for e in rec.events]
-    df = pd.DataFrame(events, columns=["case_id", "activity", "timestamp", "actor", "status", "source_ref"])
+    df = pd.DataFrame(events, columns=["case_id", "activity", "timestamp", "actor",
+                                       "status", "source_ref", "value"])
+    # fastparquet types an all-None column as object and then refuses it; the
+    # canonical type for the optional money column is float either way.
+    df["value"] = pd.to_numeric(df["value"], errors="coerce").astype("float64")
     # fastparquet, not pyarrow: importing pyarrow loads the Arrow C++ runtime, which
     # segfaults when sharing the process with chroma/hnswlib + torch on Windows.
     df.to_parquet(config.EVENT_LOG_PATH, index=False, engine="fastparquet")
     return len(events)
 
 
-def run(source: str, profile: str | None = None, mapping_path=None) -> None:
+def run(source: str, profile: str | None = None, mapping_path=None,
+        drive=None) -> None:
     from scrub.anonymise import reset_actor_registry
     reset_actor_registry()  # deterministic actor placeholder numbering per run
 
@@ -195,7 +220,7 @@ def run(source: str, profile: str | None = None, mapping_path=None) -> None:
     if source == "messy":
         if not profile:
             raise SystemExit("--source messy requires --profile")
-        recs, summ = _read_messy(profile, mapping_path)
+        recs, summ = _read_messy(profile, mapping_path, drive)
         records += recs
         summaries.append(summ)
 
@@ -234,6 +259,7 @@ def run(source: str, profile: str | None = None, mapping_path=None) -> None:
     reset_collection()  # rebuild the vector store from scratch for this source
     n_chunks = embed_chunks(chunk_records(records))
     n_events = _write_event_log(records)
+    _write_event_log_owner(source, profile)
 
     print()
     for line in summaries:
@@ -256,8 +282,13 @@ def main() -> None:
                         default=None, help="SME profile for --source messy")
     parser.add_argument("--mapping", type=Path, default=None,
                         help="approved mapping JSON (default: mappings/approved_<profile>.json)")
+    parser.add_argument("--drive", type=Path, default=None,
+                        help="a later snapshot of the same drive (default: the "
+                             "profile's configured folder) — re-analysed through "
+                             "the SAME approved mapping, no second mapping gate")
     args = parser.parse_args()
-    run(args.source, profile=args.profile, mapping_path=args.mapping)
+    run(args.source, profile=args.profile, mapping_path=args.mapping,
+        drive=args.drive)
 
 
 if __name__ == "__main__":
