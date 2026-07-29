@@ -14,6 +14,27 @@ On Windows, call the venv Python by its full path. The bare `python` command hit
 $env:PYTHONIOENCODING="utf-8"
 ```
 
+## The order of the steps
+
+```mermaid
+flowchart LR
+    A["audit.run<br/>propose mapping"] --> B{{"approve in<br/>Mapping Review"}}
+    B --> C["ingest.py<br/>--source messy"]
+    C --> D["bridge.export_messy<br/>detect + diagnose"]
+    D --> E{{"approve in<br/>Today queue"}}
+    E --> F["remediate.run<br/>--apply"]
+    E --> G["actions.cli progress<br/>tracked work"]
+    G --> H["ingest.py --drive<br/>later snapshot"]
+    H --> I["actions.cli review<br/>+ validate"]
+
+    classDef step fill:#c7d2fe,stroke:#4338ca,color:#111827
+    classDef gate fill:#fecaca,stroke:#b91c1c,color:#111827
+    class A,C,D,F,G,H,I step
+    class B,E gate
+```
+
+The ingest step errors on purpose if there is no approved mapping. That is Gate 1 being enforced, not a bug.
+
 ## The light path (no API key)
 
 Every agent step has an offline mode. This runs the whole pipeline with no API key, at lower accuracy. It uses heuristics and templates instead of the model.
@@ -41,16 +62,36 @@ $env:PYTHONIOENCODING="utf-8"
 .venv/Scripts/python.exe -m eval.score_mapping --profile foyle
 ```
 
-The ingest step errors on purpose if there is no approved mapping. This enforces Gate 1.
+## Switch firms
 
-## Switch to the second firm
-
-Swap the profile. There is no new code. This is the generalisability point.
+Swap the profile. There is no new code. This is the generalisability point. Three profiles exist: `foyle`, `joinery`, and `advisory`.
 
 ```
-.venv/Scripts/python.exe -m audit.run --profile joinery --offline
-# approve, then run the same steps with --profile joinery
+.venv/Scripts/python.exe -m audit.run --profile advisory --offline
+# approve, then run the same steps with --profile advisory
 ```
+
+## The action queue from the command line
+
+The dashboard is the normal way in, but the same lifecycle is scriptable.
+
+```
+.venv/Scripts/python.exe -m actions.cli queue    --profile advisory
+.venv/Scripts/python.exe -m actions.cli decide   --profile advisory --action-id <id> --decision approve --owner "Sam" --due-date 2026-08-07
+.venv/Scripts/python.exe -m actions.cli progress --profile advisory --action-id <id> --status completed
+```
+
+## Measuring whether it worked
+
+Re-analyse a **later snapshot of the same drive** through the already-approved mapping, then review and confirm the outcomes. No second trip through Gate 1.
+
+```
+.venv/Scripts/python.exe ingest.py --drive data/synthetic/messy_advisory_followup --profile advisory
+.venv/Scripts/python.exe -m actions.cli review   --profile advisory
+.venv/Scripts/python.exe -m actions.cli validate --profile advisory --intervention-id <id> --effective yes
+```
+
+Only a measured improvement that a person confirms becomes trusted knowledge. See [Action Layer](Action-Layer).
 
 ## The dashboard
 
@@ -70,7 +111,7 @@ The UI serves at `http://localhost:5173`. Once each firm has been built once, th
 
 ## The longitudinal replay
 
-This is the over-time evaluation. It is eval-side only and does not touch the pipeline core.
+This is the over-time evaluation. It is eval-side only and does not touch the pipeline core or the dashboard's state.
 
 ```
 .venv/Scripts/python.exe synthetic/generate_stream.py --profile foyle
@@ -82,5 +123,8 @@ This writes nine weekly snapshots, replays them, and draws the result curves int
 
 ## If something breaks
 
-- If eval numbers move without reason, an approval in the browser may have overwritten the approved mapping. Restore it from git.
-- If a status value crashes the console, set the UTF-8 encoding shown above.
+- **Eval numbers move without reason.** An approval in the browser overwrote the approved mapping. Restore it: `git checkout mappings/approved_*.json`.
+- **A status value crashes the console.** Set the UTF-8 encoding shown at the top.
+- **Ingest refuses to run.** There is no approved mapping for that profile. That is Gate 1 working.
+- **The anomaly pass produces nothing.** No local model is running. The pass skips by design; nothing else is affected.
+- **The 7B local model will not load.** It needs about 6 GB of RAM. Use `OLLAMA_MODEL=qwen2.5:1.5b` on a smaller machine.

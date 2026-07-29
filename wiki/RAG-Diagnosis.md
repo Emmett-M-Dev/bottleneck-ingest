@@ -8,6 +8,28 @@ A model can guess a cause. A guess is not evidence. Staff need a reason they can
 
 So the system grounds each diagnosis in past fixes. This is retrieval-augmented generation, or RAG. The system finds similar past resolutions, then asks the model to reason over them. The user sees which past fixes shaped the answer.
 
+## The retrieval flow
+
+```mermaid
+flowchart LR
+    B["Bottleneck<br/>stage + pattern"] --> Q["Query"]
+    Q --> V[("Resolution store<br/>vector index")]
+    V --> E["Top resolutions<br/>ranked by similarity"]
+    E --> SC["Scrub"]
+    SC --> M["Claude<br/>structured call"]
+    M --> D["Diagnosis, root cause,<br/>fix steps, confidence,<br/>ids of evidence used"]
+    M -. "no key or call fails" .-> TP["Template fallback"]
+
+    classDef core fill:#c7d2fe,stroke:#4338ca,color:#111827
+    classDef store fill:#bbf7d0,stroke:#15803d,color:#111827
+    classDef ext fill:#e9d5ff,stroke:#7e22ce,color:#111827
+    classDef soft fill:#e5e7eb,stroke:#6b7280,color:#111827
+    class B,Q,E,D core
+    class V store
+    class SC,M ext
+    class TP soft
+```
+
 ## The resolution store
 
 The knowledge store holds past resolutions. Each entry says how a similar problem was fixed before. The store is a vector index, so the system can search it by meaning, not by exact words.
@@ -28,14 +50,46 @@ Every evidence excerpt passes through the scrub step first. No raw personal data
 
 There is a template fallback. If there is no API key or the call fails, the system produces a plain diagnosis from the detection numbers and the top retrieved fix. The pipeline never stalls.
 
-## The learning loop
+## The learning loop — approval is not proof
 
-The system learns from its own approved fixes.
+The system learns from its own fixes. But an approval is a decision, not a result. A manager approving a fix is evidence that it sounded sensible, not evidence that it worked.
 
-When a human approves or edits a fix at Gate 2, the system saves that fix into the resolution store. The next diagnosis can then retrieve the firm's own approved fix. Over time, the store fills with fixes the firm has already trusted.
+So the loop is **outcome-gated**. Two stores, and the gap between them is the point:
 
-This is what makes the system dynamic. It gets better as the firm uses it. The [Evaluation](Evaluation) page shows the learned-fix retrieval rate climbing from zero to one over the replay run.
+```mermaid
+flowchart LR
+    G2{{"GATE 2<br/>human approves"}} --> P[("pending_resolutions_&lt;p&gt;.json<br/>every approval, forever<br/>AUDIT ONLY")]
+    G2 --> W["Work is done"]
+    W --> ME["Measured against a<br/>LATER analysis"]
+    ME -->|"improved,<br/>and a human confirms"| LR[("learned_resolutions_&lt;p&gt;.json")]
+    ME -->|"no improvement"| IN["ineffective<br/>kept, never retrieved"]
+    LR --> EMB["Embedded into<br/>sme_resolutions"]
+    EMB -.->|"retrieved next run"| Q["Diagnosis"]
+
+    classDef gate fill:#fecaca,stroke:#b91c1c,color:#111827
+    classDef store fill:#bbf7d0,stroke:#15803d,color:#111827
+    classDef act fill:#bfdbfe,stroke:#1d4ed8,color:#111827
+    classDef soft fill:#e5e7eb,stroke:#6b7280,color:#111827
+    class G2 gate
+    class P,LR store
+    class W,ME,EMB,Q act
+    class IN soft
+```
+
+`pending_resolutions_<profile>.json` records every approval and is **never embedded and never retrievable as advice**. It is the audit trail. Only `learned_resolutions_<profile>.json` — validated and measurably effective — reaches the vector store.
+
+Entries written under the older approval-is-proof rule can be demoted with:
+
+```
+python -m pipeline.learn --profile <p> --migrate-legacy
+```
+
+That has already been run for foyle: three entries demoted.
+
+This is what makes the system dynamic. It gets better as the firm uses it — but only on the fixes that actually worked. The [Evaluation](Evaluation) page shows the learned-fix retrieval curve.
 
 ## The cost model
 
 Each fix carries a cost estimate, tuned per firm. This helps the user weigh a fix before approving it. The user sees the likely cost, not just the suggestion.
+
+That figure is a **projection** from the firm's cost assumptions, and it is labelled as one. It never counts as evidence that a fix worked. See [Action Layer](Action-Layer).

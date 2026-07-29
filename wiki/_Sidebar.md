@@ -14,6 +14,7 @@
 - [Ingestion and Mapping](Ingestion-and-Mapping)
 - [Bottleneck Detection](Bottleneck-Detection)
 - [RAG Diagnosis](RAG-Diagnosis)
+- [Action Layer](Action-Layer)
 - [Human-in-the-Loop](Human-in-the-Loop)
 - [Remediation](Remediation)
 

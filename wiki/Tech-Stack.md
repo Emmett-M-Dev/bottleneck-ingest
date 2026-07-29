@@ -7,6 +7,7 @@ The stack is chosen to run on one laptop, with no GPU and no cloud infrastructur
 | Layer | Tool | Notes |
 |---|---|---|
 | Pipeline graph | LangGraph | Runs the steps: detect, retrieve, diagnose, gate, execute. |
+| Action layer | Pure Python + pydantic | Models, lifecycle, ranking, routing. No heavy imports on purpose. |
 | Mapping agent | Claude API | Reads messy files, proposes mappings. Scrubbed payload. |
 | Diagnosis agent | Claude API | Grounds a fix in past resolutions. Scrubbed payload. |
 | Anomaly pass | Ollama (local) | Exploratory only. Aggregate stats. Skips if absent. |
@@ -29,11 +30,40 @@ The design splits work by privacy need:
 
 The requirements are pinned to a known-good set. This is not fussiness. The latest wheels of some native libraries failed to load their DLLs on the build machine. The pinned set loads cleanly and keeps the whole project repeatable. It is CPU-only and needs no GPU.
 
-## The parquet constraint
+## The parquet constraint, and why processes are split
 
-The project uses fastparquet, not pyarrow. Importing pyarrow loads a native runtime that crashes in-process with the vector store and the model libraries on Windows. fastparquet writes the same file without that runtime. This pin is deliberate.
+The project uses fastparquet, not pyarrow. Importing pyarrow eagerly loads the Arrow C++ runtime, which segfaults in-process alongside the vector store and the model libraries on Windows. fastparquet writes the same file without that runtime. This pin is deliberate — do not "helpfully" swap it.
 
-For the same reason, the mapping agent and the remediation executor run as separate processes. They never import the heavy libraries. This keeps them clear of the crash.
+The same constraint shapes the process layout. Some parts must stay clear of the heavy runtimes entirely:
+
+```mermaid
+flowchart TD
+    UI["React dashboard"] --> API["FastAPI bridge<br/>own venv, thin"]
+
+    subgraph LIGHT["Light processes — no chroma, pyarrow, or torch"]
+        AU["audit/<br/>mapping agent"]
+        RM["remediate/<br/>executor"]
+        AC["actions/<br/>action layer"]
+    end
+
+    subgraph HEAVY["Heavy process — chroma + torch + fastparquet"]
+        PL["pipeline/ + detection/<br/>ingest.py"]
+    end
+
+    API --> AU
+    API --> RM
+    API --> AC
+    API --> PL
+
+    classDef ui fill:#bfdbfe,stroke:#1d4ed8,color:#111827
+    classDef light fill:#bbf7d0,stroke:#15803d,color:#111827
+    classDef heavy fill:#c7d2fe,stroke:#4338ca,color:#111827
+    class UI,API ui
+    class AU,RM,AC light
+    class PL heavy
+```
+
+The bridge shells out to each one and returns plain JSON. Nothing in the light box may import chromadb, pyarrow, or torch.
 
 ## Graceful when parts are missing
 

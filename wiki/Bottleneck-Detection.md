@@ -2,6 +2,27 @@
 
 This is the first step of the fixed pipeline core.
 
+## Three detectors, one event log
+
+```mermaid
+flowchart LR
+    L[("Event log")] --> DY["Structural scan<br/>every stage, 0..N findings"]
+    L --> CR["Case rules<br/>which cases need attention"]
+    L --> AN["Anomaly pass<br/>local model, aggregates only"]
+    DY --> Q["Findings"]
+    CR --> Q
+    AN -. "advisory,<br/>not scored" .-> Q
+
+    classDef store fill:#bbf7d0,stroke:#15803d,color:#111827
+    classDef core fill:#c7d2fe,stroke:#4338ca,color:#111827
+    classDef soft fill:#e5e7eb,stroke:#6b7280,color:#111827
+    class L store
+    class DY,CR,Q core
+    class AN soft
+```
+
+The structural scan answers the analyst's question — *which stage is broken*. The case rules answer the worker's — *which jobs need me*. See [Action Layer](Action-Layer) for the rules.
+
 ## Dynamic detection
 
 Older versions used markers. A marker told the system where to look. That does not scale, and it hides per-firm tuning inside the core.
@@ -10,7 +31,23 @@ The current detector is dynamic. It scans every stage in the workflow and report
 
 ## The three patterns
 
-The detector looks for three structural patterns:
+The detector looks for three structural patterns. Each is a shape in the event log, not a label:
+
+```mermaid
+flowchart LR
+    subgraph DELAY["Delay — an outlier gap"]
+        d1["Stage A"] -->|"14 days"| d2["Stage B"]
+    end
+    subgraph REP["Repetition — a duplicate entry"]
+        r1["Stage A"] --> r2["Stage A"]
+    end
+    subgraph REW["Rework — a backward move"]
+        w1["Stage B"] --> w2["Stage A"]
+    end
+
+    classDef n fill:#c7d2fe,stroke:#4338ca,color:#111827
+    class d1,d2,r1,r2,w1,w2 n
+```
 
 - **Delay.** Cases wait too long entering or leaving a stage. The detector finds outlier gaps in time.
 - **Repetition.** A duplicate-work stage appears. The detector finds repeated stage entries.
@@ -32,4 +69,4 @@ This pass is advisory. It is not scored against ground truth. It costs nothing t
 
 ## Why this is the core, not the adapter
 
-The detector is the academic constant. It is the same code for the placement firm and the joinery firm. It has no per-firm rules. That is what makes it part of the fixed core, not the thin adapter.
+The detector is the academic constant. It is the same code for the placement firm, the joinery firm, and the advisory firm. It has no per-firm rules. That is what makes it part of the fixed core, not the thin adapter.
