@@ -259,7 +259,7 @@ This is the primary view. Everything else is supporting evidence.
 
 | Tile | Value source | Measured or projected |
 |---|---|---|
-| **Needs attention** — `14` "across 26 engagements" | **[COMPUTED]** count of items in status proposed/approved/assigned/in_progress; the case count is the union of `affected_case_ids` | measured |
+| **Needs attention** — `15` "across 26 engagements" | **[COMPUTED]** count of items in status proposed/approved/assigned/in_progress; the case count is the union of `affected_case_ids` | measured |
 | **Revenue at risk** — `£481,000` "from the values in your own sheets" | **[COMPUTED]** sum of `impact.revenue_at_risk`. For `unrealised_value` items it is literally the sum of the `value` column read out of the SME's spreadsheets. For SLA-breach/stalled/unowned items it falls back to `avg_case_value` **[CONFIG £18,000]** for any case with no recorded value | **mixed** — `is_projection` is set per item; the card shows which |
 | **Cost of delay so far** — `£10,826` "projected from your cost assumptions" | **[CONFIG × COMPUTED]** `affected × metric_days × costs.delay_day_cost` where `delay_day_cost = 120` is a number in `config.py` | **projected** |
 | **Staff time at risk** — `42.5 h` | **[CONFIG × COMPUTED]** `affected × hours_per_repetition (4.0)` / `hours_per_rework (12.0)` | **projected** |

@@ -168,10 +168,22 @@ is the contract the FastAPI layer parses. Artefacts land in
 ```
 Replays the drive as it looked each week through the unchanged core: detection is
 re-scored per tick against a *moving* ground truth, and a **simulated (oracle)
-Gate-2 approver** feeds approvals to the learning loop so tick t+1 retrieves the
-fix approved at tick t (learned-hit rate 0 → 1 over the run — the learning-loop
-curve). Replay-learned entries live in `outputs/replay_learned_<p>.json`
-(RES-RPL ids) and its gate log in `outputs/replay_decisions_<p>.jsonl` — the
+Gate-2 approver** feeds approvals to the outcome-gated learning loop, which only
+promotes a fix once it is completed and *measured* as an improvement against a
+later tick's analysis. Measured result, both foyle and joinery: `lifecycle.validated`
+stays at **0** across all nine ticks — no oracle-approved fix was ever completed
+and re-measured showing genuine improvement, so nothing entered `sme_resolutions` —
+while `lifecycle.approved_unmeasured` (what the old, pre-outcome-gating loop would
+have trusted by the same tick) reaches **3** in both profiles and holds. Cause:
+affected-case counts only *grow* as more of a recording is revealed, so
+`actions/outcome.py::compare` cannot return a measured improvement inside this
+window; `tests/test_replay.py` confirms the validation path does work when a
+finding genuinely disappears, so this is the honest behaviour of a sound
+mechanism, not a bug. `outputs/replay_pending_<p>.json` (the approval audit
+trail) and `outputs/replay_interventions_<p>.json` (the lifecycle records) are
+the artefacts that substantiate both curves; `outputs/replay_learned_<p>.json`
+does **not** exist for either profile — it is written only on a promotion, and
+none occurred. The gate log lives in `outputs/replay_decisions_<p>.jsonl` — the
 dashboard's real learned file and decisions.jsonl are never touched. The default
 fresh reset rebuilds `sme_resolutions` from the seeded corpora for reproducibility.
 
@@ -218,7 +230,11 @@ Full JSON: `outputs/eval_mapping_<profile>.json`.
 - The replay's honest result: `lifecycle.validated` stays at 0 for the full
   9-tick window in both profiles under outcome gating; `lifecycle.approved_unmeasured`
   (what the old approval-gated loop would have trusted) reaches 3 in both
-  (foyle tick 4, joinery tick 6). See `CLAUDE.md` §7 for why.
+  (foyle tick 4, joinery tick 6). Two caveats that travel with these numbers
+  everywhere they're cited: the Gate-2 approver is a **simulated oracle, not a
+  human**, and the 9-tick stream is a **recording, not a counterfactual** — an
+  approval at tick *t* cannot change what tick *t+1* contains. See `CLAUDE.md`
+  §7 for the full mechanism.
 - Tests green (`pytest -q`): **202 passed.**
 
 ## 8. Gotchas & constraints (read before touching)
