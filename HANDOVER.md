@@ -192,10 +192,13 @@ Column-mapping **F1**, baseline (heuristic) → LLM → human-approved:
 |---|---|---|---|
 | foyle | 0.846 | 0.968 | 1.000 |
 | joinery | 0.308 | 0.909 | 1.000 |
+| advisory | 0.500 | 0.766 | 1.000 |
 
 Baseline collapses on joinery's renamed-header fork (`Job#/Phase/When/Who`) —
-that gap is the argument for the LLM audit. Human gate closes the residual
-(foyle: 1 correction; joinery: 2). Full JSON: `outputs/eval_mapping_<profile>.json`.
+that gap is the argument for the LLM audit. Advisory's LLM figure (0.766) is
+the weakest of the three — precision drops on that profile even though recall
+stays at 1.0. Human gate closes the residual (foyle: 1 correction; joinery: 2).
+Full JSON: `outputs/eval_mapping_<profile>.json`.
 
 ## 7. Current state (2026-07-09)
 

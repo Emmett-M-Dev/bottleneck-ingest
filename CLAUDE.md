@@ -297,19 +297,11 @@ precision tasks — both privacy controls implemented and tested.
   |---|---|---|---|
   | foyle | 0.846 | 0.968 | 1.000 |
   | joinery | 0.308 | 0.909 | 1.000 |
-  | advisory | 0.500 | *(not yet run online)* | 1.000 |
+  | advisory | 0.500 | 0.766 | 1.000 |
 
-  Baseline collapses on joinery's renamed-header fork — that gap is the argument for the LLM audit; the human gate closes the residual.
+  Baseline collapses on joinery's renamed-header fork — that gap is the argument for the LLM audit; the human gate closes the residual. Advisory's LLM figure is the weakest of the three online conditions — 0.766 against foyle's 0.968 and joinery's 0.909 — driven by precision (0.621, 11 column errors) rather than recall (1.0): the LLM proposal over-includes columns on this profile rather than missing them. Written plainly, not smoothed over.
 
-  ⚠️ **Two live caveats on this table.**
-  1. `advisory`'s proposal was generated `--offline`, so its baseline and "LLM"
-     conditions are the same heuristic. Run `python -m audit.run --profile
-     advisory` (online, costs one API call) to fill the middle column.
-  2. `foyle`'s **approved** mapping was re-approved in the browser and now
-     scores 0.800, not 1.000 — the documented mapping-drift hazard (§10).
-     `git checkout mappings/approved_foyle.json` restores the 1.000 figure.
-     Also, `outputs/ui_mapping_proposal_foyle.json` is currently an *offline*
-     proposal; the committed LLM one lives in `eval/results/`.
+  Foyle's human-approved condition is a genuine, mixed result rather than a clean 1.000 across the board: column F1 is 1.000, but `role_accuracy` is only 0.6, because the approver labelled `host families 2026.xlsx` as `ignore` and `staff phone list.xlsx` as `notes`, where ground truth says `reference` and `ignore` respectively. Every column mapping was corrected; two file roles were not. That is a real finding about Gate 1, not a defect to fix: the human reviewer catches column-level semantics reliably but can still mislabel what a whole file is for.
 - **Longitudinal replay (the "dynamic system" eval):** `synthetic/generate_stream.py`
   writes 9 cumulative weekly snapshots per profile (`stream_<p>/tick_NN/`) + a
   per-tick ground truth; `eval/replay.py` replays them through the unchanged
@@ -374,7 +366,7 @@ ingest path.
 - **Diagrams before code** for anything architectural — Emmett thinks visually.
 - Runs Claude Code in the VS Code sidebar, task-by-task, supervised.
 - **Windows:** call `.venv/Scripts/python.exe` explicitly (bare `python` hits the Store stub); set `PYTHONIOENCODING=utf-8` when status values contain `✔`.
-- **Mapping drift:** approving in the browser overwrites `mappings/approved_<profile>.json`. If eval numbers move unexpectedly, `git checkout mappings/approved_*.json`.
+- **Mapping drift:** approving in the browser overwrites `mappings/approved_<profile>.json`. If eval numbers move unexpectedly, do **not** run `git checkout mappings/approved_*.json` — the drifted foyle mapping was itself committed (`c92caef`), so that command restores the drift, not the fix. Recover from the last known-good commit instead: `git checkout <good-commit> -- mappings/approved_<profile>.json` (foyle's known-good mapping is in `a8e3437`).
 
 ---
 
@@ -397,8 +389,9 @@ ingest path.
 - **Generalisability demonstrated on three SMEs:** foyle + joinery + **advisory**
   (Northstar Advisory) through one pipeline, zero new reader/detector/action code
   for SME #3.
-- **Eval numbers produced:** mapping F1 table (§7, with two live caveats),
-  detection baseline-vs-dynamic across all three profiles (§7).
+- **Eval numbers produced:** mapping F1 table (§7, all three profiles online,
+  no outstanding caveats), detection baseline-vs-dynamic across all three
+  profiles (§7).
 - **§6a resolved** — LangGraph and Ollama are both in the artifact.
 - **React dashboard (hitl-react) live** — **Today** (action queue, expandable
   evidence, owner/due-date, progress + outcome-review controls, "what was sent
@@ -408,8 +401,8 @@ ingest path.
 - Dissertation Word draft exists (`Murray_B00810618_Dissertation_Draft.docx`) — Sections 1–4 written, later phases scaffolded. **Sections describing detection/eval need updating for the dynamic detector AND for the action layer.**
 
 **On the horizon:** re-run `eval.replay` for foyle + joinery under the
-outcome-gated learning loop and re-cite the curves; run `audit.run --profile
-advisory` online to fill the LLM column of the mapping table; decide whether to
-restore `mappings/approved_foyle.json` from git (see §7 caveat 2); Phase 2–5
-build reports; supervisor sign-off on the consented Foyle export.
+outcome-gated learning loop and re-cite the curves; Phase 2–5 build reports;
+supervisor sign-off on the consented Foyle export. (The advisory LLM column
+and the foyle mapping-drift recovery, both formerly listed here, are done —
+see §7.)
 [YOU] install Ollama + `ollama pull qwen2.5:7b` for the anomaly-pass demo.

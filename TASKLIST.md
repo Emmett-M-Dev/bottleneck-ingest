@@ -107,16 +107,19 @@ Work through these **top to bottom**. Do not skip ahead. Mark [x] as you go.
   and joinery, regenerate the figures, and expect the learning curve to shift
   right and possibly sit lower — that is the honest result, not a regression.
 
-- [ ] **Fill the LLM column for `advisory`.** Its mapping proposal was generated
-  `--offline`, so baseline == "LLM" (0.500) in the eval table. One online
-  `python -m audit.run --profile advisory` fixes it. Costs one API call.
+- [x] **Filled the LLM column for `advisory`.** Ran `python -m audit.run
+  --profile advisory` online, replacing the offline heuristic-only proposal.
+  Result: LLM column F1 = 0.766 (baseline 0.500, human-approved 1.000) — see
+  `outputs/eval_mapping_advisory.json`.
 
-- [ ] **Decide what to do about `mappings/approved_foyle.json`.** It was
-  re-approved in the browser and now scores 0.800 rather than the documented
-  1.000 (host families ↔ staff phone list roles swapped, and the OLD bookings
-  file's columns nulled). `git checkout mappings/approved_foyle.json` restores
-  the committed mapping. Left as-is deliberately — it is an uncommitted user
-  change, not something to revert without asking.
+- [x] **Restored `mappings/approved_foyle.json`.** `git checkout
+  mappings/approved_foyle.json` would NOT have fixed the drift — the drifted
+  mapping had itself been committed (`c92caef`). Recovered the pre-drift
+  mapping from its known-good commit instead
+  (`git checkout a8e3437 -- mappings/approved_foyle.json`, committed as
+  `e2eb650`). Result: column F1 back to 1.000. Note `role_accuracy` is 0.6 —
+  that predates the drift and is a separate, genuine finding (CLAUDE.md §7),
+  not something this fix touches.
 
 - [ ] **Seed operational patterns into foyle/joinery, or state why not.** Both
   drives were built for structural bottlenecks, so every case reaches a terminal
@@ -202,7 +205,7 @@ Work through these **top to bottom**. Do not skip ahead. Mark [x] as you go.
 3. **fastparquet, not pyarrow** — pinned in `requirements.txt`. Do not swap.
 4. **`PYTHONIOENCODING=utf-8`** — required for `✔` in status values (cp1252 default crashes).
 5. **`.venv/Scripts/python.exe` explicitly** — bare `python` hits the Windows Store stub.
-6. **Mapping drift** — browser approval overwrites `mappings/approved_<profile>.json`. If eval shifts: `git checkout mappings/approved_*.json`.
+6. **Mapping drift** — browser approval overwrites `mappings/approved_<profile>.json`. If eval shifts, do NOT `git checkout mappings/approved_*.json` — a drifted mapping can itself be committed (foyle's was, in `c92caef`), so that command restores the drift rather than fixing it. Recover from the last known-good commit instead: `git checkout <good-commit> -- mappings/approved_<profile>.json` (foyle's known-good mapping is in `a8e3437`).
 7. **`ANTHROPIC_API_KEY` in `.env`** — gitignored. **Rotate before submission** (key was pasted in a dev chat session).
 8. **Bottleneck count is DYNAMIC** — `detect_dynamic()` returns 0..N findings; the seeded drives currently yield 3 per profile plus optional anomaly cards. `markers` in config are eval-only (baseline detector) — do not wire them back into the pipeline. The seeded patterns are STRUCTURAL (duplicate stage entries, backward transitions); regenerating drives with marker-named stages would break `eval/score_detection.py`'s story.
 9. **Drive = 5 reproducible files** — do not add ad-hoc test files to `data/synthetic/messy_foyle/`. The ground-truth test asserts an exact file list.
