@@ -1,0 +1,584 @@
+{
+  "profile": "advisory",
+  "drive": "C:\\Users\\Emmet\\bottleneck-ingest\\data\\synthetic\\messy_advisory",
+  "generated_at": "2026-08-01T09:25:55.799301+00:00",
+  "model": "claude-opus-4-8",
+  "mode": "llm",
+  "files": [
+    {
+      "filename": "clients.xlsx",
+      "sheet": "Sheet1",
+      "inferred_role": "reference",
+      "role_confidence": 0.92,
+      "include": false,
+      "columns": [
+        {
+          "source_header": "Client",
+          "canonical_field": "case_id",
+          "confidence": 0.3
+        },
+        {
+          "source_header": "Sector",
+          "canonical_field": null,
+          "confidence": 0.9
+        },
+        {
+          "source_header": "Account Manager",
+          "canonical_field": "actor",
+          "confidence": 0.4
+        },
+        {
+          "source_header": "Retainer",
+          "canonical_field": null,
+          "confidence": 0.9
+        }
+      ],
+      "issues": [
+        "No event structure - client master list with no timestamps or activities",
+        "Retainer column has blanks and inconsistent yes/no values"
+      ],
+      "n_rows": 12
+    },
+    {
+      "filename": "invoices.xlsx",
+      "sheet": "Sheet1",
+      "inferred_role": "reference",
+      "role_confidence": 0.6,
+      "include": false,
+      "columns": [
+        {
+          "source_header": "Invoice No",
+          "canonical_field": null,
+          "confidence": 0.5
+        },
+        {
+          "source_header": "Project Code",
+          "canonical_field": "case_id",
+          "confidence": 0.85
+        },
+        {
+          "source_header": "Client",
+          "canonical_field": null,
+          "confidence": 0.6
+        },
+        {
+          "source_header": "Net",
+          "canonical_field": "value",
+          "confidence": 0.6
+        },
+        {
+          "source_header": "Issued",
+          "canonical_field": "timestamp",
+          "confidence": 0.45
+        },
+        {
+          "source_header": "Due",
+          "canonical_field": null,
+          "confidence": 0.5
+        },
+        {
+          "source_header": "Paid On",
+          "canonical_field": null,
+          "confidence": 0.5
+        }
+      ],
+      "issues": [
+        "Multiple date columns (Issued/Due/Paid On) - not a single event timestamp",
+        "Financial record rather than workflow events; one row per invoice not per step"
+      ],
+      "n_rows": 13
+    },
+    {
+      "filename": "leads.xlsx",
+      "sheet": "Sheet1",
+      "inferred_role": "events",
+      "role_confidence": 0.88,
+      "include": true,
+      "columns": [
+        {
+          "source_header": "Lead Ref",
+          "canonical_field": "case_id",
+          "confidence": 0.9
+        },
+        {
+          "source_header": "Stage",
+          "canonical_field": "activity",
+          "confidence": 0.85
+        },
+        {
+          "source_header": "Date",
+          "canonical_field": "timestamp",
+          "confidence": 0.9
+        },
+        {
+          "source_header": "Owner",
+          "canonical_field": "actor",
+          "confidence": 0.85
+        },
+        {
+          "source_header": "Status",
+          "canonical_field": "status",
+          "confidence": 0.9
+        },
+        {
+          "source_header": "Est. Value",
+          "canonical_field": "value",
+          "confidence": 0.8
+        }
+      ],
+      "issues": [
+        "Lead Ref uses NA-#### codes that match Project Code in other files - pre-sales stage of same case lifecycle",
+        "Status values inconsistent (sent/done/complete/Complete \u2714)"
+      ],
+      "n_rows": 97
+    },
+    {
+      "filename": "projects - final NEW.xlsx",
+      "sheet": "Sheet1",
+      "inferred_role": "events",
+      "role_confidence": 0.9,
+      "include": false,
+      "columns": [
+        {
+          "source_header": "Project Code",
+          "canonical_field": "case_id",
+          "confidence": 0.92
+        },
+        {
+          "source_header": "Milestone",
+          "canonical_field": "activity",
+          "confidence": 0.85
+        },
+        {
+          "source_header": "Updated",
+          "canonical_field": "timestamp",
+          "confidence": 0.88
+        },
+        {
+          "source_header": "Consultant",
+          "canonical_field": "actor",
+          "confidence": 0.85
+        },
+        {
+          "source_header": "Notes",
+          "canonical_field": "status",
+          "confidence": 0.65
+        },
+        {
+          "source_header": "Fee (\u00a3)",
+          "canonical_field": "value",
+          "confidence": 0.8
+        }
+      ],
+      "issues": [
+        "Appears to be a truncated/stale copy (20 rows) of projects.xlsx (83 rows); identical sample rows",
+        "Filename 'final NEW' suggests manual versioning; superseded by fuller projects.xlsx"
+      ],
+      "n_rows": 20
+    },
+    {
+      "filename": "projects.xlsx",
+      "sheet": "Sheet1",
+      "inferred_role": "events",
+      "role_confidence": 0.9,
+      "include": true,
+      "columns": [
+        {
+          "source_header": "Project Code",
+          "canonical_field": "case_id",
+          "confidence": 0.92
+        },
+        {
+          "source_header": "Milestone",
+          "canonical_field": "activity",
+          "confidence": 0.85
+        },
+        {
+          "source_header": "Updated",
+          "canonical_field": "timestamp",
+          "confidence": 0.88
+        },
+        {
+          "source_header": "Consultant",
+          "canonical_field": "actor",
+          "confidence": 0.85
+        },
+        {
+          "source_header": "Notes",
+          "canonical_field": "status",
+          "confidence": 0.65
+        },
+        {
+          "source_header": "Fee (\u00a3)",
+          "canonical_field": "value",
+          "confidence": 0.8
+        }
+      ],
+      "issues": [
+        "Notes column doubles as freetext status - inconsistent values",
+        "Milestone labels inconsistent casing (ONBOARDING/Delivery)"
+      ],
+      "n_rows": 83
+    },
+    {
+      "filename": "team_capacity.xlsx",
+      "sheet": "Sheet1",
+      "inferred_role": "reference",
+      "role_confidence": 0.93,
+      "include": false,
+      "columns": [
+        {
+          "source_header": "Consultant",
+          "canonical_field": "actor",
+          "confidence": 0.5
+        },
+        {
+          "source_header": "Role",
+          "canonical_field": null,
+          "confidence": 0.9
+        },
+        {
+          "source_header": "Weekly Hours",
+          "canonical_field": null,
+          "confidence": 0.9
+        },
+        {
+          "source_header": "Specialism",
+          "canonical_field": null,
+          "confidence": 0.9
+        }
+      ],
+      "issues": [
+        "Staff reference/capacity data - no event structure"
+      ],
+      "n_rows": 7
+    },
+    {
+      "filename": "timesheets.xlsx",
+      "sheet": "Sheet1",
+      "inferred_role": "reference",
+      "role_confidence": 0.6,
+      "include": false,
+      "columns": [
+        {
+          "source_header": "Consultant",
+          "canonical_field": "actor",
+          "confidence": 0.55
+        },
+        {
+          "source_header": "Project Code",
+          "canonical_field": "case_id",
+          "confidence": 0.8
+        },
+        {
+          "source_header": "Week Ending",
+          "canonical_field": "timestamp",
+          "confidence": 0.5
+        },
+        {
+          "source_header": "Hours",
+          "canonical_field": "value",
+          "confidence": 0.6
+        },
+        {
+          "source_header": "Billable",
+          "canonical_field": "status",
+          "confidence": 0.4
+        }
+      ],
+      "issues": [
+        "Time-logging records aggregated by week, not workflow events",
+        "Week Ending is a period boundary not an event moment; Billable has inconsistent Y/N/yes values"
+      ],
+      "n_rows": 24
+    }
+  ],
+  "mess_report": {
+    "duplicates": [
+      "'projects - final NEW.xlsx' duplicates the first 20 rows of 'projects.xlsx' (identical NA-1041 milestone rows and dates)"
+    ],
+    "overlaps": [
+      "leads.xlsx and projects.xlsx share the same NA-#### case identifiers (e.g. NA-1041) covering pre-sales vs delivery stages of the same case lifecycle",
+      "invoices.xlsx and timesheets.xlsx also key on the same NA-#### Project Codes"
+    ],
+    "gaps": [
+      "leads.xlsx starts 23/02/2026; no coverage before Feb 2026",
+      "Delivery/project events cover March 2026 onward while pre-sales lead events precede - full case lifecycle only stitchable by joining leads+projects",
+      "No file records events after invoice payment dates (late Apr/May 2026)"
+    ],
+    "irrelevant": [
+      "clients.xlsx (client master reference)",
+      "team_capacity.xlsx (staff capacity reference)"
+    ]
+  },
+  "baseline": {
+    "files": [
+      {
+        "filename": "clients.xlsx",
+        "sheet": "Sheet1",
+        "inferred_role": "ignore",
+        "role_confidence": 0.4,
+        "include": false,
+        "columns": [
+          {
+            "source_header": "Client",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Sector",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Account Manager",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Retainer",
+            "canonical_field": null,
+            "confidence": 0.4
+          }
+        ],
+        "issues": []
+      },
+      {
+        "filename": "invoices.xlsx",
+        "sheet": "Sheet1",
+        "inferred_role": "ignore",
+        "role_confidence": 0.4,
+        "include": false,
+        "columns": [
+          {
+            "source_header": "Invoice No",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Project Code",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Client",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Net",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Issued",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Due",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Paid On",
+            "canonical_field": null,
+            "confidence": 0.4
+          }
+        ],
+        "issues": []
+      },
+      {
+        "filename": "leads.xlsx",
+        "sheet": "Sheet1",
+        "inferred_role": "events",
+        "role_confidence": 0.4,
+        "include": true,
+        "columns": [
+          {
+            "source_header": "Lead Ref",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Stage",
+            "canonical_field": "activity",
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Date",
+            "canonical_field": "timestamp",
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Owner",
+            "canonical_field": "actor",
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Status",
+            "canonical_field": "status",
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Est. Value",
+            "canonical_field": null,
+            "confidence": 0.4
+          }
+        ],
+        "issues": []
+      },
+      {
+        "filename": "projects - final NEW.xlsx",
+        "sheet": "Sheet1",
+        "inferred_role": "ignore",
+        "role_confidence": 0.4,
+        "include": false,
+        "columns": [
+          {
+            "source_header": "Project Code",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Milestone",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Updated",
+            "canonical_field": "timestamp",
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Consultant",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Notes",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Fee (\u00a3)",
+            "canonical_field": null,
+            "confidence": 0.4
+          }
+        ],
+        "issues": []
+      },
+      {
+        "filename": "projects.xlsx",
+        "sheet": "Sheet1",
+        "inferred_role": "ignore",
+        "role_confidence": 0.4,
+        "include": false,
+        "columns": [
+          {
+            "source_header": "Project Code",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Milestone",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Updated",
+            "canonical_field": "timestamp",
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Consultant",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Notes",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Fee (\u00a3)",
+            "canonical_field": null,
+            "confidence": 0.4
+          }
+        ],
+        "issues": []
+      },
+      {
+        "filename": "team_capacity.xlsx",
+        "sheet": "Sheet1",
+        "inferred_role": "ignore",
+        "role_confidence": 0.4,
+        "include": false,
+        "columns": [
+          {
+            "source_header": "Consultant",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Role",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Weekly Hours",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Specialism",
+            "canonical_field": null,
+            "confidence": 0.4
+          }
+        ],
+        "issues": []
+      },
+      {
+        "filename": "timesheets.xlsx",
+        "sheet": "Sheet1",
+        "inferred_role": "ignore",
+        "role_confidence": 0.4,
+        "include": false,
+        "columns": [
+          {
+            "source_header": "Consultant",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Project Code",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Week Ending",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Hours",
+            "canonical_field": null,
+            "confidence": 0.4
+          },
+          {
+            "source_header": "Billable",
+            "canonical_field": null,
+            "confidence": 0.4
+          }
+        ],
+        "issues": []
+      }
+    ],
+    "mess_report": {
+      "duplicates": [],
+      "overlaps": [],
+      "gaps": [],
+      "irrelevant": []
+    }
+  }
+}
