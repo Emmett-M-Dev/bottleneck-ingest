@@ -709,7 +709,7 @@
         "evidence_excerpts": [
           "3 cases show the 'Site Work Started' pattern in the live event log.",
           "SITE WORK STARTED for case [ORG_1] handled by [PERSON_1] (status: ok)",
-          "site work started for case [PERSON_1] on 2026-04-02T00:00:00 handled by [PERSON_1] (status: ok)"
+          "site work started for case [PERSON_1] on 2026-05-18T00:00:00 handled by [PERSON_1] (status: ok)"
         ]
       },
       "sme_context": {
@@ -889,8 +889,8 @@
         "affected_count": 3,
         "evidence_excerpts": [
           "3 cases show the 'Site Work Started' pattern in the live event log.",
-          "Site Work Started for case [GPE_1] on 2026-02-22T00:00:00 handled by [PERSON_2] (status: ok)",
-          "SITE WORK STARTED for case [PERSON_1] on 2026-04-26T00:00:00 handled by [PERSON_1] (status: tbc)"
+          "Site Work Started for case [GPE_1] on 2026-04-09T00:00:00 handled by [PERSON_2] (status: ok)",
+          "SITE WORK STARTED for case [PERSON_1] on 2026-06-11T00:00:00 handled by [PERSON_1] (status: tbc)"
         ]
       },
       "sme_context": {
@@ -1198,8 +1198,8 @@
         "affected_count": 2,
         "evidence_excerpts": [
           "2 cases show the 'Site Survey' pattern in the live event log.",
-          "Site Survey for case [PERSON_1] on 2026-03-12T00:00:00 handled by [PERSON_1] (status: tbc)",
-          "SITE SURVEY for case [PERSON_1] on 2026-03-29T00:00:00 handled by [PERSON_2] (status: supplier late)"
+          "Site Survey for case [PERSON_1] on 2026-04-27T00:00:00 handled by [PERSON_1] (status: tbc)",
+          "SITE SURVEY for case [PERSON_1] on 2026-05-14T00:00:00 handled by [PERSON_2] (status: supplier late)"
         ]
       },
       "sme_context": {

@@ -495,96 +495,12 @@
     "generated_by": "case_rule"
   },
   {
-    "action_id": "ACT-FOY-46b02044",
-    "profile": "foyle",
-    "finding_key": "stage_sla_breach::document collection::days_over_sla",
-    "finding_type": "stage_sla_breach",
-    "title": "1 case(s) past the Document Collection SLA",
-    "summary": "The agreed limit at Document Collection is 10 days; the worst has waited 21.",
-    "workflow": "Placement pipeline",
-    "stage": "Document Collection",
-    "affected_case_ids": [
-      "B-2026-025"
-    ],
-    "evidence": [
-      {
-        "kind": "metric",
-        "label": "days_over_sla",
-        "detail": "The agreed limit at Document Collection is 10 days; the worst has waited 21.",
-        "source_ref": null,
-        "source_file": null,
-        "sheet": null,
-        "row": null,
-        "case_id": null,
-        "metric_label": "days_over_sla",
-        "metric_value": 11.0,
-        "excerpt": null
-      },
-      {
-        "kind": "source_row",
-        "label": "B-2026-025",
-        "detail": "waiting 21 days; 11 days over the limit; owner [PERSON_2]",
-        "source_ref": "bookings summer NEW.xlsx:Sheet1:76",
-        "source_file": "bookings summer NEW.xlsx",
-        "sheet": "Sheet1",
-        "row": 76,
-        "case_id": "B-2026-025",
-        "metric_label": null,
-        "metric_value": null,
-        "excerpt": null
-      }
-    ],
-    "metric_label": "days_over_sla",
-    "metric_value": 11.0,
-    "detection_confidence": 0.95,
-    "data_quality_confidence": 0.98,
-    "impact": {
-      "category": "revenue_at_risk",
-      "currency": "£",
-      "revenue_at_risk": 1850.0,
-      "cost_incurred": null,
-      "hours_at_risk": null,
-      "capacity_pct": null,
-      "delivery_risk": "medium",
-      "affected_case_count": 1,
-      "basis": "1 case(s) × £1,850 average case value",
-      "is_projection": true
-    },
-    "recommended_action": "Chase the 1 booking(s) sitting past the Document Collection limit",
-    "action_steps": [
-      "Open each listed booking, oldest first.",
-      "Make the next contact or hand it to whoever can move it.",
-      "Record what happened on the booking row so the clock resets honestly."
-    ],
-    "action_category": "case_action",
-    "action_template": null,
-    "owner": "Placement coordinator",
-    "due_date": "2026-09-03",
-    "status": "proposed",
-    "created_at": "2026-08-31",
-    "updated_at": "2026-08-31",
-    "source_records": [
-      "bookings summer NEW.xlsx:Sheet1:76"
-    ],
-    "intervention_id": null,
-    "rank_score": 44.51,
-    "rank_explanation": [
-      "£1,850 projected at risk (50% of the largest item) → 20.0 pts",
-      "medium client-delivery risk → 11.0 pts",
-      "1 affected case(s), the queue's widest is 7 → 2.9 pts",
-      "due in 3 day(s) → 13.0 pts",
-      "detection confidence 95% scales 46.9 → 44.5 pts"
-    ],
-    "llm_payload": null,
-    "generated_by": "case_rule"
-  },
-  {
     "action_id": "ACT-FOY-0c2f5029",
     "profile": "foyle",
     "finding_key": "delay::booking confirmed::avg_delay_days",
     "finding_type": "delay",
     "title": "Cases stall entering Booking Confirmed",
-    "summary": "Cases are taking an average of 14.6 days to reach the Booking Confirmed stage after the Placement Offer, with 5 cases showing this recurring delay pattern in the live event log. Bookings are eventually confirmed by different staff members across a spread of dates, but the long wait before confirmation suggests these cases sit unattended between the offer and confirmation rather than being actively progressed. Root cause: Unconfirmed bookings are not being tracked or chased promptly after the placement offer, so they stall silently until someone picks them up, adding roughly two weeks of delay.",
+    "summary": "5 cases waited an average of 15 days to reach Booking Confirmed — far beyond the workflow's normal rhythm.",
     "workflow": "Placement pipeline",
     "stage": "Booking Confirmed",
     "affected_case_ids": [
@@ -715,7 +631,7 @@
     ],
     "metric_label": "avg_delay_days",
     "metric_value": 14.6,
-    "detection_confidence": 0.55,
+    "detection_confidence": 0.8,
     "data_quality_confidence": 0.98,
     "impact": {
       "category": "time_loss",
@@ -729,12 +645,11 @@
       "basis": "5 case(s) × 15 days × £35/day",
       "is_projection": true
     },
-    "recommended_action": "Introduce a weekly review of all bookings still unconfirmed after the placement offer and share out the follow-up work.",
+    "recommended_action": "Set an entry SLA for Booking Confirmed",
     "action_steps": [
-      "Run a weekly report of every case that has had a Placement Offer but no Booking Confirmed after seven days.",
-      "Assign each stalled booking to a staff member with spare capacity to chase the outstanding confirmation.",
-      "Route incoming host/partner confirmation replies into a shared inbox monitored by at least two staff, with a handover rule for absences.",
-      "Track each stalled booking to closure and record the reason for any delay to spot recurring blockers."
+      "Agree a target number of days for work to reach Booking Confirmed.",
+      "Flag cases still short of Booking Confirmed inside that window on the tracker.",
+      "Review flagged cases weekly and clear the blocker behind each one."
     ],
     "action_category": "process_intervention",
     "action_template": null,
@@ -749,13 +664,13 @@
       "bookings Jan-May 2026.xlsx:Sheet1:64"
     ],
     "intervention_id": null,
-    "rank_score": 36.8,
+    "rank_score": 53.53,
     "rank_explanation": [
       "£2,555 projected at risk (69% of the largest item) → 27.6 pts",
       "high client-delivery risk → 20.0 pts",
       "5 affected case(s), the queue's widest is 7 → 14.3 pts",
       "due in 11 day(s) → 5.0 pts",
-      "detection confidence 55% scales 66.9 → 36.8 pts"
+      "detection confidence 80% scales 66.9 → 53.5 pts"
     ],
     "llm_payload": {
       "bottleneck": {
@@ -767,8 +682,8 @@
         "affected_count": 5,
         "evidence_excerpts": [
           "5 cases show the '[ORG_1] pattern in the live event log.",
-          "BOOKING CONFIRMED for case B-2026-001 on 2026-01-27T00:00:00 handled by [PERSON_1] (status: ok)",
-          "booking confirmed for case B-2026-005 on 2026-03-18T00:00:00 handled by [PERSON_2] (status: complete)"
+          "BOOKING CONFIRMED for case B-2026-001 on 2026-02-06T00:00:00 handled by [PERSON_1] (status: ok)",
+          "booking confirmed for case B-2026-005 on 2026-03-28T00:00:00 handled by [PERSON_2] (status: complete)"
         ]
       },
       "sme_context": {
@@ -783,25 +698,93 @@
           "Arrival"
         ]
       },
-      "past_resolutions": [
-        {
-          "resolution_id": "RES-FOY-002",
-          "resolution": "A batch of group bookings stalled before confirmation while one coordinator chased the same three host families. Introduced a weekly review of every booking still unconfirmed seven days after the placement offer, reallocating chases to whoever had capacity. Stalled bookings were spotted within a week instead of surfacing at invoicing.",
-          "days_to_resolve": 12
-        },
-        {
-          "resolution_id": "RES-FOY-003",
-          "resolution": "Bookings from one sending organisation waited on confirmation because the host stipend rate had not been agreed. Agreed stipend rates with the sending organisation before the season opened and published them to the host list. Worked for that organisation, but rate queries from new partners still caused occasional stalls.",
-          "days_to_resolve": 17
-        },
-        {
-          "resolution_id": "RES-FOY-004",
-          "resolution": "Confirmations queued behind a single inbox that only the placements coordinator checked. Set up a shared confirmations inbox monitored by two staff with an out-of-office handover rule. No booking waited more than three working days on an unread host reply.",
-          "days_to_resolve": 27
-        }
-      ]
+      "past_resolutions": []
     },
     "generated_by": "detector"
+  },
+  {
+    "action_id": "ACT-FOY-46b02044",
+    "profile": "foyle",
+    "finding_key": "stage_sla_breach::document collection::days_over_sla",
+    "finding_type": "stage_sla_breach",
+    "title": "1 case(s) past the Document Collection SLA",
+    "summary": "The agreed limit at Document Collection is 10 days; the worst has waited 21.",
+    "workflow": "Placement pipeline",
+    "stage": "Document Collection",
+    "affected_case_ids": [
+      "B-2026-025"
+    ],
+    "evidence": [
+      {
+        "kind": "metric",
+        "label": "days_over_sla",
+        "detail": "The agreed limit at Document Collection is 10 days; the worst has waited 21.",
+        "source_ref": null,
+        "source_file": null,
+        "sheet": null,
+        "row": null,
+        "case_id": null,
+        "metric_label": "days_over_sla",
+        "metric_value": 11.0,
+        "excerpt": null
+      },
+      {
+        "kind": "source_row",
+        "label": "B-2026-025",
+        "detail": "waiting 21 days; 11 days over the limit; owner [PERSON_2]",
+        "source_ref": "bookings summer NEW.xlsx:Sheet1:76",
+        "source_file": "bookings summer NEW.xlsx",
+        "sheet": "Sheet1",
+        "row": 76,
+        "case_id": "B-2026-025",
+        "metric_label": null,
+        "metric_value": null,
+        "excerpt": null
+      }
+    ],
+    "metric_label": "days_over_sla",
+    "metric_value": 11.0,
+    "detection_confidence": 0.95,
+    "data_quality_confidence": 0.98,
+    "impact": {
+      "category": "revenue_at_risk",
+      "currency": "£",
+      "revenue_at_risk": 1850.0,
+      "cost_incurred": null,
+      "hours_at_risk": null,
+      "capacity_pct": null,
+      "delivery_risk": "medium",
+      "affected_case_count": 1,
+      "basis": "1 case(s) × £1,850 average case value",
+      "is_projection": true
+    },
+    "recommended_action": "Chase the 1 booking(s) sitting past the Document Collection limit",
+    "action_steps": [
+      "Open each listed booking, oldest first.",
+      "Make the next contact or hand it to whoever can move it.",
+      "Record what happened on the booking row so the clock resets honestly."
+    ],
+    "action_category": "case_action",
+    "action_template": null,
+    "owner": "Placement coordinator",
+    "due_date": "2026-09-03",
+    "status": "proposed",
+    "created_at": "2026-08-31",
+    "updated_at": "2026-08-31",
+    "source_records": [
+      "bookings summer NEW.xlsx:Sheet1:76"
+    ],
+    "intervention_id": null,
+    "rank_score": 44.51,
+    "rank_explanation": [
+      "£1,850 projected at risk (50% of the largest item) → 20.0 pts",
+      "medium client-delivery risk → 11.0 pts",
+      "1 affected case(s), the queue's widest is 7 → 2.9 pts",
+      "due in 3 day(s) → 13.0 pts",
+      "detection confidence 95% scales 46.9 → 44.5 pts"
+    ],
+    "llm_payload": null,
+    "generated_by": "case_rule"
   },
   {
     "action_id": "ACT-FOY-189f36bc",
@@ -979,7 +962,7 @@
     "finding_key": "rework::placement offer::loop_back_cases",
     "finding_type": "rework",
     "title": "Cases loop back to Placement Offer",
-    "summary": "Three cases in the live event log have looped back into the 'Placement Offer' stage after moving past it, meaning placement work is being redone. The excerpts show the stage being re-handled for different cases (e.g. B-2026-002 still 'In progress', B-2026-006 marked 'complete'), indicating that offers are being reopened or reissued rather than settled cleanly the first time. Root cause: Placement offers are being finalised on inputs that later change or turn out to be incomplete (e.g. host/partner capacity or profile details), so cases fall back into the Placement Offer stage for re-work when those inputs prove unreliable.",
+    "summary": "3 cases returned to Placement Offer after having moved past it — earlier work is being redone under time pressure.",
     "workflow": "Placement pipeline",
     "stage": "Placement Offer",
     "affected_case_ids": [
@@ -1082,7 +1065,7 @@
     ],
     "metric_label": "loop_back_cases",
     "metric_value": 3.0,
-    "detection_confidence": 0.72,
+    "detection_confidence": 0.8,
     "data_quality_confidence": 0.98,
     "impact": {
       "category": "delivery_risk",
@@ -1096,13 +1079,11 @@
       "basis": "3 loop-back(s) × £250",
       "is_projection": true
     },
-    "recommended_action": "Lock in and verify placement inputs at the point the offer is completed, and hold a reserve to absorb fall-throughs.",
+    "recommended_action": "Confirm before leaving Placement Offer, hold a reserve",
     "action_steps": [
-      "Re-confirm the key inputs (host/partner capacity, host profile details) at the moment Placement Offer is marked complete, not only when it starts.",
-      "Ask partner/host organisations to confirm available capacity in writing before the offer is finalised.",
-      "Regenerate host profiles from the current tracker at offer time so no out-of-date details are attached.",
-      "Keep a small reserve of placement slots to absorb withdrawals or fall-throughs without reopening the whole stage.",
-      "Log the reason for every loop-back so recurring causes can be spotted and addressed early."
+      "Re-confirm the inputs to Placement Offer at the point of completion, not just at the start.",
+      "Keep a small reserve (people, slots or stock) to absorb fall-throughs.",
+      "Record the reason for every loop-back so repeat causes are spotted early."
     ],
     "action_category": "process_intervention",
     "action_template": null,
@@ -1117,13 +1098,13 @@
       "bookings summer NEW.xlsx:Sheet1:19"
     ],
     "intervention_id": null,
-    "rank_score": 23.53,
+    "rank_score": 26.14,
     "rank_explanation": [
       "£750 projected at risk (20% of the largest item) → 8.1 pts",
       "medium client-delivery risk → 11.0 pts",
       "3 affected case(s), the queue's widest is 7 → 8.6 pts",
       "due in 11 day(s) → 5.0 pts",
-      "detection confidence 72% scales 32.7 → 23.5 pts"
+      "detection confidence 80% scales 32.7 → 26.1 pts"
     ],
     "llm_payload": {
       "bottleneck": {
@@ -1135,8 +1116,8 @@
         "affected_count": 3,
         "evidence_excerpts": [
           "3 cases show the 'Placement Offer' pattern in the live event log.",
-          "placement offer for case B-2026-002 on 2026-01-29T00:00:00 handled by [PERSON_1] (status: In progress)",
-          "PLACEMENT OFFER for case B-2026-006 on 2026-03-24T00:00:00 handled by [PERSON_3] (status: complete)"
+          "placement offer for case B-2026-002 on 2026-02-08T00:00:00 handled by [PERSON_1] (status: In progress)",
+          "PLACEMENT OFFER for case B-2026-006 on 2026-04-03T00:00:00 handled by [PERSON_3] (status: complete)"
         ]
       },
       "sme_context": {
@@ -1151,23 +1132,7 @@
           "Arrival"
         ]
       },
-      "past_resolutions": [
-        {
-          "resolution_id": "RES-LRN-FOY-003",
-          "resolution": "3 cases returned to Placement Offer after having moved past it — earlier work is being redone under time pressure. Confirm before leaving Placement Offer, hold a reserve: Re-confirm the inputs to Placement Offer at the point of completion, not just at the start.; Keep a small reserve (people, slots or stock) to absorb fall-throughs.; Record the reason for every loop-back so repeat causes are spotted early. Approved at HITL Gate 2 on 2026-07-11.",
-          "days_to_resolve": null
-        },
-        {
-          "resolution_id": "RES-FOY-014",
-          "resolution": "A work-placement company withdrew after students were matched, forcing re-allocation of a whole group. Asked partner companies to confirm capacity in writing four weeks before arrival. Group withdrawals were caught early enough to re-match calmly.",
-          "days_to_resolve": 10
-        },
-        {
-          "resolution_id": "RES-FOY-022",
-          "resolution": "Placement offers went out with out-of-date host profiles attached. Regenerated host profiles from the tracker at offer time. Complaints about mismatched profiles stopped.",
-          "days_to_resolve": 3
-        }
-      ]
+      "past_resolutions": []
     },
     "generated_by": "detector"
   },
@@ -1177,7 +1142,7 @@
     "finding_key": "repetition::document collection::repeated_entry_cases",
     "finding_type": "repetition",
     "title": "Document Collection done twice",
-    "summary": "Three cases in the international education placement workflow passed through the Document Collection stage more than once. The live event log shows the stage being repeated rather than completed once and carried forward — for example one case was marked done while another was chased twice for the same documents. Staff are redoing document collection work instead of relying on a recorded first-pass outcome. Root cause: There is no single authoritative, visible record of what documents were already collected, so staff re-request or re-run Document Collection even when it was completed earlier.",
+    "summary": "3 cases passed through Document Collection more than once — the same step is being redone instead of carried forward.",
     "workflow": "Placement pipeline",
     "stage": "Document Collection",
     "affected_case_ids": [
@@ -1294,12 +1259,11 @@
       "basis": "3 repeated step(s) × £90",
       "is_projection": true
     },
-    "recommended_action": "Make the first Document Collection pass complete and visible so it never needs repeating.",
+    "recommended_action": "Make the first Document Collection the only one",
     "action_steps": [
-      "Adopt a fixed Document Collection checklist so the first pass captures every required document in one go.",
-      "Record the outcome of Document Collection on the case row itself, visible to all staff, and only repeat it when the recorded outcome is genuinely missing.",
-      "Create one shared folder per booking reference and make saving arriving documents to it part of the intake step, so colleagues can see at a glance what has arrived.",
-      "Write a short desk guide explaining where documents live and how the checklist is read, for use during staff cover or handovers."
+      "Use a fixed checklist for Document Collection so the first pass captures everything.",
+      "Record the outcome of Document Collection on the case row itself, visible to everyone.",
+      "Only repeat Document Collection when its recorded outcome is genuinely missing."
     ],
     "action_category": "process_intervention",
     "action_template": null,
@@ -1332,8 +1296,8 @@
         "affected_count": 3,
         "evidence_excerpts": [
           "3 cases show the 'Document Collection' pattern in the live event log.",
-          "Document Collection for case B-2026-003 on 2026-02-16T00:00:00 handled by [PERSON_2] (status: done )",
-          "Document Collection for case B-2026-007 on 2026-04-04T00:00:00 handled by [PERSON_3] (status: chased 2x)"
+          "Document Collection for case B-2026-003 on 2026-02-26T00:00:00 handled by [PERSON_2] (status: done )",
+          "Document Collection for case B-2026-007 on 2026-04-14T00:00:00 handled by [PERSON_3] (status: chased 2x)"
         ]
       },
       "sme_context": {
@@ -1348,23 +1312,7 @@
           "Arrival"
         ]
       },
-      "past_resolutions": [
-        {
-          "resolution_id": "RES-LRN-FOY-002",
-          "resolution": "3 cases passed through Document Collection more than once — the same step is being redone instead of carried forward. Make the first Document Collection the only one: Use a fixed checklist for Document Collection so the first pass captures everything.; Record the outcome of Document Collection on the case row itself, visible to everyone.; Only repeat Document Collection when its recorded outcome is genuinely missing. Approved at HITL Gate 2 on 2026-07-11.",
-          "days_to_resolve": null
-        },
-        {
-          "resolution_id": "RES-FOY-010",
-          "resolution": "A temp covering the placements desk re-requested documents because the handover notes did not say where files were kept. Wrote a one-page desk guide covering where documents live and how the checklist is read. The next cover period ran without duplicate requests.",
-          "days_to_resolve": 9
-        },
-        {
-          "resolution_id": "RES-FOY-008",
-          "resolution": "Documents arrived by email and were saved to personal folders, so colleagues re-requested files that already existed. Created one shared folder per booking reference and made saving to it part of the intake step. Staff could see at a glance what had arrived; duplicate requests stopped.",
-          "days_to_resolve": 17
-        }
-      ]
+      "past_resolutions": []
     },
     "generated_by": "detector"
   },
