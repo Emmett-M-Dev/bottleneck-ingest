@@ -277,6 +277,65 @@ def test_no_staff_names_survive_into_the_action_queue() -> None:
     assert "[PERSON_" in blob, "the placeholders should still be there"
 
 
+# ── The foyle profile's operational patterns ─────────────────────────────────
+
+def _drive_log(profile: str) -> pd.DataFrame:
+    """A profile's whole drive, read through its ground-truth mapping."""
+    from audit.schemas import ApprovedFileMapping, ApprovedMapping
+    from readers.mapped_reader import read_mapped
+
+    cfg = config.MESSY_PROFILES[profile]
+    gt = json.loads(cfg["gt_mapping"].read_text(encoding="utf-8"))
+    approved = ApprovedMapping(
+        profile=profile, approved_at="2026-07-31T00:00:00+00:00",
+        source_proposal_generated_at="2026-07-31T00:00:00+00:00",
+        files=[ApprovedFileMapping(**f) for f in gt["files"]])
+    rows, _ = read_mapped(cfg["dir"], approved)
+    df = pd.DataFrame(rows)
+    df["stage"] = df["activity"].str.strip().str.lower()
+    df["ts"] = pd.to_datetime(df["timestamp"], errors="coerce")
+    return df
+
+
+def _drive_gt(profile: str) -> dict:
+    return json.loads(config.MESSY_PROFILES[profile]["gt_bottlenecks"]
+                      .read_text(encoding="utf-8"))
+
+
+def test_foyle_operational_patterns_are_present() -> None:
+    """The placement drive must exercise the action queue, not just the
+    structural detector — otherwise the product is demonstrated on one SME."""
+    findings = detect_case_findings(_drive_log("foyle"),
+                                    config.MESSY_PROFILES["foyle"])
+    types = {f.type for f in findings}
+    for expected in ("stage_sla_breach", "stalled_case", "unowned_case",
+                     "overloaded_owner"):
+        assert expected in types, expected
+
+
+def test_foyle_flagged_cases_are_a_strict_subset_of_the_parked_ones() -> None:
+    """The circularity guard: the generator says where each booking stopped,
+    the rules decide independently whether stopping there is a problem yet —
+    so some parked bookings must NOT be flagged."""
+    gt = _drive_gt("foyle")
+    parked = {c for cases in gt["operational_intent"]["parked_at"].values()
+              for c in cases}
+    findings = detect_case_findings(_drive_log("foyle"),
+                                    config.MESSY_PROFILES["foyle"])
+    flagged = {c for f in findings if f.type == "stage_sla_breach"
+               for c in f.affected_cases}
+    assert flagged, "the parked bookings should produce SLA breaches"
+    assert flagged < parked
+
+
+def test_foyle_unowned_matches_the_seeded_intent() -> None:
+    gt = _drive_gt("foyle")
+    findings = _by_type(detect_case_findings(_drive_log("foyle"),
+                                             config.MESSY_PROFILES["foyle"]))
+    assert (findings["unowned_case"].affected_cases
+            == sorted(gt["operational_intent"]["unowned"]))
+
+
 @pytest.mark.parametrize("profile", PROFILES)
 def test_every_profile_declares_the_action_layer_config(profile: str) -> None:
     """A new SME is a config block, not code — so every profile must carry the
