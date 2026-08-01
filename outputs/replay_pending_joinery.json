@@ -1,0 +1,44 @@
+[
+  {
+    "resolution_id": "RES-PND-JOI-001",
+    "profile": "joinery",
+    "bottleneck_type": "repetition",
+    "stage": "Site Survey",
+    "problem_description": "2 cases show the 'Site Survey' repetition pattern (repeated_entry_cases=2).",
+    "action_taken": "Review the 'Site Survey' step against past resolutions: Review the 'Site Survey' step with the staff who work it.; Compare the affected cases against the unaffected ones for what differs.; Consider the approach from RES-JOI-011: Big commercial jobs needed second visits because one surveyor could not cover everything. Sent two people on surveys ove",
+    "outcome": "Approved at HITL Gate 2 on 2026-03-30. Not yet measured — awaiting an outcome review.",
+    "days_to_resolve": null,
+    "source": "pending",
+    "status": "approved_unmeasured",
+    "decision_id": "replay-joinery-repetition-site-survey",
+    "intervention_id": null
+  },
+  {
+    "resolution_id": "RES-PND-JOI-002",
+    "profile": "joinery",
+    "bottleneck_type": "delay",
+    "stage": "Site Work Started",
+    "problem_description": "2 cases show the 'Site Work Started' delay pattern (avg_delay_days=16).",
+    "action_taken": "Review the 'Site Work Started' step against past resolutions: Review the 'Site Work Started' step with the staff who work it.; Compare the affected cases against the unaffected ones for what differs.; Consider the approach from RES-JOI-002: Jobs stalled between materials ordering and site start because supplier lead times were guessed. Recorded actual lead ti",
+    "outcome": "Approved at HITL Gate 2 on 2026-04-06. Not yet measured — awaiting an outcome review.",
+    "days_to_resolve": null,
+    "source": "pending",
+    "status": "approved_unmeasured",
+    "decision_id": "replay-joinery-delay-site-work-started",
+    "intervention_id": null
+  },
+  {
+    "resolution_id": "RES-PND-JOI-003",
+    "profile": "joinery",
+    "bottleneck_type": "rework",
+    "stage": "Site Work Started",
+    "problem_description": "2 cases show the 'Site Work Started' rework pattern (loop_back_cases=2).",
+    "action_taken": "Review the 'Site Work Started' step against past resolutions: Review the 'Site Work Started' step with the staff who work it.; Compare the affected cases against the unaffected ones for what differs.; Consider the approach from RES-JOI-005: Common fixings ran out mid-job, pausing site work while someone drove to the merchant. Kept a buffer stock of hinges, ru",
+    "outcome": "Approved at HITL Gate 2 on 2026-04-13. Not yet measured — awaiting an outcome review.",
+    "days_to_resolve": null,
+    "source": "pending",
+    "status": "approved_unmeasured",
+    "decision_id": "replay-joinery-rework-site-work-started",
+    "intervention_id": null
+  }
+]
