@@ -1,0 +1,44 @@
+{
+  "profile": "foyle",
+  "model": "none",
+  "proposal_generated_at": "2026-07-09T08:11:13.824399+00:00",
+  "conditions": {
+    "baseline": {
+      "role_accuracy": 0.6,
+      "include_accuracy": 0.4,
+      "column_exact_accuracy": 0.826,
+      "column_precision": 1.0,
+      "column_recall": 0.733,
+      "column_f1": 0.846,
+      "column_errors": 4
+    },
+    "offline": {
+      "role_accuracy": 0.6,
+      "include_accuracy": 0.4,
+      "column_exact_accuracy": 0.826,
+      "column_precision": 1.0,
+      "column_recall": 0.733,
+      "column_f1": 0.846,
+      "column_errors": 4
+    },
+    "approved": {
+      "role_accuracy": 0.6,
+      "include_accuracy": 0.6,
+      "column_exact_accuracy": 1.0,
+      "column_precision": 1.0,
+      "column_recall": 1.0,
+      "column_f1": 1.0,
+      "column_errors": 0
+    }
+  },
+  "hitl": {
+    "action": "modify",
+    "corrections": {
+      "role_changes": 1,
+      "column_changes": 1,
+      "include_toggles": 1
+    },
+    "time_to_decision_seconds": 0.5,
+    "decided_at": "2026-07-05T16:31:37.885519+00:00"
+  }
+}
