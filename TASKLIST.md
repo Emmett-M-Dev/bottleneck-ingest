@@ -21,7 +21,7 @@ This file tells an agent **exactly** what is done, what is next, and in what ord
 - [x] **Bottleneck detection — DYNAMIC** — `detection/dynamic.py::detect_dynamic()`. Statistical scan of EVERY stage, no marker config: delay = entry gaps beyond the log's own Q3+1.5×IQR threshold, repetition = a stage re-entered with no later stage in between, rework = a genuine backward transition vs `stage_order`. Returns 0..N bottlenecks ordered by impact. `detect_generic()` + `MESSY_PROFILES[p]["markers"]` remain **eval-only** (the baseline the dynamic detector is scored against).
 - [x] **LLM anomaly pass** — `detection/anomaly.py`. Aggregate per-stage stats (stage names + numbers ONLY — a leak test enforces it) → local Ollama model proposes up to 3 advisory findings → `type="anomaly"` cards badged "AI-spotted — unverified". Skipped silently when Ollama is absent.
 - [x] **Local-LLM provider layer** — `pipeline/llm.py`. Ollama `/api/chat` JSON mode, schema-in-prompt, pydantic validation + 1 retry, None on any failure. Claude keeps the precision tasks (mapping, diagnosis); Ollama takes the exploratory pass — resolves the §6a Ollama claim.
-- [x] **Detection eval** — `eval/score_detection.py`. Marker baseline vs dynamic, P/R/F1 per type vs seeded ground truth. Results: baseline macro-F1 0.524 (foyle) / 0.523 (joinery) — presence-based markers collapse on structural patterns — vs dynamic **1.000 / 1.000**.
+- [x] **Detection eval** — `eval/score_detection.py`. Marker baseline vs dynamic, P/R/F1 per type vs seeded ground truth. Results (after foyle/joinery were reseeded with parked operational cases, P0 item 4 below): baseline macro-F1 0.486 (foyle, was 0.524) / 0.487 (joinery, was 0.523) / 0.471 (advisory, untouched) — presence-based markers collapse further on structural patterns once parked cases pass through the same marker-named stages — vs dynamic **1.000 / 1.000 / 1.000** (unchanged; recall stayed 1.0 for every type throughout, only baseline precision moved).
 - [x] **Cost model** — `MESSY_PROFILES[p]["costs"]` → per-case `estimated_cost` with the basis spelled out ("5 cases × 15 days × £35/day"); total in the workflow KPIs.
 - [x] **Learning loop** — `pipeline/learn.py`. Approved/modified Gate-2 fixes append to `data/learned/learned_resolutions_<p>.json` (RES-LRN-…, source="learned") and upsert into `sme_resolutions` — the next diagnosis retrieves the SME's own approved fixes. Fired by the API on POST /api/decisions (own process). Idempotent on decision_id.
 - [x] **Impact history** — every export appends a snapshot to `outputs/history_<p>.jsonl`; a remediation apply appends one too (messy_cells → 0). Served by GET /api/history/{p}; Dashboard ImpactPanel sparklines + a badged PROJECTION line.
@@ -99,13 +99,24 @@ Work through these **top to bottom**. Do not skip ahead. Mark [x] as you go.
 
 ### 🔴 Priority 0 — Follow-ups created by the action-layer work (2026-07-23)
 
-- [ ] **Re-run + re-cite the longitudinal replay.** `eval/replay.py` is now
+- [x] **Re-ran + re-cited the longitudinal replay.** `eval/replay.py` is now
   outcome-gated: the oracle approves, completes, and only a *measured*
-  improvement at a later tick is validated and embedded. Each tick logs both
-  `lifecycle.validated` and `lifecycle.approved_unmeasured`, so the write-up can
-  put the outcome-gated curve next to the old approval-gated one. Run for foyle
-  and joinery, regenerate the figures, and expect the learning curve to shift
-  right and possibly sit lower — that is the honest result, not a regression.
+  improvement at a later tick is validated and embedded. Ran for both foyle and
+  joinery and regenerated the figures. Result: **`lifecycle.validated` stayed at
+  0 for the full 9-tick window, in both profiles** — no oracle-approved fix was
+  ever completed and re-measured against a later tick showing genuine
+  improvement, so nothing entered `sme_resolutions`. `lifecycle.approved_unmeasured`
+  (what the old approval-gated loop would have trusted by the same tick) reached
+  **3** in both profiles (foyle by tick 4, joinery by tick 6) and held. Cause,
+  traced to source: affected-case counts only *grow* in a recording (2→3→4), so
+  `actions/outcome.py::compare` can never return a measured improvement inside
+  this window; `tests/test_replay.py` proves the validation path does work when
+  a finding genuinely disappears, so this is the honest behaviour of a sound
+  mechanism, not a bug. The previously cited "learned-hit rate 0 → 1" does
+  **not** survive outcome gating — see `CLAUDE.md` §7. `outputs/replay_pending_<p>.json`
+  and `outputs/replay_interventions_<p>.json` substantiate both curves;
+  `replay_learned_<p>.json` was not produced (only written on a promotion, and
+  none occurred).
 
 - [x] **Filled the LLM column for `advisory`.** Ran `python -m audit.run
   --profile advisory` online, replacing the offline heuristic-only proposal.
@@ -121,11 +132,22 @@ Work through these **top to bottom**. Do not skip ahead. Mark [x] as you go.
   that predates the drift and is a separate, genuine finding (CLAUDE.md §7),
   not something this fix touches.
 
-- [ ] **Seed operational patterns into foyle/joinery, or state why not.** Both
-  drives were built for structural bottlenecks, so every case reaches a terminal
-  stage and their action queues contain no case-level work. Honest, but it makes
-  the Today view thin for those two. Re-seeding would move their eval numbers,
-  so this is a deliberate decision, not a bug fix.
+- [x] **Seeded operational patterns into foyle/joinery.** Both drives now carry
+  *parked* cases (stalled at a stage, unowned, piled onto one owner) alongside
+  their original structural delay/repetition/rework patterns, mirroring the
+  advisory drive's design: each generator records only *where* a case was
+  parked; `detection/case_rules.py` decides independently whether that breaches
+  an SLA (same circularity guard as advisory), and flags strictly fewer cases
+  than were parked (tests assert it, both profiles). Neither drive has a money
+  column, so `unrealised_value` stays out of reach for foyle/joinery **by
+  design** — a test pins that absence. This did move the eval numbers as
+  expected (detection macro-F1 baseline: foyle 0.524→0.486, joinery 0.523→0.487,
+  dynamic unchanged at 1.000/1.000 — see the DONE section's detection-eval line
+  above), which is the deliberate, accepted trade-off. Result: foyle and
+  joinery action queues are no longer thin — 12 items each (`stage_sla_breach`
+  ×4, `stalled_case` ×1, `unowned_case` ×1, `overloaded_owner` ×1, plus the
+  original `delay`/`rework`/`repetition`/`messy_status_values`/`stale_duplicate_file`
+  ×1 each).
 
 ### 🔴 Priority 1 — Dissertation integrity (must resolve before write-up)
 
@@ -149,6 +171,20 @@ Work through these **top to bottom**. Do not skip ahead. Mark [x] as you go.
   CLAUDE.md + HANDOVER.md use chronological numbering: mapping = Gate 1, fixes = Gate 2.
   Code comments in `hitl-react/api/main.py` and some bridge files say the opposite.
   Do a search-and-replace pass when touching those files.
+
+- [ ] **Latent bug: structural diagnosis join keys on rank order, not content.**
+  `actions/build.py::_structural_items` joins diagnosis prose onto detected
+  bottlenecks by `bn.id`, and `detection/dynamic.py` assigns `id` purely by
+  rank order (`f"BN{i:03d}"`). It has only ever lined up by luck — confirmed
+  during the 2026-08-01 action-queue rebuild, when a stale `ui_cases_<profile>.json`
+  cache (predating the foyle/joinery reseed) happened to still match because
+  the reseed didn't reorder the three structural types. A future reseed that
+  *does* reorder delay/repetition/rework would silently mis-attribute one
+  bottleneck's diagnosis text to another, with no error raised. Fix = key the
+  join on a content hash of `(type, stage, metric_label)` instead of `bn.id`.
+  Not fixed by the eval-debt plan (out of its "no `.py` changes" scope) —
+  carried here as a known hazard for whoever next touches `actions/build.py`.
+  See HANDOVER.md §8 gotcha 16.
 
 ### 🟡 Priority 2 — Write-up artefacts (before report submission)
 
@@ -213,3 +249,5 @@ Work through these **top to bottom**. Do not skip ahead. Mark [x] as you go.
 11. **Dashboard-triggered exports attempt one Claude diagnosis call per bottleneck** (~30–90 s per export) plus one local Ollama anomaly call. Set `DIAGNOSE_OFFLINE=1` in the hitl-react API server env (or pass `--offline`) to force templates + skip the anomaly pass without code changes.
 12. **Ollama is optional** — no local model = anomaly pass silently absent, nothing breaks. For the demo: install Ollama for Windows + `ollama pull qwen2.5:7b`. **RAM:** 7b needs ~6 GB free to load; on Emmett's 8 GB laptop it fails (`unable to allocate CPU_REPACK buffer`). This machine runs `qwen2.5:1.5b` instead — set `OLLAMA_MODEL=qwen2.5:1.5b` in the hitl-react API server env (and any CLI shell running a live export). Code default stays 7b (the dissertation claim); the env knob is the per-machine override. Verified working end-to-end on 1.5b (produces 3 anomaly findings on foyle).
 13. **`sme_resolutions` now also holds learned entries** (`RES-LRN-…`, source="learned", from `data/learned/`). `pipeline.embed_resolutions --reset` wipes them from the collection — re-run `python -m pipeline.learn`'s embed (or re-approve) after a reset, or just re-run `python -c "from pipeline.learn import embed_learned; embed_learned('<p>')"`.
+14. **`actions/build.py::_structural_items` joins diagnosis prose by `bn.id`, a rank-order id, not a content key** — a future reseed that reorders the structural pattern types would silently mis-attribute diagnosis text between bottlenecks. Not a hypothetical: this is exactly what a stale `ui_cases_<profile>.json` cache was found doing (correctly, by luck) after the 2026-08-01 foyle/joinery reseed. See TASKLIST Priority 1 and HANDOVER.md §8 gotcha 16.
+15. **`DIAGNOSE_OFFLINE` does not protect every export** — only `bridge/export_messy.py` reads it. `bridge/export_actions.py` has no live-diagnosis path at all; its structural items' diagnosis text comes entirely from whatever `outputs/ui_cases_<profile>.json` cache is already on disk. Setting the env var before running `export_actions` alone does nothing — refresh the cache with `export_messy --offline` (or `DIAGNOSE_OFFLINE=1`) first if template-only text is required.

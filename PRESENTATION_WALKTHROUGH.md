@@ -172,16 +172,18 @@ netstat -ano | Select-String ":8000\s+.*LISTENING"      # expect ONE pid
 | Thing | Right now |
 |---|---|
 | Active profile | `foyle` (`outputs/active_profile.txt`) |
-| Event log holds | `foyle` (`outputs/event_log_profile.txt`) |
-| foyle mapping proposal | **offline/heuristic** — badge will read 📐, mess report empty |
+| Event log holds | `advisory` (`outputs/event_log_profile.txt`) — last touched by an eval-debt task's action-queue rebuild; mismatched against the active profile until the next ingest/switch. That mismatch is exactly gotcha #11 in HANDOVER.md §8 — re-run `ingest.py --source messy --profile foyle` (or just switch in the dashboard, which re-ingests) before demoing |
+| foyle mapping proposal | **LLM, claude-opus-4-8** — badge reads 🤖, mess report populated (regenerated online 2026-08-01) |
 | joinery mapping proposal | **LLM, claude-opus-4-8** — badge reads 🤖, mess report populated |
-| advisory mapping proposal | **offline/heuristic** — badge reads 📐 |
-| foyle approved mapping | drifted; scores F1 **0.800**, not 1.000. `git checkout mappings/approved_foyle.json` restores it |
+| advisory mapping proposal | **LLM, claude-opus-4-8** — badge reads 🤖, mess report populated (regenerated online 2026-08-01) |
+| foyle approved mapping | **restored** — scores column F1 **1.000** (role_accuracy 0.6, a separate, genuine finding — §4.4 below). The old drift-recovery command (`git checkout mappings/approved_foyle.json`) would **not** have fixed this, since the drifted mapping was itself committed; it was recovered from its known-good commit instead |
 | Interventions for advisory | **zero** — the "What we did about it" board will be empty until you approve something live |
 
-**Therefore: open Gate 1 on `joinery`, not on advisory.** It is the only profile
-whose committed proposal is a genuine Claude output, so it is the only one where
-the mess report and the per-column confidences are real AI. Say so out loud.
+**All three profiles now have a genuine Claude-generated mapping proposal on
+disk**, not just joinery — foyle and advisory were both regenerated online
+during the eval-debt work. Any of the three will show a real mess report and
+real per-column confidences; joinery is simply the one whose proposal predates
+that work (committed 2026-07-05) rather than being freshly regenerated.
 
 ---
 
@@ -436,22 +438,28 @@ files side by side: `pending_*` has every approval ever (never embedded),
 
 ### 4.4 Tab: **Mapping Review** — HITL Gate 1
 
-**Use `joinery` for this.** It is the only profile whose committed proposal is a
-real Claude output.
+**`joinery` still works well for this** and is the profile the rest of this
+section walks through, but it is no longer the *only* one with a genuine
+Claude proposal — foyle and advisory were both regenerated online during the
+eval-debt work (§3 above), so all three now show a real mess report if you
+open Gate 1 on them.
 
 **You click:** the Mapping Review tab.
 
 | Element | Source |
 |---|---|
 | *"Drive `…/messy_joinery` → profile `joinery`"* | file path |
-| *"4 sheets scanned · **🤖 LLM audit** · claude-opus-4-8"* | **the tell.** `proposal.mode` is `"llm"` or `"offline"`. On foyle/advisory right now it reads *"📐 heuristic (offline) · none"* |
+| *"4 sheets scanned · **🤖 LLM audit** · claude-opus-4-8"* | **the tell.** `proposal.mode` is `"llm"` or `"offline"`. All three profiles currently read *"🤖 LLM audit"* — an offline/heuristic proposal (📐, empty mess report) only appears after someone re-runs `audit.run --offline` locally |
 | **Mess report** (amber box) | **[CLAUDE]** — cross-file reasoning. e.g. *"jobs spring - Marks copy.xlsx appears to be a renamed personal copy potentially duplicating jobs 2026.xlsx rows…"*, *"No event coverage for 2025…"* |
 
-> **The demo moment:** switch to a profile with an offline proposal and show the
-> mess report is **empty**. The heuristic baseline literally cannot produce one —
-> it does per-header alias lookup and has no cross-file view
+> **The demo moment:** all three profiles currently show an LLM proposal, so to
+> get the contrast live you need `audit.run --profile <p> --offline` first
+> (free, no API call) to write a heuristic proposal, then reload the tab and
+> show the mess report is **empty**. The heuristic baseline literally cannot
+> produce one — it does per-header alias lookup and has no cross-file view
 > ([audit/propose.py:29](audit/propose.py#L29)). That gap *is* the argument for
-> the LLM audit.
+> the LLM audit; the eval table below (`outputs/eval_mapping_*.json`) is where
+> the same contrast is measured rather than shown.
 
 **You click:** a file row to expand it.
 
@@ -479,20 +487,30 @@ mounted. **Those are the measurable HITL numbers in the dissertation** — not a
 estimate, a logged observation.
 
 > ⚠️ **Do not click Approve on `foyle` during the demo** unless you mean to. It
-> overwrites `mappings/approved_foyle.json` and moves the eval numbers. Recovery:
-> `git checkout mappings/approved_foyle.json`.
+> overwrites `mappings/approved_foyle.json` and moves the eval numbers. If it
+> happens, a bare `git checkout mappings/approved_foyle.json` will **not** fix
+> it — a drifted foyle mapping has itself been committed before (`c92caef`), so
+> that command can restore the drift rather than remove it. Recover from a
+> known-good commit instead: `git checkout a8e3437 -- mappings/approved_foyle.json`.
 
 **The eval table this screen produces** (`outputs/eval_mapping_*.json`), column
 mapping **F1**, three conditions:
 
 | Profile | baseline (alias heuristic) | LLM | human-approved |
 |---|---|---|---|
-| foyle | 0.846 | 0.968 | 1.000 *(currently 0.800 — drifted, see above)* |
+| foyle | 0.846 | 0.968 | 1.000 |
 | **joinery** | **0.308** | **0.909** | **1.000** |
-| advisory | 0.500 | *not yet run online* | 1.000 |
+| advisory | 0.500 | 0.766 | 1.000 |
 
 Joinery is the headline: the baseline **collapses** on the renamed-header fork,
 the LLM recovers it, the human gate closes the residual (2 column corrections).
+Advisory's LLM figure (0.766) is the weakest of the three online conditions —
+precision 0.621 (11 column errors) against recall 1.0, i.e. the LLM over-includes
+columns on that profile rather than missing them. Foyle's human-approved
+condition is a genuine mixed result rather than a clean sweep: column F1 is
+1.000, but `role_accuracy` is only 0.6 — the approver mislabelled two file
+roles (`host families 2026.xlsx`, `staff phone list.xlsx`) even though every
+column mapping was corrected. That is a real finding about Gate 1, not a defect.
 
 ---
 
@@ -559,14 +577,22 @@ macro-F1 against seeded ground truth:
 
 | Profile | marker baseline | dynamic detector |
 |---|---|---|
-| foyle | 0.524 | **1.000** |
-| joinery | 0.523 | **1.000** |
+| foyle | 0.486 | **1.000** |
+| joinery | 0.487 | **1.000** |
 | advisory | 0.471 | **1.000** |
 
-The baseline scores **precision 0.10–0.17** on repetition and rework — it flags
+foyle and joinery moved from their earlier 0.524/0.523 once parked operational
+cases (§4.3's action-queue items) were seeded alongside the structural
+patterns: recall held at 1.0 for every type throughout, only baseline
+precision fell further, because the presence-based baseline flags any parked
+case that merely *passes through* a marker-named stage. The gap widened, not
+narrowed — a stronger result for statistical detection. advisory's drive is
+untouched, so its figure stands.
+
+The baseline scores **precision 0.095–0.167** on repetition and rework — it flags
 every case that merely *contains* the marker stage. The dynamic detector asks
 whether the stage genuinely repeats without progress, or is genuinely returned
-to. Same recall, 6× the precision.
+to. Same recall, up to 10× the precision.
 
 > **Circularity guard, say it before you are asked:** the generator
 > (`synthetic/generate_messy_*.py`) and the detector (`detection/dynamic.py`) are
@@ -654,12 +680,19 @@ Volunteering these reads as rigour. Being caught on them reads as the opposite.
 
 1. **The dashboard does not run the LangGraph loop.** FastAPI orchestrates the
    same steps as CLI subprocesses. The graph is a second, auditable entry point.
-2. **`advisory`'s mapping proposal was generated offline**, so its baseline and
-   "LLM" eval conditions are the same heuristic. `python -m audit.run --profile
-   advisory` (online, one API call) fills the middle column.
-3. **`mappings/approved_foyle.json` currently scores 0.800, not 1.000** — it was
-   re-approved in the browser. That is the documented mapping-drift hazard, and
-   it is itself a finding about HITL systems. `git checkout` restores it.
+2. **foyle and joinery's detection baseline moved further** (0.524→0.486,
+   0.523→0.487) once both drives were seeded with parked operational cases
+   alongside their structural patterns. Recall held at 1.0 throughout — only
+   baseline precision fell, because the presence-based marker detector flags
+   any parked case that merely passes through a marker-named stage without
+   exhibiting the pattern. This widens the baseline→dynamic gap; it does not
+   weaken the dynamic detector's case, which stayed at 1.000 on both.
+3. **`mappings/approved_foyle.json` is back to its pre-drift state** (column
+   F1 1.000; `role_accuracy` 0.6 is a separate, genuine finding — §4.4). If it
+   drifts again, `git checkout mappings/approved_foyle.json` will **not** fix
+   it — a drifted version has itself been committed before (`c92caef`).
+   Recover from a known-good commit instead: `git checkout a8e3437 --
+   mappings/approved_foyle.json`.
 4. **`detection_confidence` is a hand-set calibration constant per finding
    type**, not a learned probability.
 5. **`expected_improvement_pct` is an authored guess per template.** It is
@@ -691,7 +724,7 @@ Volunteering these reads as rigour. Being caught on them reads as the opposite.
 | "Does the system learn?" | Yes, but only from proven fixes. Approval writes to `pending_*` (never embedded). Only an intervention measured against a *later* analysis and confirmed by a human reaches `learned_*` and the vector store. A one-off migration already demoted 3 foyle entries written under the old approval-is-proof rule. | [pipeline/learn.py](pipeline/learn.py) |
 | "What if the fix doesn't work?" | `effective` is tri-state. A move inside ±10% returns `None` — "not enough evidence yet" — which is the honest answer most often. `None` never becomes trusted knowledge and is never written off as failure either. | [actions/outcome.py](actions/outcome.py) |
 | "Why not pyarrow / why fastparquet?" | Importing pyarrow loads the Arrow C++ runtime, which segfaults in-process with chroma/hnswlib + torch on Windows. Same reason `audit/` and `remediate/` run as separate processes. | [requirements.txt:7](requirements.txt#L7) |
-| "How many tests?" | 193 passing. `python -m pytest -q`. | — |
+| "How many tests?" | 202 passing. `python -m pytest -q`. | — |
 
 ---
 

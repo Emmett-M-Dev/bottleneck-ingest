@@ -200,12 +200,26 @@ the weakest of the three — precision drops on that profile even though recall
 stays at 1.0. Human gate closes the residual (foyle: 1 correction; joinery: 2).
 Full JSON: `outputs/eval_mapping_<profile>.json`.
 
-## 7. Current state (2026-07-09)
+## 7. Current state (2026-08-01)
 
-- **All milestones M0–M6 shipped.** Two profiles run end-to-end through one pipeline.
-- Both repos committed & clean on `master`. Latest: `c861945` (ingest), `5274db9` (react).
-- Foyle drive back to its **reproducible 5-file** state (2 ad-hoc test sheets dropped this session; pipeline unwound to 114 events / 18 cases; `mappings/approved_*.json` browser-drift reverted).
-- Tests green (`pytest -q`): mapping/remediation/detection/ground-truth suites pass.
+- **All milestones M0–M6 shipped**, plus the action layer (§0). Three profiles —
+  foyle, joinery, advisory — run end-to-end through one pipeline.
+- **All four action-layer Priority-0 follow-ups are closed** (`TASKLIST.md`): the
+  mapping F1 table is reproducible from `outputs/` for all three profiles, the
+  foyle mapping is back to its pre-drift state (`e2eb650`), the longitudinal
+  replay has been re-run and re-cited under the outcome-gated learning loop
+  (§6a note below), and foyle + joinery now carry parked operational cases so
+  their action queues (12 items each) are no longer thin.
+- foyle and joinery's detection baseline macro-F1 moved from 0.524/0.523 to
+  0.486/0.487 once those parked cases were seeded — recall held at 1.0
+  throughout, only baseline precision fell further (the dynamic detector stayed
+  at 1.000 for both). advisory's drive is untouched; its 0.471 stands. See
+  `CLAUDE.md` §7 for the per-type detail.
+- The replay's honest result: `lifecycle.validated` stays at 0 for the full
+  9-tick window in both profiles under outcome gating; `lifecycle.approved_unmeasured`
+  (what the old approval-gated loop would have trusted) reaches 3 in both
+  (foyle tick 4, joinery tick 6). See `CLAUDE.md` §7 for why.
+- Tests green (`pytest -q`): **202 passed.**
 
 ## 8. Gotchas & constraints (read before touching)
 
@@ -224,6 +238,8 @@ Full JSON: `outputs/eval_mapping_<profile>.json`.
 13. **Vite binds to IPv6.** `curl http://127.0.0.1:5173` fails; `http://localhost:5173` works. Only matters when smoke-testing from a shell.
 14. **Never leave two uvicorn instances on port 8000.** Uvicorn sets `SO_REUSEADDR`, so a second instance binds happily and Windows hands each connection to *either* one — so half the requests get served by whichever build that instance is running. The symptom is maddening: the dashboard shows correct data, then stale data, with no pattern. Check with `netstat -ano | Select-String ":8000\s+.*LISTENING"` and expect exactly one PID. A `--reload` parent killed from a wrapper can leave its worker alive, so kill by command line: `Get-CimInstance Win32_Process -Filter "Name='python.exe'" | Where-Object { $_.CommandLine -match 'uvicorn|multiprocessing-fork' } | Stop-Process -Force`.
 15. **A profile switch re-ingests, and that takes minutes.** The API's subprocess timeout is 900s for ingest-shaped work (`_TIMEOUT_INGEST`) and 180s for everything else; a timeout now returns a 504 with the command in it rather than dropping the connection. The dashboard clears the previous SME's queue on switch and says it is analysing — it must never render a queue whose `profile` differs from the one requested.
+16. **`actions/build.py::_structural_items` joins diagnosis prose onto findings by `bn.id`, which `detection/dynamic.py` assigns by RANK ORDER, not content.** It only lines up correctly because no reseed so far has reordered the three structural pattern types (delay/repetition/rework stayed BN001/BN002/BN003 for both foyle and joinery through the 2026-08-01 reseed). A future reseed that *does* reorder them would silently mis-attribute one bottleneck's diagnosis text to another — confirmed as a live risk, not a hypothetical, when a stale `ui_cases_<profile>.json` cache was caught doing exactly this position-keyed join during the action-queue rebuild. Fix = key the join on a content hash of `(type, stage, metric_label)` instead of `bn.id`; not done — tracked in `TASKLIST.md`.
+17. **`DIAGNOSE_OFFLINE` only reaches `bridge.export_messy`; `bridge.export_actions` never reads it and has no live-diagnosis path of its own.** The structural (delay/repetition/rework) items in an action queue get their diagnosis prose entirely from whichever `outputs/ui_cases_<profile>.json` cache already exists on disk — real LLM prose if that cache was last populated by an *online* `export_messy` run, template prose if it wasn't — regardless of how `export_actions` itself is invoked. Setting `DIAGNOSE_OFFLINE=1` before running `export_actions` has zero effect on it; if the queue needs to be guaranteed template-only, `export_messy --offline` (or with `DIAGNOSE_OFFLINE=1`) must be re-run first to refresh that cache.
 
 ## 9. What's next (candidates, none blocking)
 
