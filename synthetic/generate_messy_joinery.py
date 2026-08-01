@@ -25,6 +25,11 @@ so the dynamic detector must find them from the data alone:
     rework      — the job drops BACK to Site Work Started after Snagging
                   (post-handover call-back)
 
+Nine jobs are also PARKED mid-flow and left — two with no fitter's name, six
+held by one fitter. Those exercise the case-level rules (the action queue)
+rather than the stage detector. The generator records only where each job
+stopped; the rules decide whether that breaches anything.
+
 EVERYTHING is synthetic. Run:  python synthetic/generate_messy_joinery.py
 """
 
@@ -58,24 +63,87 @@ OPEN_ISH = ["waiting on glass", "supplier late", "client to confirm", "", "tbc"]
 _N_COPIED_JOBS = 2    # main-sheet jobs Mark also pasted into his copy
 _N_COPIED_EVENTS = 3
 
+# The drive's "today" — see the note in generate_messy_foyle.py.
+AS_OF = datetime(2026, 6, 30)
+
+# Jobs parked mid-flow. Mark holds six open jobs against a load limit of 4.
+# The two-week-old Materials Ordered job (14-day SLA) and the two-week-old
+# Invoice Sent job (30-day SLA) are parked but NOT in breach — the rules have
+# to draw that line themselves.
+_OPERATIONAL: list[dict] = [
+    {"park": "Quote Sent",        "weeks": 3, "owner": "Mark Deehan"},
+    {"park": "Quote Sent",        "weeks": 5, "unowned": True},
+    {"park": "Quote Accepted",    "weeks": 4, "owner": "Mark Deehan"},
+    {"park": "Materials Ordered", "weeks": 4, "owner": "Mark Deehan"},
+    {"park": "Materials Ordered", "weeks": 2, "owner": "Mark Deehan"},
+    {"park": "Site Work Started", "weeks": 5, "owner": "Mark Deehan"},
+    {"park": "Snagging",          "weeks": 3, "owner": "Ciara McCrossan"},
+    {"park": "Invoice Sent",      "weeks": 2, "unowned": True},
+    {"park": "Site Survey",       "weeks": 4, "owner": "Mark Deehan"},
+]
+
+
+def build_operational() -> tuple[list[dict], dict]:
+    """Jobs that stopped mid-flow, each translated so its LAST event sits
+    exactly `weeks` before AS_OF. Built after the structural jobs so their
+    random stream is untouched."""
+    events: list[dict] = []
+    intent: dict = {"parked_at": {}, "unowned": []}
+
+    for i, plan in enumerate(_OPERATIONAL):
+        cid = f"J-{1036 + i}"
+        case = _job_events(cid, datetime(2026, 1, 1), delay=False,
+                           rework=False, repetition=False,
+                           park_at=plan["park"],
+                           unowned=plan.get("unowned", False),
+                           owner=plan.get("owner"))
+        shift = (AS_OF - timedelta(weeks=plan["weeks"])) - case[-1]["ts"]
+        for e in case:
+            e["ts"] += shift
+        events.extend(case)
+        intent["parked_at"].setdefault(plan["park"], []).append(cid)
+        if plan.get("unowned"):
+            intent["unowned"].append(cid)
+
+    intent["unowned"].sort()
+    for stage in intent["parked_at"]:
+        intent["parked_at"][stage].sort()
+    return events, intent
+
 
 def _mess(stage: str) -> str:
     return random.choice([stage, stage.upper(), stage.lower(), stage + " "])
 
 
 def _job_events(cid: str, start: datetime, *, delay: bool, rework: bool,
-                repetition: bool) -> list[dict]:
+                repetition: bool, park_at: str | None = None,
+                unowned: bool = False,
+                owner: str | None = None) -> list[dict]:
+    """One job's event sequence.
+
+    `park_at` truncates the job so it is left sitting at that stage; `unowned`
+    leaves the Fitter cell blank; `owner` pins one fitter. All three default to
+    the original behaviour, so synthetic/generate_stream.py is unaffected."""
     events: list[dict] = []
     t = start
 
     def add(stage: str, status: str | None = None) -> None:
+        if status is None and park_at == stage:
+            status = random.choice(OPEN_ISH)
         events.append({"case_id": cid, "activity": _mess(stage), "ts": t,
-                       "actor": random.choice(FITTERS),
+                       "actor": "" if unowned else (owner or random.choice(FITTERS)),
                        "status": status or random.choice(DONE_ISH)})
 
+    def parked(stage: str) -> bool:
+        return park_at == stage
+
     add("Quote Sent")
+    if parked("Quote Sent"):
+        return events
     t += timedelta(days=random.randint(2, 5))
     add("Quote Accepted")
+    if parked("Quote Accepted"):
+        return events
     t += timedelta(days=random.randint(1, 3))
     add("Site Survey")
     if repetition:
@@ -83,13 +151,19 @@ def _job_events(cid: str, start: datetime, *, delay: bool, rework: bool,
         # entered a second time. A literal duplicate occurrence.
         t += timedelta(days=random.randint(1, 3))
         add("Site Survey", random.choice(OPEN_ISH))
+    if parked("Site Survey"):
+        return events
     t += timedelta(days=random.randint(1, 3))
     add("Materials Ordered")
+    if parked("Materials Ordered"):
+        return events
     # The delay signal: materials lead time into Site Work Started. 12-18
     # days sits safely above the worst-case dynamic outlier threshold
     # (normal gaps top out at 7 days).
     t += timedelta(days=random.randint(12, 18) if delay else random.randint(1, 3))
     add("Site Work Started")
+    if parked("Site Work Started"):
+        return events
     t += timedelta(days=random.randint(2, 5))
     add("Snagging")
     if rework:
@@ -97,8 +171,12 @@ def _job_events(cid: str, start: datetime, *, delay: bool, rework: bool,
         # snagging. A genuine backward transition against stage_order.
         t += timedelta(days=random.randint(3, 6))
         add("Site Work Started", random.choice(OPEN_ISH))
+    if parked("Snagging"):
+        return events
     t += timedelta(days=random.randint(1, 3))
     add("Invoice Sent")
+    if parked("Invoice Sent"):
+        return events
     t += timedelta(days=random.randint(3, 7))
     add("Payment Received")
     return events
@@ -193,6 +271,13 @@ def main() -> None:
 
     main_events, fork_events, gt = build_jobs()
 
+    # Anchor the structural jobs on AS_OF, then build the parked ones (which
+    # position themselves relative to AS_OF directly).
+    shift = AS_OF - max(e["ts"] for e in main_events + fork_events)
+    for e in main_events + fork_events:
+        e["ts"] += shift
+    operational, op_intent = build_operational()
+
     # Mark pasted a couple of main-sheet jobs into his personal copy too —
     # same rows, his headers. The approved mapping's dedup must absorb them.
     copied_cids = [f"J-{1021 + i}" for i in (4, 5)][:_N_COPIED_JOBS]
@@ -200,7 +285,7 @@ def main() -> None:
               for e in [x for x in main_events if x["case_id"] == cid][:_N_COPIED_EVENTS]]
 
     writes = [
-        ("jobs 2026.xlsx", _frame(main_events, MAIN_HEADERS, "%d/%m/%Y")),
+        ("jobs 2026.xlsx", _frame(main_events + operational, MAIN_HEADERS, "%d/%m/%Y")),
         ("jobs spring - Marks copy.xlsx",
          _frame(fork_events + copied, FORK_HEADERS, "%Y-%m-%d")),
         ("materials orders.xlsx", build_materials()),
@@ -212,14 +297,18 @@ def main() -> None:
 
     GT_MAPPING_FILE.write_text(json.dumps(_ground_truth_mapping(), indent=2),
                                encoding="utf-8")
-    n_jobs = len({e["case_id"] for e in main_events + fork_events})
+    n_jobs = len({e["case_id"] for e in main_events + fork_events + operational})
     payload = {"generated_at": datetime.now().isoformat(), "seed": SEED,
-               "cases": n_jobs, "bottlenecks": gt}
+               "as_of": AS_OF.isoformat(), "cases": n_jobs,
+               "bottlenecks": gt, "operational_intent": op_intent}
     GT_BOTTLENECKS_FILE.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
     print(f"Ground truth: {GT_MAPPING_FILE.name}, {GT_BOTTLENECKS_FILE.name}")
     print(f"Seeded over {n_jobs} jobs: {len(gt['delay'])} delay, "
           f"{len(gt['repetition'])} repetition, {len(gt['rework'])} rework")
+    parked = {k: len(v) for k, v in op_intent["parked_at"].items()}
+    print(f"Parked jobs by stage: {parked}  "
+          f"unowned: {len(op_intent['unowned'])}")
 
 
 if __name__ == "__main__":

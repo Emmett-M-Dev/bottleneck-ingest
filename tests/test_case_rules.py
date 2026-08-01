@@ -336,6 +336,35 @@ def test_foyle_unowned_matches_the_seeded_intent() -> None:
             == sorted(gt["operational_intent"]["unowned"]))
 
 
+def test_joinery_operational_patterns_are_present() -> None:
+    findings = detect_case_findings(_drive_log("joinery"),
+                                    config.MESSY_PROFILES["joinery"])
+    types = {f.type for f in findings}
+    for expected in ("stage_sla_breach", "stalled_case", "unowned_case",
+                     "overloaded_owner"):
+        assert expected in types, expected
+
+
+def test_joinery_flagged_jobs_are_a_strict_subset_of_the_parked_ones() -> None:
+    gt = _drive_gt("joinery")
+    parked = {c for cases in gt["operational_intent"]["parked_at"].values()
+              for c in cases}
+    findings = detect_case_findings(_drive_log("joinery"),
+                                    config.MESSY_PROFILES["joinery"])
+    flagged = {c for f in findings if f.type == "stage_sla_breach"
+               for c in f.affected_cases}
+    assert flagged
+    assert flagged < parked
+
+
+def test_joinery_unowned_matches_the_seeded_intent() -> None:
+    gt = _drive_gt("joinery")
+    findings = _by_type(detect_case_findings(_drive_log("joinery"),
+                                             config.MESSY_PROFILES["joinery"]))
+    assert (findings["unowned_case"].affected_cases
+            == sorted(gt["operational_intent"]["unowned"]))
+
+
 @pytest.mark.parametrize("profile", PROFILES)
 def test_every_profile_declares_the_action_layer_config(profile: str) -> None:
     """A new SME is a config block, not code — so every profile must carry the
