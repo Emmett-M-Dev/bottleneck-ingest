@@ -1,0 +1,1648 @@
+{
+  "profile": "joinery",
+  "workflow": "Job pipeline",
+  "case_noun": "job",
+  "ui": {
+    "brand": "McCrossan Joinery",
+    "context": "Job Ops",
+    "domain": "joinery & fit-out",
+    "initials": "MJ"
+  },
+  "currency": "£",
+  "generated_at": "2026-08-01T19:47:25.905109+00:00",
+  "analysis_date": "2026-06-30",
+  "snapshot_id": "SNAP-JOI-3fcfce40",
+  "totals": {
+    "open_items": 12,
+    "revenue_at_risk": 46800.0,
+    "cost_incurred": 3569.2,
+    "hours_at_risk": 37.1,
+    "cases_affected": 17,
+    "by_category": {
+      "case_action": 6,
+      "process_intervention": 4,
+      "data_quality": 2
+    },
+    "data_quality_confidence": 0.96
+  },
+  "sections": {
+    "revenue_at_risk": [
+      {
+        "action_id": "ACT-JOI-5bc9a463",
+        "profile": "joinery",
+        "finding_key": "unowned_case::::unowned_cases",
+        "finding_type": "unowned_case",
+        "title": "2 open case(s) have no owner",
+        "summary": "Work with nobody's name against it is work nobody is doing.",
+        "workflow": "Job pipeline",
+        "stage": "",
+        "affected_case_ids": [
+          "J-1037",
+          "J-1043"
+        ],
+        "evidence": [
+          {
+            "kind": "metric",
+            "label": "unowned_cases",
+            "detail": "Work with nobody's name against it is work nobody is doing.",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": "unowned_cases",
+            "metric_value": 2.0,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "J-1037",
+            "detail": "at Quote Sent",
+            "source_ref": "jobs 2026.xlsx:Sheet1:78",
+            "source_file": "jobs 2026.xlsx",
+            "sheet": "Sheet1",
+            "row": 78,
+            "case_id": "J-1037",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "J-1043",
+            "detail": "at Invoice Sent",
+            "source_ref": "jobs 2026.xlsx:Sheet1:106",
+            "source_file": "jobs 2026.xlsx",
+            "sheet": "Sheet1",
+            "row": 106,
+            "case_id": "J-1043",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "unowned_cases",
+        "metric_value": 2.0,
+        "detection_confidence": 0.99,
+        "data_quality_confidence": 0.96,
+        "impact": {
+          "category": "revenue_at_risk",
+          "currency": "£",
+          "revenue_at_risk": 10400.0,
+          "cost_incurred": null,
+          "hours_at_risk": null,
+          "capacity_pct": null,
+          "delivery_risk": "high",
+          "affected_case_count": 2,
+          "basis": "2 case(s) × £5,200 average case value",
+          "is_projection": true
+        },
+        "recommended_action": "Assign an owner to 2 unowned job(s)",
+        "action_steps": [
+          "Put a name against each listed job.",
+          "Tell that person it is theirs.",
+          "Make an owner mandatory before a job leaves its first stage."
+        ],
+        "action_category": "case_action",
+        "action_template": null,
+        "owner": "Workshop manager",
+        "due_date": "2026-07-03",
+        "status": "proposed",
+        "created_at": "2026-06-30",
+        "updated_at": "2026-06-30",
+        "source_records": [
+          "jobs 2026.xlsx:Sheet1:78",
+          "jobs 2026.xlsx:Sheet1:106"
+        ],
+        "intervention_id": null,
+        "rank_score": 78.87,
+        "rank_explanation": [
+          "£10,400 projected at risk (100% of the largest item) → 40.0 pts",
+          "high client-delivery risk → 20.0 pts",
+          "2 affected case(s), the queue's widest is 6 → 6.7 pts",
+          "due in 3 day(s) → 13.0 pts",
+          "detection confidence 99% scales 79.7 → 78.9 pts"
+        ],
+        "llm_payload": null,
+        "generated_by": "case_rule",
+        "execution": {
+          "route": "tracked",
+          "will_modify_files": false,
+          "explanation": "Case-level work. Approving assigns and tracks it; the system does not touch any files."
+        },
+        "sent_to_llm": {
+          "used_llm": false,
+          "payload": null,
+          "note": "Nothing about this item was sent to a language model."
+        }
+      },
+      {
+        "action_id": "ACT-JOI-314cb4d1",
+        "profile": "joinery",
+        "finding_key": "stage_sla_breach::quote sent::days_over_sla",
+        "finding_type": "stage_sla_breach",
+        "title": "2 case(s) past the Quote Sent SLA",
+        "summary": "The agreed limit at Quote Sent is 7 days; the worst has waited 35.",
+        "workflow": "Job pipeline",
+        "stage": "Quote Sent",
+        "affected_case_ids": [
+          "J-1036",
+          "J-1037"
+        ],
+        "evidence": [
+          {
+            "kind": "metric",
+            "label": "days_over_sla",
+            "detail": "The agreed limit at Quote Sent is 7 days; the worst has waited 35.",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": "days_over_sla",
+            "metric_value": 21.0,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "J-1037",
+            "detail": "waiting 35 days; 28 days over the limit",
+            "source_ref": "jobs 2026.xlsx:Sheet1:78",
+            "source_file": "jobs 2026.xlsx",
+            "sheet": "Sheet1",
+            "row": 78,
+            "case_id": "J-1037",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "J-1036",
+            "detail": "waiting 21 days; 14 days over the limit; owner [PERSON_1]",
+            "source_ref": "jobs 2026.xlsx:Sheet1:77",
+            "source_file": "jobs 2026.xlsx",
+            "sheet": "Sheet1",
+            "row": 77,
+            "case_id": "J-1036",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "days_over_sla",
+        "metric_value": 21.0,
+        "detection_confidence": 0.95,
+        "data_quality_confidence": 0.96,
+        "impact": {
+          "category": "revenue_at_risk",
+          "currency": "£",
+          "revenue_at_risk": 10400.0,
+          "cost_incurred": null,
+          "hours_at_risk": null,
+          "capacity_pct": null,
+          "delivery_risk": "high",
+          "affected_case_count": 2,
+          "basis": "2 case(s) × £5,200 average case value",
+          "is_projection": true
+        },
+        "recommended_action": "Chase the 2 job(s) sitting past the Quote Sent limit",
+        "action_steps": [
+          "Open each listed job, oldest first.",
+          "Make the next contact or hand it to whoever can move it.",
+          "Record what happened on the job row so the clock resets honestly."
+        ],
+        "action_category": "case_action",
+        "action_template": null,
+        "owner": "Workshop manager",
+        "due_date": "2026-07-03",
+        "status": "proposed",
+        "created_at": "2026-06-30",
+        "updated_at": "2026-06-30",
+        "source_records": [
+          "jobs 2026.xlsx:Sheet1:78",
+          "jobs 2026.xlsx:Sheet1:77"
+        ],
+        "intervention_id": null,
+        "rank_score": 75.68,
+        "rank_explanation": [
+          "£10,400 projected at risk (100% of the largest item) → 40.0 pts",
+          "high client-delivery risk → 20.0 pts",
+          "2 affected case(s), the queue's widest is 6 → 6.7 pts",
+          "due in 3 day(s) → 13.0 pts",
+          "detection confidence 95% scales 79.7 → 75.7 pts"
+        ],
+        "llm_payload": null,
+        "generated_by": "case_rule",
+        "execution": {
+          "route": "tracked",
+          "will_modify_files": false,
+          "explanation": "Case-level work. Approving assigns and tracks it; the system does not touch any files."
+        },
+        "sent_to_llm": {
+          "used_llm": false,
+          "payload": null,
+          "note": "Nothing about this item was sent to a language model."
+        }
+      },
+      {
+        "action_id": "ACT-JOI-9ec622fe",
+        "profile": "joinery",
+        "finding_key": "stalled_case::::days_idle",
+        "finding_type": "stalled_case",
+        "title": "2 case(s) have gone quiet",
+        "summary": "No activity for over 21 days and no completion recorded. The longest has been idle 35 days.",
+        "workflow": "Job pipeline",
+        "stage": "",
+        "affected_case_ids": [
+          "J-1041",
+          "J-1044"
+        ],
+        "evidence": [
+          {
+            "kind": "metric",
+            "label": "days_idle",
+            "detail": "No activity for over 21 days and no completion recorded. The longest has been idle 35 days.",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": "days_idle",
+            "metric_value": 31.5,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "J-1041",
+            "detail": "idle 35 days; owner [PERSON_1]; at Site Work Started",
+            "source_ref": "jobs 2026.xlsx:Sheet1:93",
+            "source_file": "jobs 2026.xlsx",
+            "sheet": "Sheet1",
+            "row": 93,
+            "case_id": "J-1041",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "J-1044",
+            "detail": "idle 28 days; owner [PERSON_1]; at Site Survey",
+            "source_ref": "jobs 2026.xlsx:Sheet1:109",
+            "source_file": "jobs 2026.xlsx",
+            "sheet": "Sheet1",
+            "row": 109,
+            "case_id": "J-1044",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "days_idle",
+        "metric_value": 31.5,
+        "detection_confidence": 0.95,
+        "data_quality_confidence": 0.96,
+        "impact": {
+          "category": "revenue_at_risk",
+          "currency": "£",
+          "revenue_at_risk": 10400.0,
+          "cost_incurred": null,
+          "hours_at_risk": null,
+          "capacity_pct": null,
+          "delivery_risk": "high",
+          "affected_case_count": 2,
+          "basis": "2 case(s) × £5,200 average case value",
+          "is_projection": true
+        },
+        "recommended_action": "Revive or close the 2 job(s) that have gone quiet",
+        "action_steps": [
+          "Check each listed job for what it is actually waiting on.",
+          "Restart it, or close it honestly if it is dead.",
+          "Note the reason — repeated reasons are a process problem, not a case one."
+        ],
+        "action_category": "case_action",
+        "action_template": null,
+        "owner": "Workshop manager",
+        "due_date": "2026-07-03",
+        "status": "proposed",
+        "created_at": "2026-06-30",
+        "updated_at": "2026-06-30",
+        "source_records": [
+          "jobs 2026.xlsx:Sheet1:93",
+          "jobs 2026.xlsx:Sheet1:109"
+        ],
+        "intervention_id": null,
+        "rank_score": 75.68,
+        "rank_explanation": [
+          "£10,400 projected at risk (100% of the largest item) → 40.0 pts",
+          "high client-delivery risk → 20.0 pts",
+          "2 affected case(s), the queue's widest is 6 → 6.7 pts",
+          "due in 3 day(s) → 13.0 pts",
+          "detection confidence 95% scales 79.7 → 75.7 pts"
+        ],
+        "llm_payload": null,
+        "generated_by": "case_rule",
+        "execution": {
+          "route": "tracked",
+          "will_modify_files": false,
+          "explanation": "Case-level work. Approving assigns and tracks it; the system does not touch any files."
+        },
+        "sent_to_llm": {
+          "used_llm": false,
+          "payload": null,
+          "note": "Nothing about this item was sent to a language model."
+        }
+      },
+      {
+        "action_id": "ACT-JOI-2dab3bec",
+        "profile": "joinery",
+        "finding_key": "stage_sla_breach::materials ordered::days_over_sla",
+        "finding_type": "stage_sla_breach",
+        "title": "1 case(s) past the Materials Ordered SLA",
+        "summary": "The agreed limit at Materials Ordered is 14 days; the worst has waited 28.",
+        "workflow": "Job pipeline",
+        "stage": "Materials Ordered",
+        "affected_case_ids": [
+          "J-1039"
+        ],
+        "evidence": [
+          {
+            "kind": "metric",
+            "label": "days_over_sla",
+            "detail": "The agreed limit at Materials Ordered is 14 days; the worst has waited 28.",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": "days_over_sla",
+            "metric_value": 14.0,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "J-1039",
+            "detail": "waiting 28 days; 14 days over the limit; owner [PERSON_1]",
+            "source_ref": "jobs 2026.xlsx:Sheet1:84",
+            "source_file": "jobs 2026.xlsx",
+            "sheet": "Sheet1",
+            "row": 84,
+            "case_id": "J-1039",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "days_over_sla",
+        "metric_value": 14.0,
+        "detection_confidence": 0.95,
+        "data_quality_confidence": 0.96,
+        "impact": {
+          "category": "revenue_at_risk",
+          "currency": "£",
+          "revenue_at_risk": 5200.0,
+          "cost_incurred": null,
+          "hours_at_risk": null,
+          "capacity_pct": null,
+          "delivery_risk": "high",
+          "affected_case_count": 1,
+          "basis": "1 case(s) × £5,200 average case value",
+          "is_projection": true
+        },
+        "recommended_action": "Chase the 1 job(s) sitting past the Materials Ordered limit",
+        "action_steps": [
+          "Open each listed job, oldest first.",
+          "Make the next contact or hand it to whoever can move it.",
+          "Record what happened on the job row so the clock resets honestly."
+        ],
+        "action_category": "case_action",
+        "action_template": null,
+        "owner": "Workshop manager",
+        "due_date": "2026-07-03",
+        "status": "proposed",
+        "created_at": "2026-06-30",
+        "updated_at": "2026-06-30",
+        "source_records": [
+          "jobs 2026.xlsx:Sheet1:84"
+        ],
+        "intervention_id": null,
+        "rank_score": 53.52,
+        "rank_explanation": [
+          "£5,200 projected at risk (50% of the largest item) → 20.0 pts",
+          "high client-delivery risk → 20.0 pts",
+          "1 affected case(s), the queue's widest is 6 → 3.3 pts",
+          "due in 3 day(s) → 13.0 pts",
+          "detection confidence 95% scales 56.3 → 53.5 pts"
+        ],
+        "llm_payload": null,
+        "generated_by": "case_rule",
+        "execution": {
+          "route": "tracked",
+          "will_modify_files": false,
+          "explanation": "Case-level work. Approving assigns and tracks it; the system does not touch any files."
+        },
+        "sent_to_llm": {
+          "used_llm": false,
+          "payload": null,
+          "note": "Nothing about this item was sent to a language model."
+        }
+      },
+      {
+        "action_id": "ACT-JOI-5eaec21f",
+        "profile": "joinery",
+        "finding_key": "stage_sla_breach::quote accepted::days_over_sla",
+        "finding_type": "stage_sla_breach",
+        "title": "1 case(s) past the Quote Accepted SLA",
+        "summary": "The agreed limit at Quote Accepted is 5 days; the worst has waited 28.",
+        "workflow": "Job pipeline",
+        "stage": "Quote Accepted",
+        "affected_case_ids": [
+          "J-1038"
+        ],
+        "evidence": [
+          {
+            "kind": "metric",
+            "label": "days_over_sla",
+            "detail": "The agreed limit at Quote Accepted is 5 days; the worst has waited 28.",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": "days_over_sla",
+            "metric_value": 23.0,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "J-1038",
+            "detail": "waiting 28 days; 23 days over the limit; owner [PERSON_1]",
+            "source_ref": "jobs 2026.xlsx:Sheet1:80",
+            "source_file": "jobs 2026.xlsx",
+            "sheet": "Sheet1",
+            "row": 80,
+            "case_id": "J-1038",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "days_over_sla",
+        "metric_value": 23.0,
+        "detection_confidence": 0.95,
+        "data_quality_confidence": 0.96,
+        "impact": {
+          "category": "revenue_at_risk",
+          "currency": "£",
+          "revenue_at_risk": 5200.0,
+          "cost_incurred": null,
+          "hours_at_risk": null,
+          "capacity_pct": null,
+          "delivery_risk": "high",
+          "affected_case_count": 1,
+          "basis": "1 case(s) × £5,200 average case value",
+          "is_projection": true
+        },
+        "recommended_action": "Chase the 1 job(s) sitting past the Quote Accepted limit",
+        "action_steps": [
+          "Open each listed job, oldest first.",
+          "Make the next contact or hand it to whoever can move it.",
+          "Record what happened on the job row so the clock resets honestly."
+        ],
+        "action_category": "case_action",
+        "action_template": null,
+        "owner": "Workshop manager",
+        "due_date": "2026-07-03",
+        "status": "proposed",
+        "created_at": "2026-06-30",
+        "updated_at": "2026-06-30",
+        "source_records": [
+          "jobs 2026.xlsx:Sheet1:80"
+        ],
+        "intervention_id": null,
+        "rank_score": 53.52,
+        "rank_explanation": [
+          "£5,200 projected at risk (50% of the largest item) → 20.0 pts",
+          "high client-delivery risk → 20.0 pts",
+          "1 affected case(s), the queue's widest is 6 → 3.3 pts",
+          "due in 3 day(s) → 13.0 pts",
+          "detection confidence 95% scales 56.3 → 53.5 pts"
+        ],
+        "llm_payload": null,
+        "generated_by": "case_rule",
+        "execution": {
+          "route": "tracked",
+          "will_modify_files": false,
+          "explanation": "Case-level work. Approving assigns and tracks it; the system does not touch any files."
+        },
+        "sent_to_llm": {
+          "used_llm": false,
+          "payload": null,
+          "note": "Nothing about this item was sent to a language model."
+        }
+      },
+      {
+        "action_id": "ACT-JOI-c086d572",
+        "profile": "joinery",
+        "finding_key": "stage_sla_breach::snagging::days_over_sla",
+        "finding_type": "stage_sla_breach",
+        "title": "1 case(s) past the Snagging SLA",
+        "summary": "The agreed limit at Snagging is 7 days; the worst has waited 21.",
+        "workflow": "Job pipeline",
+        "stage": "Snagging",
+        "affected_case_ids": [
+          "J-1042"
+        ],
+        "evidence": [
+          {
+            "kind": "metric",
+            "label": "days_over_sla",
+            "detail": "The agreed limit at Snagging is 7 days; the worst has waited 21.",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": "days_over_sla",
+            "metric_value": 14.0,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "J-1042",
+            "detail": "waiting 21 days; 14 days over the limit; owner [PERSON_2]",
+            "source_ref": "jobs 2026.xlsx:Sheet1:99",
+            "source_file": "jobs 2026.xlsx",
+            "sheet": "Sheet1",
+            "row": 99,
+            "case_id": "J-1042",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "days_over_sla",
+        "metric_value": 14.0,
+        "detection_confidence": 0.95,
+        "data_quality_confidence": 0.96,
+        "impact": {
+          "category": "revenue_at_risk",
+          "currency": "£",
+          "revenue_at_risk": 5200.0,
+          "cost_incurred": null,
+          "hours_at_risk": null,
+          "capacity_pct": null,
+          "delivery_risk": "high",
+          "affected_case_count": 1,
+          "basis": "1 case(s) × £5,200 average case value",
+          "is_projection": true
+        },
+        "recommended_action": "Chase the 1 job(s) sitting past the Snagging limit",
+        "action_steps": [
+          "Open each listed job, oldest first.",
+          "Make the next contact or hand it to whoever can move it.",
+          "Record what happened on the job row so the clock resets honestly."
+        ],
+        "action_category": "case_action",
+        "action_template": null,
+        "owner": "Workshop manager",
+        "due_date": "2026-07-03",
+        "status": "proposed",
+        "created_at": "2026-06-30",
+        "updated_at": "2026-06-30",
+        "source_records": [
+          "jobs 2026.xlsx:Sheet1:99"
+        ],
+        "intervention_id": null,
+        "rank_score": 53.52,
+        "rank_explanation": [
+          "£5,200 projected at risk (50% of the largest item) → 20.0 pts",
+          "high client-delivery risk → 20.0 pts",
+          "1 affected case(s), the queue's widest is 6 → 3.3 pts",
+          "due in 3 day(s) → 13.0 pts",
+          "detection confidence 95% scales 56.3 → 53.5 pts"
+        ],
+        "llm_payload": null,
+        "generated_by": "case_rule",
+        "execution": {
+          "route": "tracked",
+          "will_modify_files": false,
+          "explanation": "Case-level work. Approving assigns and tracks it; the system does not touch any files."
+        },
+        "sent_to_llm": {
+          "used_llm": false,
+          "payload": null,
+          "note": "Nothing about this item was sent to a language model."
+        }
+      }
+    ],
+    "capacity_constraints": [
+      {
+        "action_id": "ACT-JOI-86bc80fa",
+        "profile": "joinery",
+        "finding_key": "overloaded_owner::::open_cases_held::[person_1]",
+        "finding_type": "overloaded_owner",
+        "title": "[PERSON_1] is holding 6 open cases",
+        "summary": "The working limit for this business is 4. Everything above it queues behind one person. The name is masked in the analysis store — open one of the listed source rows in the original spreadsheet to see who it is.",
+        "workflow": "Job pipeline",
+        "stage": "",
+        "affected_case_ids": [
+          "J-1036",
+          "J-1038",
+          "J-1039",
+          "J-1040",
+          "J-1041",
+          "J-1044"
+        ],
+        "evidence": [
+          {
+            "kind": "metric",
+            "label": "open_cases_held",
+            "detail": "The working limit for this business is 4. Everything above it queues behind one person.",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": "open_cases_held",
+            "metric_value": 6.0,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "J-1036",
+            "detail": "at Quote Sent",
+            "source_ref": "jobs 2026.xlsx:Sheet1:77",
+            "source_file": "jobs 2026.xlsx",
+            "sheet": "Sheet1",
+            "row": 77,
+            "case_id": "J-1036",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "J-1038",
+            "detail": "at Quote Accepted",
+            "source_ref": "jobs 2026.xlsx:Sheet1:80",
+            "source_file": "jobs 2026.xlsx",
+            "sheet": "Sheet1",
+            "row": 80,
+            "case_id": "J-1038",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "J-1039",
+            "detail": "at Materials Ordered",
+            "source_ref": "jobs 2026.xlsx:Sheet1:84",
+            "source_file": "jobs 2026.xlsx",
+            "sheet": "Sheet1",
+            "row": 84,
+            "case_id": "J-1039",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "J-1040",
+            "detail": "at Materials Ordered",
+            "source_ref": "jobs 2026.xlsx:Sheet1:88",
+            "source_file": "jobs 2026.xlsx",
+            "sheet": "Sheet1",
+            "row": 88,
+            "case_id": "J-1040",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "J-1041",
+            "detail": "at Site Work Started",
+            "source_ref": "jobs 2026.xlsx:Sheet1:93",
+            "source_file": "jobs 2026.xlsx",
+            "sheet": "Sheet1",
+            "row": 93,
+            "case_id": "J-1041",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "J-1044",
+            "detail": "at Site Survey",
+            "source_ref": "jobs 2026.xlsx:Sheet1:109",
+            "source_file": "jobs 2026.xlsx",
+            "sheet": "Sheet1",
+            "row": 109,
+            "case_id": "J-1044",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "open_cases_held",
+        "metric_value": 6.0,
+        "detection_confidence": 0.95,
+        "data_quality_confidence": 0.96,
+        "impact": {
+          "category": "capacity_loss",
+          "currency": "£",
+          "revenue_at_risk": null,
+          "cost_incurred": null,
+          "hours_at_risk": 6.0,
+          "capacity_pct": 150.0,
+          "delivery_risk": "medium",
+          "affected_case_count": 6,
+          "basis": "6 open case(s) against a working limit of 4 — 2 over",
+          "is_projection": true
+        },
+        "recommended_action": "Rebalance [PERSON_1]'s workload",
+        "action_steps": [
+          "Review the 6 open jobs [PERSON_1] is holding.",
+          "Move the ones that do not need their specific knowledge to a colleague.",
+          "Agree a working limit and check it at the weekly review."
+        ],
+        "action_category": "process_intervention",
+        "action_template": null,
+        "owner": "Workshop manager",
+        "due_date": "2026-07-21",
+        "status": "proposed",
+        "created_at": "2026-06-30",
+        "updated_at": "2026-06-30",
+        "source_records": [
+          "jobs 2026.xlsx:Sheet1:77",
+          "jobs 2026.xlsx:Sheet1:80",
+          "jobs 2026.xlsx:Sheet1:84"
+        ],
+        "intervention_id": null,
+        "rank_score": 34.2,
+        "rank_explanation": [
+          "no monetary figure available → 0 pts",
+          "medium client-delivery risk → 11.0 pts",
+          "6 affected case(s), the queue's widest is 6 → 20.0 pts",
+          "due in 21 day(s) → 5.0 pts",
+          "detection confidence 95% scales 36.0 → 34.2 pts"
+        ],
+        "llm_payload": null,
+        "generated_by": "case_rule",
+        "execution": {
+          "route": "tracked",
+          "will_modify_files": false,
+          "explanation": "Process change. Approving starts a measurable intervention with a baseline and a review date; the system does not touch any files."
+        },
+        "sent_to_llm": {
+          "used_llm": false,
+          "payload": null,
+          "note": "Nothing about this item was sent to a language model."
+        }
+      }
+    ],
+    "delivery_risks": [
+      {
+        "action_id": "ACT-JOI-3ab3af8e",
+        "profile": "joinery",
+        "finding_key": "delay::site work started::avg_delay_days",
+        "finding_type": "delay",
+        "title": "Cases stall entering Site Work Started",
+        "summary": "3 cases waited an average of 12 days to reach Site Work Started — far beyond the workflow's normal rhythm.",
+        "workflow": "Job pipeline",
+        "stage": "Site Work Started",
+        "affected_case_ids": [
+          "J-1022",
+          "J-1026",
+          "J-1032"
+        ],
+        "evidence": [
+          {
+            "kind": "metric",
+            "label": "avg_delay_days",
+            "detail": "measured across 3 case(s) at Site Work Started",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": "avg_delay_days",
+            "metric_value": 12.3,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "Site Work Started source row",
+            "detail": null,
+            "source_ref": "jobs 2026.xlsx:Sheet1:14",
+            "source_file": "jobs 2026.xlsx",
+            "sheet": "Sheet1",
+            "row": 14,
+            "case_id": null,
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "Site Work Started source row",
+            "detail": null,
+            "source_ref": "jobs 2026.xlsx:Sheet1:48",
+            "source_file": "jobs 2026.xlsx",
+            "sheet": "Sheet1",
+            "row": 48,
+            "case_id": null,
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "Site Work Started source row",
+            "detail": null,
+            "source_ref": "jobs spring - Marks copy.xlsx:Sheet1:23",
+            "source_file": "jobs spring - Marks copy.xlsx",
+            "sheet": "Sheet1",
+            "row": 23,
+            "case_id": null,
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "J-1022",
+            "detail": null,
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "J-1022",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "J-1026",
+            "detail": null,
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "J-1026",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "J-1032",
+            "detail": null,
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "J-1032",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "avg_delay_days",
+        "metric_value": 12.3,
+        "detection_confidence": 0.8,
+        "data_quality_confidence": 0.96,
+        "impact": {
+          "category": "time_loss",
+          "currency": "£",
+          "revenue_at_risk": null,
+          "cost_incurred": 2214.0,
+          "hours_at_risk": null,
+          "capacity_pct": null,
+          "delivery_risk": "medium",
+          "affected_case_count": 3,
+          "basis": "3 case(s) × 12 days × £60/day",
+          "is_projection": true
+        },
+        "recommended_action": "Set an entry SLA for Site Work Started",
+        "action_steps": [
+          "Agree a target number of days for work to reach Site Work Started.",
+          "Flag cases still short of Site Work Started inside that window on the tracker.",
+          "Review flagged cases weekly and clear the blocker behind each one."
+        ],
+        "action_category": "process_intervention",
+        "action_template": null,
+        "owner": "Workshop manager",
+        "due_date": "2026-06-05",
+        "status": "proposed",
+        "created_at": "2026-05-15",
+        "updated_at": "2026-06-30",
+        "source_records": [
+          "jobs 2026.xlsx:Sheet1:14",
+          "jobs 2026.xlsx:Sheet1:48",
+          "jobs spring - Marks copy.xlsx:Sheet1:23"
+        ],
+        "intervention_id": null,
+        "rank_score": 39.61,
+        "rank_explanation": [
+          "£2,214 projected at risk (21% of the largest item) → 8.5 pts",
+          "medium client-delivery risk → 11.0 pts",
+          "3 affected case(s), the queue's widest is 6 → 10.0 pts",
+          "overdue by 25 day(s) → 20.0 pts",
+          "detection confidence 80% scales 49.5 → 39.6 pts"
+        ],
+        "llm_payload": {
+          "bottleneck": {
+            "id": "BN001",
+            "type": "delay",
+            "stage": "Site Work Started",
+            "metric_label": "avg_delay_days",
+            "metric_value": 12.3,
+            "affected_count": 3,
+            "evidence_excerpts": [
+              "3 cases show the 'Site Work Started' pattern in the live event log.",
+              "SITE WORK STARTED for case [ORG_1] handled by [PERSON_1] (status: ok)",
+              "site work started for case [PERSON_1] on 2026-04-02T00:00:00 handled by [PERSON_1] (status: ok)"
+            ]
+          },
+          "sme_context": {
+            "domain": "joinery & fit-out",
+            "workflow_stages": [
+              "Quote Sent",
+              "Quote Accepted",
+              "Site Survey",
+              "Materials Ordered",
+              "Site Work Started",
+              "Snagging",
+              "Invoice Sent",
+              "Payment Received"
+            ]
+          },
+          "past_resolutions": []
+        },
+        "generated_by": "detector",
+        "execution": {
+          "route": "tracked",
+          "will_modify_files": false,
+          "explanation": "Process change. Approving starts a measurable intervention with a baseline and a review date; the system does not touch any files."
+        },
+        "sent_to_llm": {
+          "used_llm": true,
+          "payload": {
+            "bottleneck": {
+              "id": "BN001",
+              "type": "delay",
+              "stage": "Site Work Started",
+              "metric_label": "avg_delay_days",
+              "metric_value": 12.3,
+              "affected_count": 3,
+              "evidence_excerpts": [
+                "3 cases show the 'Site Work Started' pattern in the live event log.",
+                "SITE WORK STARTED for case [ORG_1] handled by [PERSON_1] (status: ok)",
+                "site work started for case [PERSON_1] on 2026-04-02T00:00:00 handled by [PERSON_1] (status: ok)"
+              ]
+            },
+            "sme_context": {
+              "domain": "joinery & fit-out",
+              "workflow_stages": [
+                "Quote Sent",
+                "Quote Accepted",
+                "Site Survey",
+                "Materials Ordered",
+                "Site Work Started",
+                "Snagging",
+                "Invoice Sent",
+                "Payment Received"
+              ]
+            },
+            "past_resolutions": []
+          },
+          "note": "Only the scrubbed payload shown here left this machine. Names and identifiers are replaced with placeholders before anything is sent."
+        }
+      },
+      {
+        "action_id": "ACT-JOI-7f7ded52",
+        "profile": "joinery",
+        "finding_key": "rework::site work started::loop_back_cases",
+        "finding_type": "rework",
+        "title": "Cases loop back to Site Work Started",
+        "summary": "3 cases returned to Site Work Started after having moved past it — earlier work is being redone under time pressure.",
+        "workflow": "Job pipeline",
+        "stage": "Site Work Started",
+        "affected_case_ids": [
+          "J-1023",
+          "J-1028",
+          "J-1034"
+        ],
+        "evidence": [
+          {
+            "kind": "metric",
+            "label": "loop_back_cases",
+            "detail": "measured across 3 case(s) at Site Work Started",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": "loop_back_cases",
+            "metric_value": 3.0,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "Site Work Started source row",
+            "detail": null,
+            "source_ref": "jobs 2026.xlsx:Sheet1:24",
+            "source_file": "jobs 2026.xlsx",
+            "sheet": "Sheet1",
+            "row": 24,
+            "case_id": null,
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "Site Work Started source row",
+            "detail": null,
+            "source_ref": "jobs 2026.xlsx:Sheet1:66",
+            "source_file": "jobs 2026.xlsx",
+            "sheet": "Sheet1",
+            "row": 66,
+            "case_id": null,
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "Site Work Started source row",
+            "detail": null,
+            "source_ref": "jobs spring - Marks copy.xlsx:Sheet1:41",
+            "source_file": "jobs spring - Marks copy.xlsx",
+            "sheet": "Sheet1",
+            "row": 41,
+            "case_id": null,
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "J-1023",
+            "detail": null,
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "J-1023",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "J-1028",
+            "detail": null,
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "J-1028",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "J-1034",
+            "detail": null,
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "J-1034",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "loop_back_cases",
+        "metric_value": 3.0,
+        "detection_confidence": 0.8,
+        "data_quality_confidence": 0.96,
+        "impact": {
+          "category": "delivery_risk",
+          "currency": "£",
+          "revenue_at_risk": null,
+          "cost_incurred": 960.0,
+          "hours_at_risk": 24.0,
+          "capacity_pct": null,
+          "delivery_risk": "medium",
+          "affected_case_count": 3,
+          "basis": "3 loop-back(s) × £320",
+          "is_projection": true
+        },
+        "recommended_action": "Confirm before leaving Site Work Started, hold a reserve",
+        "action_steps": [
+          "Re-confirm the inputs to Site Work Started at the point of completion, not just at the start.",
+          "Keep a small reserve (people, slots or stock) to absorb fall-throughs.",
+          "Record the reason for every loop-back so repeat causes are spotted early."
+        ],
+        "action_category": "process_intervention",
+        "action_template": null,
+        "owner": "Workshop manager",
+        "due_date": "2026-06-05",
+        "status": "proposed",
+        "created_at": "2026-05-15",
+        "updated_at": "2026-06-30",
+        "source_records": [
+          "jobs 2026.xlsx:Sheet1:24",
+          "jobs 2026.xlsx:Sheet1:66",
+          "jobs spring - Marks copy.xlsx:Sheet1:41"
+        ],
+        "intervention_id": null,
+        "rank_score": 35.75,
+        "rank_explanation": [
+          "£960 projected at risk (9% of the largest item) → 3.7 pts",
+          "medium client-delivery risk → 11.0 pts",
+          "3 affected case(s), the queue's widest is 6 → 10.0 pts",
+          "overdue by 25 day(s) → 20.0 pts",
+          "detection confidence 80% scales 44.7 → 35.8 pts"
+        ],
+        "llm_payload": {
+          "bottleneck": {
+            "id": "BN002",
+            "type": "rework",
+            "stage": "Site Work Started",
+            "metric_label": "loop_back_cases",
+            "metric_value": 3.0,
+            "affected_count": 3,
+            "evidence_excerpts": [
+              "3 cases show the 'Site Work Started' pattern in the live event log.",
+              "Site Work Started for case [GPE_1] on 2026-02-22T00:00:00 handled by [PERSON_2] (status: ok)",
+              "SITE WORK STARTED for case [PERSON_1] on 2026-04-26T00:00:00 handled by [PERSON_1] (status: tbc)"
+            ]
+          },
+          "sme_context": {
+            "domain": "joinery & fit-out",
+            "workflow_stages": [
+              "Quote Sent",
+              "Quote Accepted",
+              "Site Survey",
+              "Materials Ordered",
+              "Site Work Started",
+              "Snagging",
+              "Invoice Sent",
+              "Payment Received"
+            ]
+          },
+          "past_resolutions": []
+        },
+        "generated_by": "detector",
+        "execution": {
+          "route": "tracked",
+          "will_modify_files": false,
+          "explanation": "Process change. Approving starts a measurable intervention with a baseline and a review date; the system does not touch any files."
+        },
+        "sent_to_llm": {
+          "used_llm": true,
+          "payload": {
+            "bottleneck": {
+              "id": "BN002",
+              "type": "rework",
+              "stage": "Site Work Started",
+              "metric_label": "loop_back_cases",
+              "metric_value": 3.0,
+              "affected_count": 3,
+              "evidence_excerpts": [
+                "3 cases show the 'Site Work Started' pattern in the live event log.",
+                "Site Work Started for case [GPE_1] on 2026-02-22T00:00:00 handled by [PERSON_2] (status: ok)",
+                "SITE WORK STARTED for case [PERSON_1] on 2026-04-26T00:00:00 handled by [PERSON_1] (status: tbc)"
+              ]
+            },
+            "sme_context": {
+              "domain": "joinery & fit-out",
+              "workflow_stages": [
+                "Quote Sent",
+                "Quote Accepted",
+                "Site Survey",
+                "Materials Ordered",
+                "Site Work Started",
+                "Snagging",
+                "Invoice Sent",
+                "Payment Received"
+              ]
+            },
+            "past_resolutions": []
+          },
+          "note": "Only the scrubbed payload shown here left this machine. Names and identifiers are replaced with placeholders before anything is sent."
+        }
+      }
+    ],
+    "data_quality": [
+      {
+        "action_id": "ACT-JOI-81208963",
+        "profile": "joinery",
+        "finding_key": "data_quality::status_values::cells",
+        "finding_type": "messy_status_values",
+        "title": "131 status cells are written 2 different ways",
+        "summary": "Staff type the same status a dozen ways. Reports and filters silently miss rows because of it.",
+        "workflow": "Job pipeline",
+        "stage": "jobs 2026.xlsx, jobs spring - Marks copy.xlsx",
+        "affected_case_ids": [],
+        "evidence": [
+          {
+            "kind": "metric",
+            "label": "inconsistent_status_cells",
+            "detail": "cells whose written status differs from the controlled vocabulary",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": "inconsistent_status_cells",
+            "metric_value": 131.0,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "jobs 2026.xlsx",
+            "detail": null,
+            "source_ref": null,
+            "source_file": "jobs 2026.xlsx",
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "jobs spring - Marks copy.xlsx",
+            "detail": null,
+            "source_ref": null,
+            "source_file": "jobs spring - Marks copy.xlsx",
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "inconsistent_status_cells",
+        "metric_value": 131.0,
+        "detection_confidence": 0.99,
+        "data_quality_confidence": 0.96,
+        "impact": {
+          "category": "data_quality",
+          "currency": "£",
+          "revenue_at_risk": null,
+          "cost_incurred": 35.2,
+          "hours_at_risk": 1.1,
+          "capacity_pct": null,
+          "delivery_risk": null,
+          "affected_case_count": 0,
+          "basis": "131 inconsistent cell(s) × 0.5 min to interpret",
+          "is_projection": true
+        },
+        "recommended_action": "Normalise 1 inconsistent status value(s) to a fixed set",
+        "action_steps": [
+          "Review the proposed before → after value map.",
+          "Approve it to write cleaned copies — the original files are never touched.",
+          "Use the fixed set from now on so the mess does not return."
+        ],
+        "action_category": "data_quality",
+        "action_template": "normalise_status_values",
+        "owner": "Workshop manager",
+        "due_date": "2026-05-22",
+        "status": "proposed",
+        "created_at": "2026-05-15",
+        "updated_at": "2026-06-30",
+        "source_records": [
+          "jobs 2026.xlsx",
+          "jobs spring - Marks copy.xlsx"
+        ],
+        "intervention_id": null,
+        "rank_score": 19.93,
+        "rank_explanation": [
+          "£35 projected at risk (0% of the largest item) → 0.1 pts",
+          "overdue by 39 day(s) → 20.0 pts",
+          "detection confidence 99% scales 20.1 → 19.9 pts"
+        ],
+        "llm_payload": null,
+        "generated_by": "detector",
+        "execution": {
+          "route": "machine",
+          "will_modify_files": true,
+          "explanation": "Data-quality fix 'normalise_status_values' is on the machine-safe list — approving writes cleaned copies and leaves the originals untouched."
+        },
+        "sent_to_llm": {
+          "used_llm": false,
+          "payload": null,
+          "note": "Nothing about this item was sent to a language model."
+        }
+      },
+      {
+        "action_id": "ACT-JOI-070726b4",
+        "profile": "joinery",
+        "finding_key": "data_quality::stale_copies::files",
+        "finding_type": "stale_duplicate_file",
+        "title": "2 overlapping or duplicated file(s) on the drive",
+        "summary": "More than one file covers the same work. Whichever one somebody opens first becomes the truth for that day.",
+        "workflow": "Job pipeline",
+        "stage": "the drive",
+        "affected_case_ids": [],
+        "evidence": [
+          {
+            "kind": "excerpt",
+            "label": "Audit mess report",
+            "detail": "jobs spring - Marks copy.xlsx appears to be a renamed personal copy potentially duplicating jobs 2026.xlsx rows; case IDs differ in samples (J-1021 vs J-1030) so verify overlap",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "excerpt",
+            "label": "Audit mess report",
+            "detail": "jobs 2026.xlsx and jobs spring - Marks copy.xlsx both cover early-2026 joinery jobs and likely overlap in Jan-Mar 2026",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "overlapping_files",
+        "metric_value": 2.0,
+        "detection_confidence": 0.8,
+        "data_quality_confidence": 0.96,
+        "impact": {
+          "category": "unknown",
+          "currency": "£",
+          "revenue_at_risk": null,
+          "cost_incurred": null,
+          "hours_at_risk": null,
+          "capacity_pct": null,
+          "delivery_risk": null,
+          "affected_case_count": 0,
+          "basis": "not quantified",
+          "is_projection": true
+        },
+        "recommended_action": "Decide which copy of the drive is the real one",
+        "action_steps": [
+          "Compare the overlapping files and pick the authoritative copy.",
+          "Rename or archive the others so nobody edits the wrong one.",
+          "Re-run the mapping review so the pipeline reads only the survivor."
+        ],
+        "action_category": "data_quality",
+        "action_template": null,
+        "owner": "Workshop manager",
+        "due_date": "2026-05-22",
+        "status": "proposed",
+        "created_at": "2026-05-15",
+        "updated_at": "2026-06-30",
+        "source_records": [],
+        "intervention_id": null,
+        "rank_score": 16.0,
+        "rank_explanation": [
+          "no monetary figure available → 0 pts",
+          "overdue by 39 day(s) → 20.0 pts",
+          "detection confidence 80% scales 20.0 → 16.0 pts"
+        ],
+        "llm_payload": null,
+        "generated_by": "detector",
+        "execution": {
+          "route": "tracked",
+          "will_modify_files": false,
+          "explanation": "Data-quality work with no machine-safe template — it becomes a tracked task for a person."
+        },
+        "sent_to_llm": {
+          "used_llm": false,
+          "payload": null,
+          "note": "Nothing about this item was sent to a language model."
+        }
+      }
+    ],
+    "needs_attention": [
+      {
+        "action_id": "ACT-JOI-354aeb09",
+        "profile": "joinery",
+        "finding_key": "repetition::site survey::repeated_entry_cases",
+        "finding_type": "repetition",
+        "title": "Site Survey done twice",
+        "summary": "2 cases passed through Site Survey more than once — the same step is being redone instead of carried forward.",
+        "workflow": "Job pipeline",
+        "stage": "Site Survey",
+        "affected_case_ids": [
+          "J-1025",
+          "J-1031"
+        ],
+        "evidence": [
+          {
+            "kind": "metric",
+            "label": "repeated_entry_cases",
+            "detail": "measured across 2 case(s) at Site Survey",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": "repeated_entry_cases",
+            "metric_value": 2.0,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "Site Survey source row",
+            "detail": null,
+            "source_ref": "jobs 2026.xlsx:Sheet1:38",
+            "source_file": "jobs 2026.xlsx",
+            "sheet": "Sheet1",
+            "row": 38,
+            "case_id": null,
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "Site Survey source row",
+            "detail": null,
+            "source_ref": "jobs spring - Marks copy.xlsx:Sheet1:13",
+            "source_file": "jobs spring - Marks copy.xlsx",
+            "sheet": "Sheet1",
+            "row": 13,
+            "case_id": null,
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "J-1025",
+            "detail": null,
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "J-1025",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "J-1031",
+            "detail": null,
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "J-1031",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "repeated_entry_cases",
+        "metric_value": 2.0,
+        "detection_confidence": 0.8,
+        "data_quality_confidence": 0.96,
+        "impact": {
+          "category": "time_loss",
+          "currency": "£",
+          "revenue_at_risk": null,
+          "cost_incurred": 360.0,
+          "hours_at_risk": 6.0,
+          "capacity_pct": null,
+          "delivery_risk": "low",
+          "affected_case_count": 2,
+          "basis": "2 repeated step(s) × £180",
+          "is_projection": true
+        },
+        "recommended_action": "Make the first Site Survey the only one",
+        "action_steps": [
+          "Use a fixed checklist for Site Survey so the first pass captures everything.",
+          "Record the outcome of Site Survey on the case row itself, visible to everyone.",
+          "Only repeat Site Survey when its recorded outcome is genuinely missing."
+        ],
+        "action_category": "process_intervention",
+        "action_template": null,
+        "owner": "Workshop manager",
+        "due_date": "2026-06-05",
+        "status": "proposed",
+        "created_at": "2026-05-15",
+        "updated_at": "2026-06-30",
+        "source_records": [
+          "jobs 2026.xlsx:Sheet1:38",
+          "jobs spring - Marks copy.xlsx:Sheet1:13"
+        ],
+        "intervention_id": null,
+        "rank_score": 25.64,
+        "rank_explanation": [
+          "£360 projected at risk (3% of the largest item) → 1.4 pts",
+          "low client-delivery risk → 4.0 pts",
+          "2 affected case(s), the queue's widest is 6 → 6.7 pts",
+          "overdue by 25 day(s) → 20.0 pts",
+          "detection confidence 80% scales 32.1 → 25.6 pts"
+        ],
+        "llm_payload": {
+          "bottleneck": {
+            "id": "BN003",
+            "type": "repetition",
+            "stage": "Site Survey",
+            "metric_label": "repeated_entry_cases",
+            "metric_value": 2.0,
+            "affected_count": 2,
+            "evidence_excerpts": [
+              "2 cases show the 'Site Survey' pattern in the live event log.",
+              "Site Survey for case [PERSON_1] on 2026-03-12T00:00:00 handled by [PERSON_1] (status: tbc)",
+              "SITE SURVEY for case [PERSON_1] on 2026-03-29T00:00:00 handled by [PERSON_2] (status: supplier late)"
+            ]
+          },
+          "sme_context": {
+            "domain": "joinery & fit-out",
+            "workflow_stages": [
+              "Quote Sent",
+              "Quote Accepted",
+              "Site Survey",
+              "Materials Ordered",
+              "Site Work Started",
+              "Snagging",
+              "Invoice Sent",
+              "Payment Received"
+            ]
+          },
+          "past_resolutions": []
+        },
+        "generated_by": "detector",
+        "execution": {
+          "route": "tracked",
+          "will_modify_files": false,
+          "explanation": "Process change. Approving starts a measurable intervention with a baseline and a review date; the system does not touch any files."
+        },
+        "sent_to_llm": {
+          "used_llm": true,
+          "payload": {
+            "bottleneck": {
+              "id": "BN003",
+              "type": "repetition",
+              "stage": "Site Survey",
+              "metric_label": "repeated_entry_cases",
+              "metric_value": 2.0,
+              "affected_count": 2,
+              "evidence_excerpts": [
+                "2 cases show the 'Site Survey' pattern in the live event log.",
+                "Site Survey for case [PERSON_1] on 2026-03-12T00:00:00 handled by [PERSON_1] (status: tbc)",
+                "SITE SURVEY for case [PERSON_1] on 2026-03-29T00:00:00 handled by [PERSON_2] (status: supplier late)"
+              ]
+            },
+            "sme_context": {
+              "domain": "joinery & fit-out",
+              "workflow_stages": [
+                "Quote Sent",
+                "Quote Accepted",
+                "Site Survey",
+                "Materials Ordered",
+                "Site Work Started",
+                "Snagging",
+                "Invoice Sent",
+                "Payment Received"
+              ]
+            },
+            "past_resolutions": []
+          },
+          "note": "Only the scrubbed payload shown here left this machine. Names and identifiers are replaced with placeholders before anything is sent."
+        }
+      }
+    ]
+  },
+  "interventions": {
+    "active": [],
+    "recently_validated": [],
+    "summary": {
+      "profile": "joinery",
+      "total": 0,
+      "by_status": {},
+      "validated_effective": 0,
+      "awaiting_review": 0,
+      "ineffective": 0
+    }
+  }
+}
