@@ -474,7 +474,9 @@ git commit -m "Add simulator package skeleton, sim paths and the advisory profil
 
 **Interfaces:**
 - Produces: `SimEvent(stage: str, ts: datetime, actor: str, status: str)` — dataclass. `stage` is **canonical** (matches `stage_order` exactly); the messy surface form is applied at render time.
-- Produces: `SimCase` with fields `cid: str`, `client: str`, `value: float`, `events: list[SimEvent]`, and properties `last_ts -> datetime`, `stage -> str` (canonical stage of the last event), `owner -> str` (actor of the last event, `""` if unowned). Field names deliberately duck-type `synthetic.generate_messy_advisory.Engagement` so the generator's reference-sheet builders can be reused unchanged.
+- Produces: `SimCase` with fields `cid: str`, `client: str`, `value: float`, `events: list[SimEvent]`, and properties `last_ts -> datetime`, `stage -> str` (canonical stage of the last event), `owner -> str` (actor of the last event, `""` if unowned).
+
+  **Correction, 2026-08-02.** An earlier draft of this plan claimed the field names duck-type `synthetic.generate_messy_advisory.Engagement` closely enough that the generator's reference-sheet builders could be reused *unchanged*. That is false and review proved it: `Engagement.events` is `list[dict]` accessed by key (`e["activity"]`, `e["ts"]`, …), while `SimCase.events` is `list[SimEvent]` with a canonical `stage` field. `build_clients` works (it touches only case-level fields); `build_timesheets` and `build_invoices` raise `TypeError: 'SimEvent' object is not subscriptable`. The duck-typing holds **at the case level only**. Task 4's `_EngagementLike` adapter is what supplies the dict shape, which is also where the messy stage spelling is re-applied — see Task 4.
 - Produces: `WorldState` with fields `profile`, `seed`, `day`, `start_date: datetime`, `cases: dict[str, SimCase]`, `params: dict[str, float]`, `next_case_num: int`, `intent: dict`; property `current_date -> datetime`; methods `to_dict()`, `rng_for_day(day) -> random.Random`.
 - Produces: `from_dict(d: dict) -> WorldState`, `day0_from_generator(profile: str) -> WorldState`, `canon_stage(label: str, stage_order: list[str]) -> str`.
 
@@ -605,8 +607,15 @@ class SimEvent:
 
 @dataclass
 class SimCase:
-    """Field names duck-type generate_messy_advisory.Engagement on purpose, so
-    that module's reference-sheet builders can be reused without a shim."""
+    """One case, owning an append-only event list.
+
+    Case-level field names (cid/client/value) mirror
+    generate_messy_advisory.Engagement, so a SimCase can stand in where an
+    Engagement is expected. `events` does NOT: it holds SimEvent dataclasses
+    with a CANONICAL `stage`, where the generator holds dicts with a messy
+    `activity`. Any generator builder that subscripts events needs the adapter
+    in simulator/render.py, which is also where messy spelling is re-applied.
+    """
     cid: str
     client: str
     value: float
