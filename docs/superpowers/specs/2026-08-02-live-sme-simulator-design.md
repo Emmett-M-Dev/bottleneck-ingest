@@ -102,7 +102,8 @@ Settled during brainstorming, recorded so implementation does not relitigate the
 7. **Sim runs as a shell-out CLI**, matching the existing thin-orchestrator
    convention. Demo and headless eval share one entry point.
 8. **Analysis cadence is weekly** in demo mode, configurable.
-9. **Ollama is dropped entirely** — see write-up debt below.
+9. **Ollama is dropped entirely.** It was trialled during development and
+   withdrawn on resource grounds — see the reframing below.
 
 ## Architecture
 
@@ -302,26 +303,52 @@ alone closes the loop for the write-up.
 a replayed demo costs nothing after its first run, and the template fallback
 means no network is a degraded demo rather than a failed one.
 
-## Write-up debt created
+## Ollama: reframed as a development finding
 
-Dropping Ollama entirely removes the anomaly pass **feature**, not merely its
-engine — the "AI-spotted" cards go away. The following need editing before
-submission:
+Ollama was genuinely used during development and testing of this project, then
+removed: running a 7B model locally was too compute-heavy and taxing on the
+development machine, and the work moved to the Claude API. It was a real trial
+with a negative result, not a feature that was never built.
+
+That reframes the write-up change from a retraction into a **finding**, and a
+useful one. CLAUDE.md §3 argues that the SME AI adoption gap is driven by
+resource constraints rather than technical sophistication. First-hand evidence
+that local inference on a single commodity development machine was materially
+taxing supports that argument directly, and it is an observation rather than an
+assertion — which is more than the original §6a hybrid claim offered.
+
+Two constraints on how it is written:
+
+- **Past tense throughout.** It was trialled and withdrawn. It is not in the
+  delivered artifact.
+- **It cannot be cited as a privacy control of the delivered system.** §9 goes
+  from two implemented controls to one. The zero-PII scrub stands alone and must
+  not be described as one of a pair.
+
+- [YOU] For this to be a finding rather than an anecdote, the write-up needs
+  something concrete alongside it — development machine spec, the model used
+  (`qwen2.5:7b`), and rough observed latency or memory pressure, stated as
+  approximate. Without a number it is an unsupported claim and a viva panel will
+  say so. Approximate and honestly labelled is fine; nothing at all is not.
+
+### Documents to edit before submission
 
 - **§4** architecture diagram — remove the local-LLM anomaly pass from the
   pipeline core box.
-- **§6** tech stack — remove the Ollama row.
-- **§6a** — the resolved "hybrid local/cloud division of labour" claim is
-  withdrawn. LangGraph's half of that section stands.
-- **§9** — the local-inference privacy control is withdrawn. The zero-PII scrub
-  remains as the implemented control, and must not be described as one of two.
+- **§6** tech stack — remove the Ollama row, or move it to a "trialled and
+  withdrawn" note.
+- **§6a** — the "hybrid local/cloud division of labour" claim is replaced by the
+  development finding above. LangGraph's half of that section stands unchanged.
+- **§9** — as above, two controls become one.
 - **§7** — replay curves re-cited after P2; a new subsection describing the
   simulator as the data strategy for longitudinal evaluation.
 - `HANDOVER.md`, `TASKLIST.md`, `DEMO.md`, `PRESENTATION_WALKTHROUGH.md` — run
-  instructions for the retired paths.
+  instructions for the retired paths, and the `[YOU] install Ollama` task in
+  CLAUDE.md §11.
 
 Code to remove: `pipeline/llm.py` local path, `detection/anomaly.py`, their tests,
-and the `OLLAMA_MODEL` / `OLLAMA_URL` environment handling.
+and the `OLLAMA_MODEL` / `OLLAMA_URL` environment handling. The anomaly pass
+feature — the "AI-spotted" cards — goes with it.
 
 ## Retirement list
 
