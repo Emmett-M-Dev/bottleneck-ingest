@@ -136,3 +136,25 @@ def test_fallback_only_applies_to_legacy_exports():
     assert reworks[0].title != "SHOULD NOT APPEAR"
     # It should have the default auto-generated title, not the export's
     assert "rework" in reworks[0].title.lower()
+
+
+def test_export_messy_emits_finding_key():
+    """Verify that bridge/export_messy.py emits finding_key in case dicts.
+
+    We use static source analysis to avoid the heavy import (spaCy via pipeline.diagnose).
+    If someone removes or breaks the finding_key emission, this test fails immediately."""
+    import re
+    from pathlib import Path
+
+    messy_path = Path(__file__).parent.parent / "bridge" / "export_messy.py"
+    source = messy_path.read_text(encoding="utf-8")
+
+    # Check that finding_key is imported
+    assert "from detection.detect import finding_key" in source, \
+        "finding_key must be imported from detection.detect"
+
+    # Check that the case dict includes finding_key emission
+    # Look for the pattern where case_id and finding_key are both assigned
+    pattern = r'"case_id":\s*bn\.id,\s*"finding_key":\s*finding_key\(bn\)'
+    assert re.search(pattern, source), \
+        'case dict must contain "case_id": bn.id, "finding_key": finding_key(bn)'
