@@ -56,6 +56,11 @@ ADVISORY: dict = {
         "repetition": {"repetition_prob": -0.04},
         "rework": {"rework_prob": -0.03},
     },
+
+    # Probability that an approved PROCESS intervention actually lands.
+    # Same rule as effect_prob: deliberately below 1.0, so this path cannot
+    # be the one place in the simulator where every approval magically works.
+    "process_effect_prob": {"delay": 0.60, "repetition": 0.50, "rework": 0.50},
     "param_floor": 0.02,
 
     "personas": [

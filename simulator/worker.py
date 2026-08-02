@@ -122,7 +122,13 @@ def _effect(world: WorldState, case, finding_type: str, cfg: dict,
 
 def apply_approved(world: WorldState, items, rng: random.Random,
                    cfg: dict) -> list[dict]:
-    """Act on approved action items. Returns one record per item considered."""
+    """Act on approved action items.
+
+    Returns one record per item CONSIDERED for the two item-level paths
+    (machine-executable-template skip; process-intervention param shift) —
+    but one record per entry in `affected_case_ids` for the wired per-case
+    path, since each affected case gets its own independent probability
+    draw and its own outcome."""
     out: list[dict] = []
     for item in items:
         if item.status not in _ACTIONABLE_STATUSES:
@@ -143,13 +149,16 @@ def apply_approved(world: WorldState, items, rng: random.Random,
             delta = (cfg["process_param_delta"].get(item.finding_type)
                      if item.action_category == "process_intervention"
                      else None)
-            if delta:
+            if delta is None:
+                outcome = "unwired"
+            elif rng.random() < cfg["process_effect_prob"][item.finding_type]:
                 floor = cfg["param_floor"]
                 for key, d in delta.items():
                     world.params[key] = max(floor, world.params.get(key, 0) + d)
                 outcome = "applied"
             else:
-                outcome = "unwired"
+                # Draw failed: the parameter must not move.
+                outcome = "failed"
             out.append({"action_id": item.action_id,
                         "finding_type": item.finding_type,
                         "case_id": None, "outcome": outcome})

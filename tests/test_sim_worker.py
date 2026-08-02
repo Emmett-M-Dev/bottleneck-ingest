@@ -15,14 +15,14 @@ def _world():
 
 
 def _item(finding_type, case_ids, *, status="approved",
-          template=None) -> ActionItem:
+          template=None, category="case_action") -> ActionItem:
     return ActionItem(
         action_id=f"A-{finding_type}", profile="advisory",
         finding_key=f"{finding_type}::x::y", finding_type=finding_type,
         title="t", summary="s", workflow="Lead-to-cash", stage="Lead",
         affected_case_ids=list(case_ids), status=status,
-        action_template=template, created_at="2026-07-20",
-        updated_at="2026-07-20")
+        action_template=template, action_category=category,
+        created_at="2026-07-20", updated_at="2026-07-20")
 
 
 def _msg(intent, case_id):
@@ -115,3 +115,41 @@ def test_effects_are_probabilistic_not_guaranteed():
                              random.Random(s), CFG)
         outcomes.add(out[0]["outcome"])
     assert outcomes == {"applied", "failed"}
+
+
+# Fix round 1: process_effect_prob["delay"] = 0.60. random.Random(1).random()
+# == 0.1343... (< 0.60, succeeds); random.Random(0).random() == 0.8444...
+# (>= 0.60, fails). Deterministic seeds, not a statistical loop, per review.
+_DELAY_APPLIED_SEED = 1
+_DELAY_FAILED_SEED = 0
+
+
+def test_approved_process_intervention_shifts_the_param_on_success():
+    w = _world()
+    before = w.params["stall_prob.Proposal"]
+    out = apply_approved(
+        w, [_item("delay", [], category="process_intervention")],
+        random.Random(_DELAY_APPLIED_SEED), CFG)
+    delta = CFG["process_param_delta"]["delay"]["stall_prob.Proposal"]
+    assert out[0]["outcome"] == "applied"
+    assert w.params["stall_prob.Proposal"] == before + delta
+
+
+def test_approved_process_intervention_leaves_the_param_alone_on_failure():
+    w = _world()
+    before = w.params["stall_prob.Proposal"]
+    out = apply_approved(
+        w, [_item("delay", [], category="process_intervention")],
+        random.Random(_DELAY_FAILED_SEED), CFG)
+    assert out[0]["outcome"] == "failed"
+    assert w.params["stall_prob.Proposal"] == before
+
+
+def test_repeated_process_interventions_clamp_at_the_param_floor():
+    w = _world()
+    item = _item("delay", [], category="process_intervention")
+    for _ in range(5):
+        out = apply_approved(w, [item], random.Random(_DELAY_APPLIED_SEED), CFG)
+        assert out[0]["outcome"] == "applied"
+    assert w.params["stall_prob.Proposal"] == CFG["param_floor"]
+    assert w.params["stall_prob.Proposal"] >= CFG["param_floor"]
