@@ -506,8 +506,8 @@ def test_rng_is_deterministic_per_day_and_differs_across_days():
 def test_day0_import_loads_the_advisory_world():
     w = day0_from_generator("advisory")
     assert w.day == 0
-    assert len(w.cases) == 26              # len(_PLAN) in the generator
-    assert w.next_case_num == 1041 + 26
+    assert len(w.cases) == 27              # len(_PLAN) in the generator
+    assert w.next_case_num == 1041 + 27    # ids run NA-1041 .. NA-1067
     # every event stage canonicalised against the profile's stage order
     order = set(w.intent["stage_order"])
     stages = {e.stage for c in w.cases.values() for e in c.events}
