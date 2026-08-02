@@ -72,3 +72,67 @@ def test_diagnosis_attaches_by_content_not_by_rank_order():
     delays = [i for i in items if i.finding_type == "delay"]
     assert delays, "expected a delay finding"
     assert delays[0].title == "CONTENT-MATCHED TITLE"
+
+
+def test_fallback_only_applies_to_legacy_exports():
+    """When a current-style export carries finding_key entries, the positional
+    bn.id fallback must NOT apply. A finding whose content key is not in the
+    export must not pick up the prose from an unrelated finding at its rank position."""
+    rows = []
+    # Background cases with normal gaps (1-3 days)
+    for n in range(1, 6):
+        cid = f"NA-{n}"
+        rows += [
+            (cid, "Lead", "2026-01-01", "R", "done", "x.xlsx:1", 1000),
+            (cid, "Qualification", "2026-01-02", "R", "done", "x.xlsx:2", 1000),
+            (cid, "Proposal", "2026-01-04", "R", "done", "x.xlsx:3", 1000),
+            (cid, "Won", "2026-01-05", "R", "done", "x.xlsx:4", 1000),
+        ]
+    # Anomalous cases with long gaps at Proposal (delay)
+    for n in range(6, 9):
+        cid = f"NA-{n}"
+        rows += [
+            (cid, "Lead", "2026-01-01", "R", "done", "x.xlsx:1", 1000),
+            (cid, "Qualification", "2026-01-03", "R", "done", "x.xlsx:2", 1000),
+            (cid, "Proposal", "2026-01-28", "R", "done", "x.xlsx:3", 1000),
+            (cid, "Won", "2026-01-29", "R", "done", "x.xlsx:4", 1000),
+        ]
+    # Cases with rework (backward transition from Won to Proposal)
+    for n in range(9, 12):
+        cid = f"NA-{n}"
+        rows += [
+            (cid, "Lead", "2026-01-01", "R", "done", "x.xlsx:1", 1000),
+            (cid, "Qualification", "2026-01-02", "R", "done", "x.xlsx:2", 1000),
+            (cid, "Proposal", "2026-01-04", "R", "done", "x.xlsx:3", 1000),
+            (cid, "Won", "2026-01-05", "R", "done", "x.xlsx:4", 1000),
+            (cid, "Proposal", "2026-01-06", "R", "done", "x.xlsx:5", 1000),  # rework
+        ]
+    df = _events(rows)
+
+    # Current-style export: has finding_key entries
+    # case_id="BN002" is the rework's assigned id, but finding_key is for delay
+    # This should NOT attach the delay title to the rework
+    cases = [
+        {
+            "case_id": "BN001",
+            "finding_key": "delay::proposal::avg_delay_days",
+            "type": "delay",
+            "title": "DELAY TITLE",
+            "description": "delay description",
+        },
+        {
+            "case_id": "BN002",  # This is the rework's id, but content key is delay
+            "finding_key": "delay::proposal::avg_delay_days",
+            "type": "delay",
+            "title": "SHOULD NOT APPEAR",
+            "description": "this should not attach to rework",
+        },
+    ]
+
+    items = build_action_items("advisory", df, cases=cases)
+    reworks = [i for i in items if i.finding_type == "rework"]
+    assert reworks, "expected a rework finding"
+    # The rework should NOT pick up the prose from the mismatched case_id
+    assert reworks[0].title != "SHOULD NOT APPEAR"
+    # It should have the default auto-generated title, not the export's
+    assert "rework" in reworks[0].title.lower()

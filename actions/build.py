@@ -181,13 +181,15 @@ def _make_item(profile: str, *, finding_key: str, finding_type: str,
 
 
 def _structural_items(profile: str, df: pd.DataFrame, as_of: date,
-                      dq: float, diagnosis_by_id: dict) -> list[ActionItem]:
+                      dq: float, diagnosis_by_id: dict, is_legacy_export: bool) -> list[ActionItem]:
     stage_order = config.MESSY_PROFILES[profile]["stage_order"]
     items: list[ActionItem] = []
 
     for bn in detect_dynamic(df, stage_order):
         key = f"{bn.type}::{_canon(bn.stage)}::{bn.metric_label}"
-        diag = diagnosis_by_id.get(key) or diagnosis_by_id.get(bn.id) or {}
+        diag = diagnosis_by_id.get(key) or {}
+        if not diag and is_legacy_export:
+            diag = diagnosis_by_id.get(bn.id) or {}
         case_details = [{"case_id": c} for c in bn.affected_cases]
         evidence = [
             _metric_evidence(bn.metric_label, bn.metric_value,
@@ -357,6 +359,10 @@ def build_action_items(profile: str, df: pd.DataFrame, *,
     dq, _ = data_quality_confidence(df)
     cases = cases or []
     diagnosis_by_id = {}
+    has_finding_key = any(c.get("finding_key") for c in cases
+                          if c.get("type") != "anomaly")
+    is_legacy_export = not has_finding_key
+
     for c in cases:
         if c.get("type") == "anomaly":
             continue
@@ -366,7 +372,7 @@ def build_action_items(profile: str, df: pd.DataFrame, *,
             diagnosis_by_id[c["finding_key"]] = c    # content key wins
 
     return [
-        *_structural_items(profile, df, as_of_date, dq, diagnosis_by_id),
+        *_structural_items(profile, df, as_of_date, dq, diagnosis_by_id, is_legacy_export),
         *_case_rule_items(profile, df, as_of_date, dq),
         *_data_quality_items(profile, as_of_date, dq),
         *_anomaly_items(profile, cases, as_of_date, dq),
