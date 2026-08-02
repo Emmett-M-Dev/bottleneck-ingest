@@ -58,11 +58,14 @@ def choose(world: WorldState, rng: random.Random, cfg: dict
         out.append((CATALOGUE["new_enquiry"], None))
 
     # Roughly one touch per twelve live cases per day, floor of zero.
+    # (Poisson with zero mean never fires, so no case-bound traffic when live is empty.)
     for _ in range(_poisson(rng, len(live) / 12.0)):
-        if not live:
-            break
         pool = [i for i in ids if CATALOGUE[i].needs_case]
-        pick = rng.choices(pool, weights=[weights[i] for i in pool], k=1)[0]
+        pool_weights = [weights[i] for i in pool]
+        if not pool or sum(pool_weights) == 0:
+            # No positively-weighted case-bound intents; no case-bound traffic this iteration.
+            continue
+        pick = rng.choices(pool, weights=pool_weights, k=1)[0]
         out.append((CATALOGUE[pick], rng.choice(live)))
 
     return out
