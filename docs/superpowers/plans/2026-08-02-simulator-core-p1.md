@@ -166,15 +166,42 @@ In `actions/build.py`, change the map construction (line 359) to prefer the cont
             diagnosis_by_id[c["finding_key"]] = c    # content key wins
 ```
 
-And change the lookup (line 190) to try the content key first:
+And change the lookup (line 190) to use the content key, falling back to the
+positional id **only when the export is wholly legacy** — that is, when no entry
+in `cases` carries a `finding_key` at all:
 
 ```python
-        diag = diagnosis_by_id.get(key) or diagnosis_by_id.get(bn.id) or {}
+        diag = diagnosis_by_id.get(key) or {}
+        if not diag and legacy_export:
+            diag = diagnosis_by_id.get(bn.id) or {}
 ```
 
-`key` is already computed on the line above as the content-based finding key, and is identical in form to what `finding_key()` returns.
+where `legacy_export` is computed once, alongside the map:
+
+```python
+    legacy_export = not any(c.get("finding_key") for c in cases)
+```
+
+`key` is already computed on the line above as the content-based finding key, and
+is identical in form to what `finding_key()` returns.
+
+> **Correction, 2026-08-02.** This step originally applied the `bn.id` fallback
+> per item. Review caught that a *current* export (one carrying `finding_key`)
+> would still fall through to a rank-order id whenever a finding's content key
+> was absent — re-introducing, in narrowed form, the exact mis-attribution this
+> task exists to remove, and contradicting the Global Constraint that BN/CF ids
+> are never join keys. Ruled in the reviewer's favour; the code above is the
+> corrected version.
 
 - [ ] **Step 7: Write the regression test for the join**
+
+> **Known defect in the sketch below, 2026-08-02.** The `_events()` helper builds
+> no `stage` column and keeps `ts` as strings, and the three-case dataset gives
+> every case an identical 22-day gap — so `detect_dynamic`'s outlier threshold
+> (Q3 + 1.5·IQR over all gaps) exceeds every gap present and **no delay finding
+> fires at all**. Build a dataset with a background of small-gap cases plus a few
+> genuine outliers, and pass `ts` as datetimes. The assertion structure below is
+> correct; only the data is not.
 
 Append to `tests/test_finding_key.py`:
 
