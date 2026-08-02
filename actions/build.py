@@ -187,7 +187,7 @@ def _structural_items(profile: str, df: pd.DataFrame, as_of: date,
 
     for bn in detect_dynamic(df, stage_order):
         key = f"{bn.type}::{_canon(bn.stage)}::{bn.metric_label}"
-        diag = diagnosis_by_id.get(bn.id) or {}
+        diag = diagnosis_by_id.get(key) or diagnosis_by_id.get(bn.id) or {}
         case_details = [{"case_id": c} for c in bn.affected_cases]
         evidence = [
             _metric_evidence(bn.metric_label, bn.metric_value,
@@ -356,8 +356,14 @@ def build_action_items(profile: str, df: pd.DataFrame, *,
     as_of_date = _as_of_date(df, as_of)
     dq, _ = data_quality_confidence(df)
     cases = cases or []
-    diagnosis_by_id = {c.get("case_id"): c for c in cases
-                       if c.get("type") != "anomaly"}
+    diagnosis_by_id = {}
+    for c in cases:
+        if c.get("type") == "anomaly":
+            continue
+        if c.get("case_id"):
+            diagnosis_by_id[c["case_id"]] = c        # legacy exports
+        if c.get("finding_key"):
+            diagnosis_by_id[c["finding_key"]] = c    # content key wins
 
     return [
         *_structural_items(profile, df, as_of_date, dq, diagnosis_by_id),

@@ -268,3 +268,14 @@ def detect_all(df: pd.DataFrame | None = None) -> list[DetectedBottleneck]:
         rework_stage=config.REWORK_STAGE,
         delay_threshold_days=config.DELAY_THRESHOLD_DAYS,
     )
+
+
+def finding_key(bn: "DetectedBottleneck") -> str:
+    """Content-based identity for a finding.
+
+    `DetectedBottleneck.id` (BN001..N) is assigned by RANK ORDER in
+    detect_dynamic, so it is not stable across two analyses of different data.
+    Anything that joins across analyses — diagnosis prose, snapshots, action
+    items — must key on this instead. See actions/build.py.
+    """
+    return f"{bn.type}::{str(bn.stage).strip().lower()}::{bn.metric_label}"
