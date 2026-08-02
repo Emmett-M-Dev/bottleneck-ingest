@@ -1,7 +1,8 @@
 {
-  "generated_at": "2026-07-10T10:01:16.723346",
+  "generated_at": "2026-08-01T10:45:51.781852",
   "seed": 13,
-  "cases": 18,
+  "as_of": "2026-08-31T00:00:00",
+  "cases": 28,
   "bottlenecks": {
     "delay": [
       "B-2026-001",
@@ -19,6 +20,36 @@
       "B-2026-002",
       "B-2026-006",
       "B-2026-013"
+    ]
+  },
+  "operational_intent": {
+    "parked_at": {
+      "Request Received": [
+        "B-2026-019",
+        "B-2026-020"
+      ],
+      "Placement Offer": [
+        "B-2026-021",
+        "B-2026-022"
+      ],
+      "Booking Confirmed": [
+        "B-2026-023",
+        "B-2026-024"
+      ],
+      "Document Collection": [
+        "B-2026-025"
+      ],
+      "Pre-Arrival Logistics": [
+        "B-2026-026",
+        "B-2026-027"
+      ],
+      "Invoice Issued": [
+        "B-2026-028"
+      ]
+    },
+    "unowned": [
+      "B-2026-020",
+      "B-2026-022"
     ]
   }
 }

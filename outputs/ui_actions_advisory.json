@@ -1,0 +1,2372 @@
+{
+  "profile": "advisory",
+  "workflow": "Lead-to-cash",
+  "case_noun": "engagement",
+  "ui": {
+    "brand": "Northstar Advisory",
+    "context": "Lead-to-cash",
+    "domain": "professional services consultancy",
+    "initials": "NA"
+  },
+  "currency": "£",
+  "generated_at": "2026-08-01T20:31:25.232485+00:00",
+  "analysis_date": "2026-07-20",
+  "snapshot_id": "SNAP-ADV-7c1b3ddc",
+  "totals": {
+    "open_items": 15,
+    "revenue_at_risk": 481000.0,
+    "cost_incurred": 10825.5,
+    "hours_at_risk": 42.5,
+    "cases_affected": 26,
+    "by_category": {
+      "case_action": 7,
+      "process_intervention": 6,
+      "data_quality": 2
+    },
+    "data_quality_confidence": 0.97
+  },
+  "sections": {
+    "revenue_at_risk": [
+      {
+        "action_id": "ACT-ADV-6722841e",
+        "profile": "advisory",
+        "finding_key": "unrealised_value::::value_not_yet_realised",
+        "finding_type": "unrealised_value",
+        "title": "16 case(s) worth £288,600 not yet billed",
+        "summary": "These cases carry a value but have not reached a revenue stage. Every day they sit there is cash not in the bank.",
+        "workflow": "Lead-to-cash",
+        "stage": "",
+        "affected_case_ids": [
+          "NA-1052",
+          "NA-1053",
+          "NA-1054",
+          "NA-1055",
+          "NA-1056",
+          "NA-1057",
+          "NA-1058",
+          "NA-1059",
+          "NA-1060",
+          "NA-1061",
+          "NA-1062",
+          "NA-1063",
+          "NA-1064",
+          "NA-1065",
+          "NA-1066",
+          "NA-1067"
+        ],
+        "evidence": [
+          {
+            "kind": "metric",
+            "label": "value_not_yet_realised",
+            "detail": "These cases carry a value but have not reached a revenue stage. Every day they sit there is cash not in the bank.",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": "value_not_yet_realised",
+            "metric_value": 288600.0,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "NA-1056",
+            "detail": "waiting 8 days; value 33,100; owner [ORG_1]; at Proposal",
+            "source_ref": "leads.xlsx:Sheet1:54",
+            "source_file": "leads.xlsx",
+            "sheet": "Sheet1",
+            "row": 54,
+            "case_id": "NA-1056",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "NA-1064",
+            "detail": "waiting 2 days; value 29,400; owner [PERSON_2]; at Onboarding",
+            "source_ref": "projects.xlsx:Sheet1:77",
+            "source_file": "projects.xlsx",
+            "sheet": "Sheet1",
+            "row": 77,
+            "case_id": "NA-1064",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "NA-1060",
+            "detail": "waiting 14 days; value 27,600; owner [PERSON_3]; at Client Review",
+            "source_ref": "projects.xlsx:Sheet1:66",
+            "source_file": "projects.xlsx",
+            "sheet": "Sheet1",
+            "row": 66,
+            "case_id": "NA-1060",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "NA-1054",
+            "detail": "waiting 0 days; value 24,300; at Lead",
+            "source_ref": "leads.xlsx:Sheet1:48",
+            "source_file": "leads.xlsx",
+            "sheet": "Sheet1",
+            "row": 48,
+            "case_id": "NA-1054",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "NA-1062",
+            "detail": "waiting 38 days; value 21,900; owner [PERSON_2]; at Invoice",
+            "source_ref": "projects.xlsx:Sheet1:74",
+            "source_file": "projects.xlsx",
+            "sheet": "Sheet1",
+            "row": 74,
+            "case_id": "NA-1062",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "NA-1058",
+            "detail": "waiting 1 days; value 20,700; at Won",
+            "source_ref": "leads.xlsx:Sheet1:62",
+            "source_file": "leads.xlsx",
+            "sheet": "Sheet1",
+            "row": 62,
+            "case_id": "NA-1058",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "NA-1066",
+            "detail": "waiting 25 days; value 18,500; owner [PERSON_3]; at Delivery",
+            "source_ref": "projects.xlsx:Sheet1:81",
+            "source_file": "projects.xlsx",
+            "sheet": "Sheet1",
+            "row": 81,
+            "case_id": "NA-1066",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "NA-1061",
+            "detail": "waiting 30 days; value 17,200; owner [PERSON_2]; at Invoice",
+            "source_ref": "projects.xlsx:Sheet1:70",
+            "source_file": "projects.xlsx",
+            "sheet": "Sheet1",
+            "row": 70,
+            "case_id": "NA-1061",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "value_not_yet_realised",
+        "metric_value": 288600.0,
+        "detection_confidence": 0.95,
+        "data_quality_confidence": 0.97,
+        "impact": {
+          "category": "revenue_at_risk",
+          "currency": "£",
+          "revenue_at_risk": 288600.0,
+          "cost_incurred": null,
+          "hours_at_risk": null,
+          "capacity_pct": null,
+          "delivery_risk": "medium",
+          "affected_case_count": 16,
+          "basis": "16 case(s) summed at their recorded value",
+          "is_projection": false
+        },
+        "recommended_action": "Bill or chase the 16 engagement(s) holding unrealised value",
+        "action_steps": [
+          "Work the list highest value first.",
+          "Raise the invoice, or chase the approval that is blocking it.",
+          "Record the invoice reference against the engagement."
+        ],
+        "action_category": "case_action",
+        "action_template": null,
+        "owner": "Engagement lead",
+        "due_date": "2026-07-22",
+        "status": "proposed",
+        "created_at": "2026-07-20",
+        "updated_at": "2026-07-20",
+        "source_records": [
+          "leads.xlsx:Sheet1:54",
+          "projects.xlsx:Sheet1:77",
+          "projects.xlsx:Sheet1:66"
+        ],
+        "intervention_id": null,
+        "rank_score": 78.68,
+        "rank_explanation": [
+          "£288,600 measured at risk (100% of the largest item) → 40.0 pts",
+          "medium client-delivery risk → 11.0 pts",
+          "16 affected case(s), the queue's widest is 17 → 18.8 pts",
+          "due in 2 day(s) → 13.0 pts",
+          "detection confidence 95% scales 82.8 → 78.7 pts"
+        ],
+        "llm_payload": null,
+        "generated_by": "case_rule",
+        "execution": {
+          "route": "tracked",
+          "will_modify_files": false,
+          "explanation": "Case-level work. Approving assigns and tracks it; the system does not touch any files."
+        },
+        "sent_to_llm": {
+          "used_llm": false,
+          "payload": null,
+          "note": "Nothing about this item was sent to a language model."
+        }
+      },
+      {
+        "action_id": "ACT-ADV-4aa5e404",
+        "profile": "advisory",
+        "finding_key": "unowned_case::::unowned_cases",
+        "finding_type": "unowned_case",
+        "title": "2 open case(s) have no owner",
+        "summary": "Work with nobody's name against it is work nobody is doing.",
+        "workflow": "Lead-to-cash",
+        "stage": "",
+        "affected_case_ids": [
+          "NA-1054",
+          "NA-1058"
+        ],
+        "evidence": [
+          {
+            "kind": "metric",
+            "label": "unowned_cases",
+            "detail": "Work with nobody's name against it is work nobody is doing.",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": "unowned_cases",
+            "metric_value": 2.0,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "NA-1054",
+            "detail": "value 24,300; at Lead",
+            "source_ref": "leads.xlsx:Sheet1:48",
+            "source_file": "leads.xlsx",
+            "sheet": "Sheet1",
+            "row": 48,
+            "case_id": "NA-1054",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "NA-1058",
+            "detail": "value 20,700; at Won",
+            "source_ref": "leads.xlsx:Sheet1:62",
+            "source_file": "leads.xlsx",
+            "sheet": "Sheet1",
+            "row": 62,
+            "case_id": "NA-1058",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "unowned_cases",
+        "metric_value": 2.0,
+        "detection_confidence": 0.99,
+        "data_quality_confidence": 0.97,
+        "impact": {
+          "category": "revenue_at_risk",
+          "currency": "£",
+          "revenue_at_risk": 45000.0,
+          "cost_incurred": null,
+          "hours_at_risk": null,
+          "capacity_pct": null,
+          "delivery_risk": "high",
+          "affected_case_count": 2,
+          "basis": "2 case(s) at their recorded value (£20,700–£24,300)",
+          "is_projection": false
+        },
+        "recommended_action": "Assign an owner to 2 unowned engagement(s)",
+        "action_steps": [
+          "Put a name against each listed engagement.",
+          "Tell that person it is theirs.",
+          "Make an owner mandatory before a engagement leaves its first stage."
+        ],
+        "action_category": "case_action",
+        "action_template": null,
+        "owner": "Engagement lead",
+        "due_date": "2026-07-22",
+        "status": "proposed",
+        "created_at": "2026-07-20",
+        "updated_at": "2026-07-20",
+        "source_records": [
+          "leads.xlsx:Sheet1:48",
+          "leads.xlsx:Sheet1:62"
+        ],
+        "intervention_id": null,
+        "rank_score": 41.17,
+        "rank_explanation": [
+          "£45,000 measured at risk (16% of the largest item) → 6.2 pts",
+          "high client-delivery risk → 20.0 pts",
+          "2 affected case(s), the queue's widest is 17 → 2.4 pts",
+          "due in 2 day(s) → 13.0 pts",
+          "detection confidence 99% scales 41.6 → 41.2 pts"
+        ],
+        "llm_payload": null,
+        "generated_by": "case_rule",
+        "execution": {
+          "route": "tracked",
+          "will_modify_files": false,
+          "explanation": "Case-level work. Approving assigns and tracks it; the system does not touch any files."
+        },
+        "sent_to_llm": {
+          "used_llm": false,
+          "payload": null,
+          "note": "Nothing about this item was sent to a language model."
+        }
+      },
+      {
+        "action_id": "ACT-ADV-3fb131c6",
+        "profile": "advisory",
+        "finding_key": "stage_sla_breach::client review::days_over_sla",
+        "finding_type": "stage_sla_breach",
+        "title": "2 case(s) past the Client Review SLA",
+        "summary": "The agreed limit at Client Review is 10 days; the worst has waited 27.",
+        "workflow": "Lead-to-cash",
+        "stage": "Client Review",
+        "affected_case_ids": [
+          "NA-1060",
+          "NA-1067"
+        ],
+        "evidence": [
+          {
+            "kind": "metric",
+            "label": "days_over_sla",
+            "detail": "The agreed limit at Client Review is 10 days; the worst has waited 27.",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": "days_over_sla",
+            "metric_value": 10.5,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "NA-1067",
+            "detail": "waiting 27 days; 17 days over the limit; value 9,400; owner [PERSON_3]",
+            "source_ref": "projects.xlsx:Sheet1:84",
+            "source_file": "projects.xlsx",
+            "sheet": "Sheet1",
+            "row": 84,
+            "case_id": "NA-1067",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "NA-1060",
+            "detail": "waiting 14 days; 4 days over the limit; value 27,600; owner [PERSON_3]",
+            "source_ref": "projects.xlsx:Sheet1:66",
+            "source_file": "projects.xlsx",
+            "sheet": "Sheet1",
+            "row": 66,
+            "case_id": "NA-1060",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "days_over_sla",
+        "metric_value": 10.5,
+        "detection_confidence": 0.95,
+        "data_quality_confidence": 0.97,
+        "impact": {
+          "category": "revenue_at_risk",
+          "currency": "£",
+          "revenue_at_risk": 37000.0,
+          "cost_incurred": null,
+          "hours_at_risk": null,
+          "capacity_pct": null,
+          "delivery_risk": "high",
+          "affected_case_count": 2,
+          "basis": "2 case(s) at their recorded value (£9,400–£27,600)",
+          "is_projection": false
+        },
+        "recommended_action": "Chase the 2 engagement(s) sitting past the Client Review limit",
+        "action_steps": [
+          "Open each listed engagement, oldest first.",
+          "Make the next contact or hand it to whoever can move it.",
+          "Record what happened on the engagement row so the clock resets honestly."
+        ],
+        "action_category": "case_action",
+        "action_template": null,
+        "owner": "Engagement lead",
+        "due_date": "2026-07-22",
+        "status": "proposed",
+        "created_at": "2026-07-20",
+        "updated_at": "2026-07-20",
+        "source_records": [
+          "projects.xlsx:Sheet1:84",
+          "projects.xlsx:Sheet1:66"
+        ],
+        "intervention_id": null,
+        "rank_score": 38.46,
+        "rank_explanation": [
+          "£37,000 measured at risk (13% of the largest item) → 5.1 pts",
+          "high client-delivery risk → 20.0 pts",
+          "2 affected case(s), the queue's widest is 17 → 2.4 pts",
+          "due in 2 day(s) → 13.0 pts",
+          "detection confidence 95% scales 40.5 → 38.5 pts"
+        ],
+        "llm_payload": null,
+        "generated_by": "case_rule",
+        "execution": {
+          "route": "tracked",
+          "will_modify_files": false,
+          "explanation": "Case-level work. Approving assigns and tracks it; the system does not touch any files."
+        },
+        "sent_to_llm": {
+          "used_llm": false,
+          "payload": null,
+          "note": "Nothing about this item was sent to a language model."
+        }
+      },
+      {
+        "action_id": "ACT-ADV-915dcd4d",
+        "profile": "advisory",
+        "finding_key": "stage_sla_breach::proposal::days_over_sla",
+        "finding_type": "stage_sla_breach",
+        "title": "2 case(s) past the Proposal SLA",
+        "summary": "The agreed limit at Proposal is 7 days; the worst has waited 8.",
+        "workflow": "Lead-to-cash",
+        "stage": "Proposal",
+        "affected_case_ids": [
+          "NA-1055",
+          "NA-1056"
+        ],
+        "evidence": [
+          {
+            "kind": "metric",
+            "label": "days_over_sla",
+            "detail": "The agreed limit at Proposal is 7 days; the worst has waited 8.",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": "days_over_sla",
+            "metric_value": 1.0,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "NA-1055",
+            "detail": "waiting 8 days; 1 days over the limit; value 8,900; owner [PERSON_1]",
+            "source_ref": "leads.xlsx:Sheet1:51",
+            "source_file": "leads.xlsx",
+            "sheet": "Sheet1",
+            "row": 51,
+            "case_id": "NA-1055",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "NA-1056",
+            "detail": "waiting 8 days; 1 days over the limit; value 33,100; owner [ORG_1]",
+            "source_ref": "leads.xlsx:Sheet1:54",
+            "source_file": "leads.xlsx",
+            "sheet": "Sheet1",
+            "row": 54,
+            "case_id": "NA-1056",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "days_over_sla",
+        "metric_value": 1.0,
+        "detection_confidence": 0.95,
+        "data_quality_confidence": 0.97,
+        "impact": {
+          "category": "revenue_at_risk",
+          "currency": "£",
+          "revenue_at_risk": 42000.0,
+          "cost_incurred": null,
+          "hours_at_risk": null,
+          "capacity_pct": null,
+          "delivery_risk": "medium",
+          "affected_case_count": 2,
+          "basis": "2 case(s) at their recorded value (£8,900–£33,100)",
+          "is_projection": false
+        },
+        "recommended_action": "Chase the 2 engagement(s) sitting past the Proposal limit",
+        "action_steps": [
+          "Open each listed engagement, oldest first.",
+          "Make the next contact or hand it to whoever can move it.",
+          "Record what happened on the engagement row so the clock resets honestly."
+        ],
+        "action_category": "case_action",
+        "action_template": null,
+        "owner": "Engagement lead",
+        "due_date": "2026-07-22",
+        "status": "proposed",
+        "created_at": "2026-07-20",
+        "updated_at": "2026-07-20",
+        "source_records": [
+          "leads.xlsx:Sheet1:51",
+          "leads.xlsx:Sheet1:54"
+        ],
+        "intervention_id": null,
+        "rank_score": 30.57,
+        "rank_explanation": [
+          "£42,000 measured at risk (15% of the largest item) → 5.8 pts",
+          "medium client-delivery risk → 11.0 pts",
+          "2 affected case(s), the queue's widest is 17 → 2.4 pts",
+          "due in 2 day(s) → 13.0 pts",
+          "detection confidence 95% scales 32.2 → 30.6 pts"
+        ],
+        "llm_payload": null,
+        "generated_by": "case_rule",
+        "execution": {
+          "route": "tracked",
+          "will_modify_files": false,
+          "explanation": "Case-level work. Approving assigns and tracks it; the system does not touch any files."
+        },
+        "sent_to_llm": {
+          "used_llm": false,
+          "payload": null,
+          "note": "Nothing about this item was sent to a language model."
+        }
+      },
+      {
+        "action_id": "ACT-ADV-154efec9",
+        "profile": "advisory",
+        "finding_key": "stage_sla_breach::lead::days_over_sla",
+        "finding_type": "stage_sla_breach",
+        "title": "2 case(s) past the Lead SLA",
+        "summary": "The agreed limit at Lead is 3 days; the worst has waited 7.",
+        "workflow": "Lead-to-cash",
+        "stage": "Lead",
+        "affected_case_ids": [
+          "NA-1052",
+          "NA-1053"
+        ],
+        "evidence": [
+          {
+            "kind": "metric",
+            "label": "days_over_sla",
+            "detail": "The agreed limit at Lead is 3 days; the worst has waited 7.",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": "days_over_sla",
+            "metric_value": 4.0,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "NA-1052",
+            "detail": "waiting 7 days; 4 days over the limit; value 11,200; owner [ORG_1]",
+            "source_ref": "leads.xlsx:Sheet1:46",
+            "source_file": "leads.xlsx",
+            "sheet": "Sheet1",
+            "row": 46,
+            "case_id": "NA-1052",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "NA-1053",
+            "detail": "waiting 7 days; 4 days over the limit; value 16,800; owner [PERSON_1]",
+            "source_ref": "leads.xlsx:Sheet1:47",
+            "source_file": "leads.xlsx",
+            "sheet": "Sheet1",
+            "row": 47,
+            "case_id": "NA-1053",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "days_over_sla",
+        "metric_value": 4.0,
+        "detection_confidence": 0.95,
+        "data_quality_confidence": 0.97,
+        "impact": {
+          "category": "revenue_at_risk",
+          "currency": "£",
+          "revenue_at_risk": 28000.0,
+          "cost_incurred": null,
+          "hours_at_risk": null,
+          "capacity_pct": null,
+          "delivery_risk": "medium",
+          "affected_case_count": 2,
+          "basis": "2 case(s) at their recorded value (£11,200–£16,800)",
+          "is_projection": false
+        },
+        "recommended_action": "Chase the 2 engagement(s) sitting past the Lead limit",
+        "action_steps": [
+          "Open each listed engagement, oldest first.",
+          "Make the next contact or hand it to whoever can move it.",
+          "Record what happened on the engagement row so the clock resets honestly."
+        ],
+        "action_category": "case_action",
+        "action_template": null,
+        "owner": "Engagement lead",
+        "due_date": "2026-07-22",
+        "status": "proposed",
+        "created_at": "2026-07-20",
+        "updated_at": "2026-07-20",
+        "source_records": [
+          "leads.xlsx:Sheet1:46",
+          "leads.xlsx:Sheet1:47"
+        ],
+        "intervention_id": null,
+        "rank_score": 28.72,
+        "rank_explanation": [
+          "£28,000 measured at risk (10% of the largest item) → 3.9 pts",
+          "medium client-delivery risk → 11.0 pts",
+          "2 affected case(s), the queue's widest is 17 → 2.4 pts",
+          "due in 2 day(s) → 13.0 pts",
+          "detection confidence 95% scales 30.2 → 28.7 pts"
+        ],
+        "llm_payload": null,
+        "generated_by": "case_rule",
+        "execution": {
+          "route": "tracked",
+          "will_modify_files": false,
+          "explanation": "Case-level work. Approving assigns and tracks it; the system does not touch any files."
+        },
+        "sent_to_llm": {
+          "used_llm": false,
+          "payload": null,
+          "note": "Nothing about this item was sent to a language model."
+        }
+      },
+      {
+        "action_id": "ACT-ADV-b75a65d7",
+        "profile": "advisory",
+        "finding_key": "stage_sla_breach::invoice::days_over_sla",
+        "finding_type": "stage_sla_breach",
+        "title": "1 case(s) past the Invoice SLA",
+        "summary": "The agreed limit at Invoice is 30 days; the worst has waited 38.",
+        "workflow": "Lead-to-cash",
+        "stage": "Invoice",
+        "affected_case_ids": [
+          "NA-1062"
+        ],
+        "evidence": [
+          {
+            "kind": "metric",
+            "label": "days_over_sla",
+            "detail": "The agreed limit at Invoice is 30 days; the worst has waited 38.",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": "days_over_sla",
+            "metric_value": 8.0,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "NA-1062",
+            "detail": "waiting 38 days; 8 days over the limit; value 21,900; owner [PERSON_2]",
+            "source_ref": "projects.xlsx:Sheet1:74",
+            "source_file": "projects.xlsx",
+            "sheet": "Sheet1",
+            "row": 74,
+            "case_id": "NA-1062",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "days_over_sla",
+        "metric_value": 8.0,
+        "detection_confidence": 0.95,
+        "data_quality_confidence": 0.97,
+        "impact": {
+          "category": "revenue_at_risk",
+          "currency": "£",
+          "revenue_at_risk": 21900.0,
+          "cost_incurred": null,
+          "hours_at_risk": null,
+          "capacity_pct": null,
+          "delivery_risk": "medium",
+          "affected_case_count": 1,
+          "basis": "1 case(s) at their recorded value (£21,900–£21,900)",
+          "is_projection": false
+        },
+        "recommended_action": "Chase the 1 engagement(s) sitting past the Invoice limit",
+        "action_steps": [
+          "Open each listed engagement, oldest first.",
+          "Make the next contact or hand it to whoever can move it.",
+          "Record what happened on the engagement row so the clock resets honestly."
+        ],
+        "action_category": "case_action",
+        "action_template": null,
+        "owner": "Engagement lead",
+        "due_date": "2026-07-22",
+        "status": "proposed",
+        "created_at": "2026-07-20",
+        "updated_at": "2026-07-20",
+        "source_records": [
+          "projects.xlsx:Sheet1:74"
+        ],
+        "intervention_id": null,
+        "rank_score": 26.8,
+        "rank_explanation": [
+          "£21,900 measured at risk (8% of the largest item) → 3.0 pts",
+          "medium client-delivery risk → 11.0 pts",
+          "1 affected case(s), the queue's widest is 17 → 1.2 pts",
+          "due in 2 day(s) → 13.0 pts",
+          "detection confidence 95% scales 28.2 → 26.8 pts"
+        ],
+        "llm_payload": null,
+        "generated_by": "case_rule",
+        "execution": {
+          "route": "tracked",
+          "will_modify_files": false,
+          "explanation": "Case-level work. Approving assigns and tracks it; the system does not touch any files."
+        },
+        "sent_to_llm": {
+          "used_llm": false,
+          "payload": null,
+          "note": "Nothing about this item was sent to a language model."
+        }
+      },
+      {
+        "action_id": "ACT-ADV-3e83b347",
+        "profile": "advisory",
+        "finding_key": "stage_sla_breach::delivery::days_over_sla",
+        "finding_type": "stage_sla_breach",
+        "title": "1 case(s) past the Delivery SLA",
+        "summary": "The agreed limit at Delivery is 21 days; the worst has waited 25.",
+        "workflow": "Lead-to-cash",
+        "stage": "Delivery",
+        "affected_case_ids": [
+          "NA-1066"
+        ],
+        "evidence": [
+          {
+            "kind": "metric",
+            "label": "days_over_sla",
+            "detail": "The agreed limit at Delivery is 21 days; the worst has waited 25.",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": "days_over_sla",
+            "metric_value": 4.0,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "NA-1066",
+            "detail": "waiting 25 days; 4 days over the limit; value 18,500; owner [PERSON_3]",
+            "source_ref": "projects.xlsx:Sheet1:81",
+            "source_file": "projects.xlsx",
+            "sheet": "Sheet1",
+            "row": 81,
+            "case_id": "NA-1066",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "days_over_sla",
+        "metric_value": 4.0,
+        "detection_confidence": 0.95,
+        "data_quality_confidence": 0.97,
+        "impact": {
+          "category": "revenue_at_risk",
+          "currency": "£",
+          "revenue_at_risk": 18500.0,
+          "cost_incurred": null,
+          "hours_at_risk": null,
+          "capacity_pct": null,
+          "delivery_risk": "low",
+          "affected_case_count": 1,
+          "basis": "1 case(s) at their recorded value (£18,500–£18,500)",
+          "is_projection": false
+        },
+        "recommended_action": "Chase the 1 engagement(s) sitting past the Delivery limit",
+        "action_steps": [
+          "Open each listed engagement, oldest first.",
+          "Make the next contact or hand it to whoever can move it.",
+          "Record what happened on the engagement row so the clock resets honestly."
+        ],
+        "action_category": "case_action",
+        "action_template": null,
+        "owner": "Engagement lead",
+        "due_date": "2026-07-22",
+        "status": "proposed",
+        "created_at": "2026-07-20",
+        "updated_at": "2026-07-20",
+        "source_records": [
+          "projects.xlsx:Sheet1:81"
+        ],
+        "intervention_id": null,
+        "rank_score": 19.7,
+        "rank_explanation": [
+          "£18,500 measured at risk (6% of the largest item) → 2.6 pts",
+          "low client-delivery risk → 4.0 pts",
+          "1 affected case(s), the queue's widest is 17 → 1.2 pts",
+          "due in 2 day(s) → 13.0 pts",
+          "detection confidence 95% scales 20.7 → 19.7 pts"
+        ],
+        "llm_payload": null,
+        "generated_by": "case_rule",
+        "execution": {
+          "route": "tracked",
+          "will_modify_files": false,
+          "explanation": "Case-level work. Approving assigns and tracks it; the system does not touch any files."
+        },
+        "sent_to_llm": {
+          "used_llm": false,
+          "payload": null,
+          "note": "Nothing about this item was sent to a language model."
+        }
+      }
+    ],
+    "capacity_constraints": [
+      {
+        "action_id": "ACT-ADV-b596aa1b",
+        "profile": "advisory",
+        "finding_key": "key_person_dependency::delivery::share_of_stage_events::[person_3]",
+        "finding_type": "key_person_dependency",
+        "title": "Delivery depends almost entirely on [PERSON_3]",
+        "summary": "[PERSON_3] handled 19 of 21 Delivery events (90%). If they are unavailable, this stage stops. The name is masked in the analysis store — open one of the listed source rows in the original spreadsheet to see who it is.",
+        "workflow": "Lead-to-cash",
+        "stage": "Delivery",
+        "affected_case_ids": [
+          "NA-1041",
+          "NA-1042",
+          "NA-1044",
+          "NA-1045",
+          "NA-1046",
+          "NA-1047",
+          "NA-1048",
+          "NA-1050",
+          "NA-1051",
+          "NA-1059",
+          "NA-1060",
+          "NA-1061",
+          "NA-1062",
+          "NA-1063",
+          "NA-1065",
+          "NA-1066",
+          "NA-1067"
+        ],
+        "evidence": [
+          {
+            "kind": "metric",
+            "label": "share_of_stage_events",
+            "detail": "[PERSON_3] handled 19 of 21 Delivery events (90%). If they are unavailable, this stage stops.",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": "share_of_stage_events",
+            "metric_value": 0.9,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "NA-1041",
+            "detail": "at Delivery",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "NA-1041",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "NA-1042",
+            "detail": "at Delivery",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "NA-1042",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "NA-1044",
+            "detail": "at Delivery",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "NA-1044",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "NA-1045",
+            "detail": "at Delivery",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "NA-1045",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "NA-1046",
+            "detail": "at Delivery",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "NA-1046",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "NA-1047",
+            "detail": "at Delivery",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "NA-1047",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "NA-1048",
+            "detail": "at Delivery",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "NA-1048",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "NA-1050",
+            "detail": "at Delivery",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "NA-1050",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "share_of_stage_events",
+        "metric_value": 0.9,
+        "detection_confidence": 0.9,
+        "data_quality_confidence": 0.97,
+        "impact": {
+          "category": "capacity_loss",
+          "currency": "£",
+          "revenue_at_risk": null,
+          "cost_incurred": null,
+          "hours_at_risk": null,
+          "capacity_pct": 90.0,
+          "delivery_risk": "high",
+          "affected_case_count": 17,
+          "basis": "one person handles 90% of the work at this stage",
+          "is_projection": true
+        },
+        "recommended_action": "Cross-train a second person on Delivery",
+        "action_steps": [
+          "Pick a colleague to shadow [PERSON_3] through Delivery.",
+          "Write down the parts of Delivery that only [PERSON_3] currently knows.",
+          "Route the next few engagements at Delivery to the second person."
+        ],
+        "action_category": "process_intervention",
+        "action_template": null,
+        "owner": "Managing partner",
+        "due_date": "2026-08-10",
+        "status": "proposed",
+        "created_at": "2026-07-20",
+        "updated_at": "2026-07-20",
+        "source_records": [
+          "projects.xlsx:Sheet1:3",
+          "projects.xlsx:Sheet1:8",
+          "projects.xlsx:Sheet1:13"
+        ],
+        "intervention_id": null,
+        "rank_score": 40.5,
+        "rank_explanation": [
+          "no monetary figure available → 0 pts",
+          "high client-delivery risk → 20.0 pts",
+          "17 affected case(s), the queue's widest is 17 → 20.0 pts",
+          "due in 21 day(s) → 5.0 pts",
+          "detection confidence 90% scales 45.0 → 40.5 pts"
+        ],
+        "llm_payload": null,
+        "generated_by": "case_rule",
+        "execution": {
+          "route": "tracked",
+          "will_modify_files": false,
+          "explanation": "Process change. Approving starts a measurable intervention with a baseline and a review date; the system does not touch any files."
+        },
+        "sent_to_llm": {
+          "used_llm": false,
+          "payload": null,
+          "note": "Nothing about this item was sent to a language model."
+        }
+      },
+      {
+        "action_id": "ACT-ADV-2485294f",
+        "profile": "advisory",
+        "finding_key": "key_person_dependency::client review::share_of_stage_events::[person_3]",
+        "finding_type": "key_person_dependency",
+        "title": "Client Review depends almost entirely on [PERSON_3]",
+        "summary": "[PERSON_3] handled 15 of 18 Client Review events (83%). If they are unavailable, this stage stops. The name is masked in the analysis store — open one of the listed source rows in the original spreadsheet to see who it is.",
+        "workflow": "Lead-to-cash",
+        "stage": "Client Review",
+        "affected_case_ids": [
+          "NA-1041",
+          "NA-1042",
+          "NA-1044",
+          "NA-1045",
+          "NA-1046",
+          "NA-1047",
+          "NA-1048",
+          "NA-1050",
+          "NA-1051",
+          "NA-1059",
+          "NA-1060",
+          "NA-1061",
+          "NA-1062",
+          "NA-1067"
+        ],
+        "evidence": [
+          {
+            "kind": "metric",
+            "label": "share_of_stage_events",
+            "detail": "[PERSON_3] handled 15 of 18 Client Review events (83%). If they are unavailable, this stage stops.",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": "share_of_stage_events",
+            "metric_value": 0.83,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "NA-1041",
+            "detail": "at Client Review",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "NA-1041",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "NA-1042",
+            "detail": "at Client Review",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "NA-1042",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "NA-1044",
+            "detail": "at Client Review",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "NA-1044",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "NA-1045",
+            "detail": "at Client Review",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "NA-1045",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "NA-1046",
+            "detail": "at Client Review",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "NA-1046",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "NA-1047",
+            "detail": "at Client Review",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "NA-1047",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "NA-1048",
+            "detail": "at Client Review",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "NA-1048",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "NA-1050",
+            "detail": "at Client Review",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "NA-1050",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "share_of_stage_events",
+        "metric_value": 0.83,
+        "detection_confidence": 0.9,
+        "data_quality_confidence": 0.97,
+        "impact": {
+          "category": "capacity_loss",
+          "currency": "£",
+          "revenue_at_risk": null,
+          "cost_incurred": null,
+          "hours_at_risk": null,
+          "capacity_pct": 83.0,
+          "delivery_risk": "high",
+          "affected_case_count": 14,
+          "basis": "one person handles 83% of the work at this stage",
+          "is_projection": true
+        },
+        "recommended_action": "Cross-train a second person on Client Review",
+        "action_steps": [
+          "Pick a colleague to shadow [PERSON_3] through Client Review.",
+          "Write down the parts of Client Review that only [PERSON_3] currently knows.",
+          "Route the next few engagements at Client Review to the second person."
+        ],
+        "action_category": "process_intervention",
+        "action_template": null,
+        "owner": "Managing partner",
+        "due_date": "2026-08-10",
+        "status": "proposed",
+        "created_at": "2026-07-20",
+        "updated_at": "2026-07-20",
+        "source_records": [
+          "projects.xlsx:Sheet1:4",
+          "projects.xlsx:Sheet1:9",
+          "projects.xlsx:Sheet1:14"
+        ],
+        "intervention_id": null,
+        "rank_score": 37.32,
+        "rank_explanation": [
+          "no monetary figure available → 0 pts",
+          "high client-delivery risk → 20.0 pts",
+          "14 affected case(s), the queue's widest is 17 → 16.5 pts",
+          "due in 21 day(s) → 5.0 pts",
+          "detection confidence 90% scales 41.5 → 37.3 pts"
+        ],
+        "llm_payload": null,
+        "generated_by": "case_rule",
+        "execution": {
+          "route": "tracked",
+          "will_modify_files": false,
+          "explanation": "Process change. Approving starts a measurable intervention with a baseline and a review date; the system does not touch any files."
+        },
+        "sent_to_llm": {
+          "used_llm": false,
+          "payload": null,
+          "note": "Nothing about this item was sent to a language model."
+        }
+      },
+      {
+        "action_id": "ACT-ADV-3d985b0f",
+        "profile": "advisory",
+        "finding_key": "overloaded_owner::::open_cases_held::[person_3]",
+        "finding_type": "overloaded_owner",
+        "title": "[PERSON_3] is holding 6 open cases",
+        "summary": "The working limit for this business is 4. Everything above it queues behind one person. The name is masked in the analysis store — open one of the listed source rows in the original spreadsheet to see who it is.",
+        "workflow": "Lead-to-cash",
+        "stage": "",
+        "affected_case_ids": [
+          "NA-1059",
+          "NA-1060",
+          "NA-1063",
+          "NA-1065",
+          "NA-1066",
+          "NA-1067"
+        ],
+        "evidence": [
+          {
+            "kind": "metric",
+            "label": "open_cases_held",
+            "detail": "The working limit for this business is 4. Everything above it queues behind one person.",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": "open_cases_held",
+            "metric_value": 6.0,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "NA-1059",
+            "detail": "value 10,300; at Client Review",
+            "source_ref": "projects.xlsx:Sheet1:63",
+            "source_file": "projects.xlsx",
+            "sheet": "Sheet1",
+            "row": 63,
+            "case_id": "NA-1059",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "NA-1060",
+            "detail": "value 27,600; at Client Review",
+            "source_ref": "projects.xlsx:Sheet1:66",
+            "source_file": "projects.xlsx",
+            "sheet": "Sheet1",
+            "row": 66,
+            "case_id": "NA-1060",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "NA-1063",
+            "detail": "value 12,800; at Delivery",
+            "source_ref": "projects.xlsx:Sheet1:76",
+            "source_file": "projects.xlsx",
+            "sheet": "Sheet1",
+            "row": 76,
+            "case_id": "NA-1063",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "NA-1065",
+            "detail": "value 12,000; at Delivery",
+            "source_ref": "projects.xlsx:Sheet1:79",
+            "source_file": "projects.xlsx",
+            "sheet": "Sheet1",
+            "row": 79,
+            "case_id": "NA-1065",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "NA-1066",
+            "detail": "value 18,500; at Delivery",
+            "source_ref": "projects.xlsx:Sheet1:81",
+            "source_file": "projects.xlsx",
+            "sheet": "Sheet1",
+            "row": 81,
+            "case_id": "NA-1066",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "NA-1067",
+            "detail": "value 9,400; at Client Review",
+            "source_ref": "projects.xlsx:Sheet1:84",
+            "source_file": "projects.xlsx",
+            "sheet": "Sheet1",
+            "row": 84,
+            "case_id": "NA-1067",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "open_cases_held",
+        "metric_value": 6.0,
+        "detection_confidence": 0.95,
+        "data_quality_confidence": 0.97,
+        "impact": {
+          "category": "capacity_loss",
+          "currency": "£",
+          "revenue_at_risk": null,
+          "cost_incurred": null,
+          "hours_at_risk": 8.0,
+          "capacity_pct": 150.0,
+          "delivery_risk": "medium",
+          "affected_case_count": 6,
+          "basis": "6 open case(s) against a working limit of 4 — 2 over",
+          "is_projection": true
+        },
+        "recommended_action": "Rebalance [PERSON_3]'s workload",
+        "action_steps": [
+          "Review the 6 open engagements [PERSON_3] is holding.",
+          "Move the ones that do not need their specific knowledge to a colleague.",
+          "Agree a working limit and check it at the weekly review."
+        ],
+        "action_category": "process_intervention",
+        "action_template": null,
+        "owner": "Managing partner",
+        "due_date": "2026-08-10",
+        "status": "proposed",
+        "created_at": "2026-07-20",
+        "updated_at": "2026-07-20",
+        "source_records": [
+          "projects.xlsx:Sheet1:63",
+          "projects.xlsx:Sheet1:66",
+          "projects.xlsx:Sheet1:76"
+        ],
+        "intervention_id": null,
+        "rank_score": 21.91,
+        "rank_explanation": [
+          "no monetary figure available → 0 pts",
+          "medium client-delivery risk → 11.0 pts",
+          "6 affected case(s), the queue's widest is 17 → 7.1 pts",
+          "due in 21 day(s) → 5.0 pts",
+          "detection confidence 95% scales 23.1 → 21.9 pts"
+        ],
+        "llm_payload": null,
+        "generated_by": "case_rule",
+        "execution": {
+          "route": "tracked",
+          "will_modify_files": false,
+          "explanation": "Process change. Approving starts a measurable intervention with a baseline and a review date; the system does not touch any files."
+        },
+        "sent_to_llm": {
+          "used_llm": false,
+          "payload": null,
+          "note": "Nothing about this item was sent to a language model."
+        }
+      }
+    ],
+    "delivery_risks": [
+      {
+        "action_id": "ACT-ADV-da6f1f95",
+        "profile": "advisory",
+        "finding_key": "delay::proposal::avg_delay_days",
+        "finding_type": "delay",
+        "title": "Cases stall entering Proposal",
+        "summary": "Cases reaching the Proposal stage are waiting on average about 19.3 days before the proposal is completed. Only 3 cases were detected, and the log shows those proposals do eventually reach a 'Complete' or 'Done' status, so the issue is the length of the wait rather than proposals being dropped. The evidence supplied is thin — it confirms the delay and that the cases resolve, but does not itself reveal whether the wait comes from slow drafting, missing paperwork, or a client-side approval sitting outside the firm's control. Root cause: Proposals sit for roughly three weeks because the firm has no fast, repeatable way to produce and progress them — drafting starts from scratch and/or waits on inputs the firm does not track — so each proposal accumulates avoidable idle time.",
+        "workflow": "Lead-to-cash",
+        "stage": "Proposal",
+        "affected_case_ids": [
+          "NA-1045",
+          "NA-1046",
+          "NA-1047"
+        ],
+        "evidence": [
+          {
+            "kind": "metric",
+            "label": "avg_delay_days",
+            "detail": "measured across 3 case(s) at Proposal",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": "avg_delay_days",
+            "metric_value": 19.3,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "Proposal source row",
+            "detail": null,
+            "source_ref": "leads.xlsx:Sheet1:20",
+            "source_file": "leads.xlsx",
+            "sheet": "Sheet1",
+            "row": 20,
+            "case_id": null,
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "Proposal source row",
+            "detail": null,
+            "source_ref": "leads.xlsx:Sheet1:24",
+            "source_file": "leads.xlsx",
+            "sheet": "Sheet1",
+            "row": 24,
+            "case_id": null,
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "Proposal source row",
+            "detail": null,
+            "source_ref": "leads.xlsx:Sheet1:28",
+            "source_file": "leads.xlsx",
+            "sheet": "Sheet1",
+            "row": 28,
+            "case_id": null,
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "NA-1045",
+            "detail": null,
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "NA-1045",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "NA-1046",
+            "detail": null,
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "NA-1046",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "NA-1047",
+            "detail": null,
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "NA-1047",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "avg_delay_days",
+        "metric_value": 19.3,
+        "detection_confidence": 0.4,
+        "data_quality_confidence": 0.97,
+        "impact": {
+          "category": "time_loss",
+          "currency": "£",
+          "revenue_at_risk": null,
+          "cost_incurred": 6948.0,
+          "hours_at_risk": null,
+          "capacity_pct": null,
+          "delivery_risk": "high",
+          "affected_case_count": 3,
+          "basis": "3 case(s) × 19 days × £120/day",
+          "is_projection": true
+        },
+        "recommended_action": "Speed up proposal turnaround with reusable templates and clearer handoff data captured earlier.",
+        "action_steps": [
+          "Build a small set of costed proposal templates for the firm's common engagement types, so drafting becomes filling in scope and rates rather than writing from scratch.",
+          "At the Qualification stage, capture who on the client side signs off and their expected timeline, and record it on the engagement row.",
+          "Track proposal wait time and split it into 'firm-side drafting' versus 'waiting on client', so the true source of the 19.3-day delay becomes visible.",
+          "Review the 3 affected cases to confirm which portion of the delay is internal drafting versus external approval before scaling the fix."
+        ],
+        "action_category": "process_intervention",
+        "action_template": null,
+        "owner": "Managing partner",
+        "due_date": "2026-08-10",
+        "status": "proposed",
+        "created_at": "2026-07-20",
+        "updated_at": "2026-07-20",
+        "source_records": [
+          "leads.xlsx:Sheet1:20",
+          "leads.xlsx:Sheet1:24",
+          "leads.xlsx:Sheet1:28"
+        ],
+        "intervention_id": null,
+        "rank_score": 11.8,
+        "rank_explanation": [
+          "£6,948 projected at risk (2% of the largest item) → 1.0 pts",
+          "high client-delivery risk → 20.0 pts",
+          "3 affected case(s), the queue's widest is 17 → 3.5 pts",
+          "due in 21 day(s) → 5.0 pts",
+          "detection confidence 40% scales 29.5 → 11.8 pts"
+        ],
+        "llm_payload": {
+          "bottleneck": {
+            "id": "BN001",
+            "type": "delay",
+            "stage": "Proposal",
+            "metric_label": "avg_delay_days",
+            "metric_value": 19.3,
+            "affected_count": 3,
+            "evidence_excerpts": [
+              "3 cases show the 'Proposal' pattern in the live event log.",
+              "proposal for case NA-1045 on 2026-04-13T00:00:00 handled by [ORG_1] (status: Complete ✔)",
+              "proposal for case [PERSON_1] on 2026-04-25T00:00:00 handled by [PERSON_1] (status: Done )"
+            ]
+          },
+          "sme_context": {
+            "domain": "professional services consultancy",
+            "workflow_stages": [
+              "Lead",
+              "Qualification",
+              "Proposal",
+              "Won",
+              "Onboarding",
+              "Delivery",
+              "Client Review",
+              "Invoice",
+              "Paid"
+            ]
+          },
+          "past_resolutions": [
+            {
+              "resolution_id": "RES-ADV-005",
+              "resolution": "A run of proposals waited on the client's own procurement process and the firm had no visibility of it. Asked at qualification who signs and by when, and recorded the answer on the engagement row. Partly effective: the wait was unchanged but it stopped being counted against the firm's own turnaround.",
+              "days_to_resolve": 27
+            },
+            {
+              "resolution_id": "RES-ADV-003",
+              "resolution": "Proposals for public-sector clients stalled waiting on insurance and accreditation paperwork nobody kept to hand. Assembled a standing bid pack of certificates and policies and diarised its renewal dates. The paperwork stopped being on the critical path.",
+              "days_to_resolve": 26
+            },
+            {
+              "resolution_id": "RES-ADV-002",
+              "resolution": "Every proposal was written from scratch, so drafting alone took a week before anyone had read it. Built three costed templates covering the work the firm actually sells and reduced drafting to filling in scope and rates. Drafting dropped to under a day; the review meeting became the only real wait.",
+              "days_to_resolve": 22
+            }
+          ]
+        },
+        "generated_by": "detector",
+        "execution": {
+          "route": "tracked",
+          "will_modify_files": false,
+          "explanation": "Process change. Approving starts a measurable intervention with a baseline and a review date; the system does not touch any files."
+        },
+        "sent_to_llm": {
+          "used_llm": true,
+          "payload": {
+            "bottleneck": {
+              "id": "BN001",
+              "type": "delay",
+              "stage": "Proposal",
+              "metric_label": "avg_delay_days",
+              "metric_value": 19.3,
+              "affected_count": 3,
+              "evidence_excerpts": [
+                "3 cases show the 'Proposal' pattern in the live event log.",
+                "proposal for case NA-1045 on 2026-04-13T00:00:00 handled by [ORG_1] (status: Complete ✔)",
+                "proposal for case [PERSON_1] on 2026-04-25T00:00:00 handled by [PERSON_1] (status: Done )"
+              ]
+            },
+            "sme_context": {
+              "domain": "professional services consultancy",
+              "workflow_stages": [
+                "Lead",
+                "Qualification",
+                "Proposal",
+                "Won",
+                "Onboarding",
+                "Delivery",
+                "Client Review",
+                "Invoice",
+                "Paid"
+              ]
+            },
+            "past_resolutions": [
+              {
+                "resolution_id": "RES-ADV-005",
+                "resolution": "A run of proposals waited on the client's own procurement process and the firm had no visibility of it. Asked at qualification who signs and by when, and recorded the answer on the engagement row. Partly effective: the wait was unchanged but it stopped being counted against the firm's own turnaround.",
+                "days_to_resolve": 27
+              },
+              {
+                "resolution_id": "RES-ADV-003",
+                "resolution": "Proposals for public-sector clients stalled waiting on insurance and accreditation paperwork nobody kept to hand. Assembled a standing bid pack of certificates and policies and diarised its renewal dates. The paperwork stopped being on the critical path.",
+                "days_to_resolve": 26
+              },
+              {
+                "resolution_id": "RES-ADV-002",
+                "resolution": "Every proposal was written from scratch, so drafting alone took a week before anyone had read it. Built three costed templates covering the work the firm actually sells and reduced drafting to filling in scope and rates. Drafting dropped to under a day; the review meeting became the only real wait.",
+                "days_to_resolve": 22
+              }
+            ]
+          },
+          "note": "Only the scrubbed payload shown here left this machine. Names and identifiers are replaced with placeholders before anything is sent."
+        }
+      },
+      {
+        "action_id": "ACT-ADV-27ea7e3b",
+        "profile": "advisory",
+        "finding_key": "rework::delivery::loop_back_cases",
+        "finding_type": "rework",
+        "title": "Cases loop back to Delivery",
+        "summary": "The live event log shows the Delivery stage being entered more than once for a small number of cases — two cases loop back into Delivery rather than moving forward to Client Review. Both affected deliveries were handled by the same team member, and the recorded statuses (one 'sent', one 'done') suggest work was marked complete but then had to be revisited. The volume is small (2 cases), so this is an early or isolated signal rather than a systemic breakdown. Root cause: Delivery work is being treated as finished and then reopened, most likely because the scope or client expectations were not locked down before delivery, so completed work has to be redone.",
+        "workflow": "Lead-to-cash",
+        "stage": "Delivery",
+        "affected_case_ids": [
+          "NA-1050",
+          "NA-1051"
+        ],
+        "evidence": [
+          {
+            "kind": "metric",
+            "label": "loop_back_cases",
+            "detail": "measured across 2 case(s) at Delivery",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": "loop_back_cases",
+            "metric_value": 2.0,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "Delivery source row",
+            "detail": null,
+            "source_ref": "projects.xlsx:Sheet1:52",
+            "source_file": "projects.xlsx",
+            "sheet": "Sheet1",
+            "row": 52,
+            "case_id": null,
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "Delivery source row",
+            "detail": null,
+            "source_ref": "projects.xlsx:Sheet1:58",
+            "source_file": "projects.xlsx",
+            "sheet": "Sheet1",
+            "row": 58,
+            "case_id": null,
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "NA-1050",
+            "detail": null,
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "NA-1050",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "NA-1051",
+            "detail": null,
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "NA-1051",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "loop_back_cases",
+        "metric_value": 2.0,
+        "detection_confidence": 0.4,
+        "data_quality_confidence": 0.97,
+        "impact": {
+          "category": "delivery_risk",
+          "currency": "£",
+          "revenue_at_risk": null,
+          "cost_incurred": 2800.0,
+          "hours_at_risk": 24.0,
+          "capacity_pct": null,
+          "delivery_risk": "low",
+          "affected_case_count": 2,
+          "basis": "2 loop-back(s) × £1400",
+          "is_projection": true
+        },
+        "recommended_action": "Lock scope and a single point of contact before delivery, and pause any reopened work until a change is formally agreed.",
+        "action_steps": [
+          "Confirm and document the agreed deliverables and acceptance criteria at Onboarding, before Delivery starts, so 'done' means the same thing to consultant and client.",
+          "Name one decision-maker per engagement and route all delivery requests and sign-off through that person to prevent conflicting instructions.",
+          "When a delivered item comes back, raise a short change note that records what changed and pauses further delivery until the revised scope (and fee, if applicable) is agreed.",
+          "Review these two cases with the consultant who handled them to see whether the reopening came from unclear scope, changed requirements, or a quality gap, and record the reason."
+        ],
+        "action_category": "process_intervention",
+        "action_template": null,
+        "owner": "Managing partner",
+        "due_date": "2026-08-10",
+        "status": "proposed",
+        "created_at": "2026-07-20",
+        "updated_at": "2026-07-20",
+        "source_records": [
+          "projects.xlsx:Sheet1:52",
+          "projects.xlsx:Sheet1:58"
+        ],
+        "intervention_id": null,
+        "rank_score": 4.7,
+        "rank_explanation": [
+          "£2,800 projected at risk (1% of the largest item) → 0.4 pts",
+          "low client-delivery risk → 4.0 pts",
+          "2 affected case(s), the queue's widest is 17 → 2.4 pts",
+          "due in 21 day(s) → 5.0 pts",
+          "detection confidence 40% scales 11.7 → 4.7 pts"
+        ],
+        "llm_payload": {
+          "bottleneck": {
+            "id": "BN003",
+            "type": "rework",
+            "stage": "Delivery",
+            "metric_label": "loop_back_cases",
+            "metric_value": 2.0,
+            "affected_count": 2,
+            "evidence_excerpts": [
+              "2 cases show the 'Delivery' pattern in the live event log.",
+              "DELIVERY for case [GPE_1] on 2026-05-23T00:00:00 handled by [PERSON_3] (status: sent)",
+              "delivery for case NA-1051 on 2026-06-01T00:00:00 handled by [PERSON_3] (status: done)"
+            ]
+          },
+          "sme_context": {
+            "domain": "professional services consultancy",
+            "workflow_stages": [
+              "Lead",
+              "Qualification",
+              "Proposal",
+              "Won",
+              "Onboarding",
+              "Delivery",
+              "Client Review",
+              "Invoice",
+              "Paid"
+            ]
+          },
+          "past_resolutions": [
+            {
+              "resolution_id": "RES-ADV-016",
+              "resolution": "Delivery reopened repeatedly on one account because the sponsor kept adding stakeholders who each wanted something different. Named a single decision-maker at onboarding and routed all requests through them. Effective on that account; harder to enforce with public-sector clients.",
+              "days_to_resolve": 24
+            },
+            {
+              "resolution_id": "RES-ADV-014",
+              "resolution": "Work went back into delivery after review because the brief changed mid-engagement and nobody re-priced it. Introduced a change note that pauses delivery until the revised scope and fee are agreed. Scope changes stopped being absorbed silently.",
+              "days_to_resolve": 28
+            },
+            {
+              "resolution_id": "RES-ADV-020",
+              "resolution": "Invoices were raised late because the practice manager waited for the consultant to confirm the work was finished. Set a standing rule that a completed milestone is invoiced on the Friday of that week. Billing lag fell from three weeks to under one.",
+              "days_to_resolve": 14
+            }
+          ]
+        },
+        "generated_by": "detector",
+        "execution": {
+          "route": "tracked",
+          "will_modify_files": false,
+          "explanation": "Process change. Approving starts a measurable intervention with a baseline and a review date; the system does not touch any files."
+        },
+        "sent_to_llm": {
+          "used_llm": true,
+          "payload": {
+            "bottleneck": {
+              "id": "BN003",
+              "type": "rework",
+              "stage": "Delivery",
+              "metric_label": "loop_back_cases",
+              "metric_value": 2.0,
+              "affected_count": 2,
+              "evidence_excerpts": [
+                "2 cases show the 'Delivery' pattern in the live event log.",
+                "DELIVERY for case [GPE_1] on 2026-05-23T00:00:00 handled by [PERSON_3] (status: sent)",
+                "delivery for case NA-1051 on 2026-06-01T00:00:00 handled by [PERSON_3] (status: done)"
+              ]
+            },
+            "sme_context": {
+              "domain": "professional services consultancy",
+              "workflow_stages": [
+                "Lead",
+                "Qualification",
+                "Proposal",
+                "Won",
+                "Onboarding",
+                "Delivery",
+                "Client Review",
+                "Invoice",
+                "Paid"
+              ]
+            },
+            "past_resolutions": [
+              {
+                "resolution_id": "RES-ADV-016",
+                "resolution": "Delivery reopened repeatedly on one account because the sponsor kept adding stakeholders who each wanted something different. Named a single decision-maker at onboarding and routed all requests through them. Effective on that account; harder to enforce with public-sector clients.",
+                "days_to_resolve": 24
+              },
+              {
+                "resolution_id": "RES-ADV-014",
+                "resolution": "Work went back into delivery after review because the brief changed mid-engagement and nobody re-priced it. Introduced a change note that pauses delivery until the revised scope and fee are agreed. Scope changes stopped being absorbed silently.",
+                "days_to_resolve": 28
+              },
+              {
+                "resolution_id": "RES-ADV-020",
+                "resolution": "Invoices were raised late because the practice manager waited for the consultant to confirm the work was finished. Set a standing rule that a completed milestone is invoiced on the Friday of that week. Billing lag fell from three weeks to under one.",
+                "days_to_resolve": 14
+              }
+            ]
+          },
+          "note": "Only the scrubbed payload shown here left this machine. Names and identifiers are replaced with placeholders before anything is sent."
+        }
+      }
+    ],
+    "data_quality": [
+      {
+        "action_id": "ACT-ADV-2ca34b26",
+        "profile": "advisory",
+        "finding_key": "data_quality::status_values::cells",
+        "finding_type": "messy_status_values",
+        "title": "200 status cells are written 3 different ways",
+        "summary": "Staff type the same status a dozen ways. Reports and filters silently miss rows because of it.",
+        "workflow": "Lead-to-cash",
+        "stage": "leads.xlsx, projects.xlsx",
+        "affected_case_ids": [],
+        "evidence": [
+          {
+            "kind": "metric",
+            "label": "inconsistent_status_cells",
+            "detail": "cells whose written status differs from the controlled vocabulary",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": "inconsistent_status_cells",
+            "metric_value": 200.0,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "leads.xlsx",
+            "detail": null,
+            "source_ref": null,
+            "source_file": "leads.xlsx",
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "projects.xlsx",
+            "detail": null,
+            "source_ref": null,
+            "source_file": "projects.xlsx",
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "projects - final NEW.xlsx",
+            "detail": null,
+            "source_ref": null,
+            "source_file": "projects - final NEW.xlsx",
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "inconsistent_status_cells",
+        "metric_value": 200.0,
+        "detection_confidence": 0.99,
+        "data_quality_confidence": 0.97,
+        "impact": {
+          "category": "data_quality",
+          "currency": "£",
+          "revenue_at_risk": null,
+          "cost_incurred": 237.5,
+          "hours_at_risk": 2.5,
+          "capacity_pct": null,
+          "delivery_risk": null,
+          "affected_case_count": 0,
+          "basis": "200 inconsistent cell(s) × 0.75 min to interpret",
+          "is_projection": true
+        },
+        "recommended_action": "Normalise 1 inconsistent status value(s) to a fixed set",
+        "action_steps": [
+          "Review the proposed before → after value map.",
+          "Approve it to write cleaned copies — the original files are never touched.",
+          "Use the fixed set from now on so the mess does not return."
+        ],
+        "action_category": "data_quality",
+        "action_template": "normalise_status_values",
+        "owner": "Practice manager",
+        "due_date": "2026-07-27",
+        "status": "proposed",
+        "created_at": "2026-07-20",
+        "updated_at": "2026-07-20",
+        "source_records": [
+          "leads.xlsx",
+          "projects.xlsx",
+          "projects - final NEW.xlsx"
+        ],
+        "intervention_id": null,
+        "rank_score": 8.94,
+        "rank_explanation": [
+          "£238 projected at risk (0% of the largest item) → 0.0 pts",
+          "due this week → 9.0 pts",
+          "detection confidence 99% scales 9.0 → 8.9 pts"
+        ],
+        "llm_payload": null,
+        "generated_by": "detector",
+        "execution": {
+          "route": "machine",
+          "will_modify_files": true,
+          "explanation": "Data-quality fix 'normalise_status_values' is on the machine-safe list — approving writes cleaned copies and leaves the originals untouched."
+        },
+        "sent_to_llm": {
+          "used_llm": false,
+          "payload": null,
+          "note": "Nothing about this item was sent to a language model."
+        }
+      },
+      {
+        "action_id": "ACT-ADV-910feb8b",
+        "profile": "advisory",
+        "finding_key": "data_quality::stale_copies::files",
+        "finding_type": "stale_duplicate_file",
+        "title": "3 overlapping or duplicated file(s) on the drive",
+        "summary": "More than one file covers the same work. Whichever one somebody opens first becomes the truth for that day.",
+        "workflow": "Lead-to-cash",
+        "stage": "the drive",
+        "affected_case_ids": [],
+        "evidence": [
+          {
+            "kind": "excerpt",
+            "label": "Audit mess report",
+            "detail": "'projects - final NEW.xlsx' duplicates the first 20 rows of 'projects.xlsx' (identical NA-1041 milestone rows and dates)",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "excerpt",
+            "label": "Audit mess report",
+            "detail": "leads.xlsx and projects.xlsx share the same NA-#### case identifiers (e.g. NA-1041) covering pre-sales vs delivery stages of the same case lifecycle",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "excerpt",
+            "label": "Audit mess report",
+            "detail": "invoices.xlsx and timesheets.xlsx also key on the same NA-#### Project Codes",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "overlapping_files",
+        "metric_value": 3.0,
+        "detection_confidence": 0.8,
+        "data_quality_confidence": 0.97,
+        "impact": {
+          "category": "unknown",
+          "currency": "£",
+          "revenue_at_risk": null,
+          "cost_incurred": null,
+          "hours_at_risk": null,
+          "capacity_pct": null,
+          "delivery_risk": null,
+          "affected_case_count": 0,
+          "basis": "not quantified",
+          "is_projection": true
+        },
+        "recommended_action": "Decide which copy of the drive is the real one",
+        "action_steps": [
+          "Compare the overlapping files and pick the authoritative copy.",
+          "Rename or archive the others so nobody edits the wrong one.",
+          "Re-run the mapping review so the pipeline reads only the survivor."
+        ],
+        "action_category": "data_quality",
+        "action_template": null,
+        "owner": "Practice manager",
+        "due_date": "2026-07-27",
+        "status": "proposed",
+        "created_at": "2026-07-20",
+        "updated_at": "2026-07-20",
+        "source_records": [],
+        "intervention_id": null,
+        "rank_score": 7.2,
+        "rank_explanation": [
+          "no monetary figure available → 0 pts",
+          "due this week → 9.0 pts",
+          "detection confidence 80% scales 9.0 → 7.2 pts"
+        ],
+        "llm_payload": null,
+        "generated_by": "detector",
+        "execution": {
+          "route": "tracked",
+          "will_modify_files": false,
+          "explanation": "Data-quality work with no machine-safe template — it becomes a tracked task for a person."
+        },
+        "sent_to_llm": {
+          "used_llm": false,
+          "payload": null,
+          "note": "Nothing about this item was sent to a language model."
+        }
+      }
+    ],
+    "needs_attention": [
+      {
+        "action_id": "ACT-ADV-fbd0d020",
+        "profile": "advisory",
+        "finding_key": "repetition::client review::repeated_entry_cases",
+        "finding_type": "repetition",
+        "title": "Client Review done twice",
+        "summary": "One consulting engagement (case for the client identified in the log) went through the Client Review stage twice within about two weeks — first on 2026-05-04 with one consultant, then again on 2026-05-18 with a different consultant. Both review entries ended in the same unresolved state, 'awaiting partner sign-off'. Across the live event log, 2 cases show this repeated-review pattern. The review is being held more than once and is not reaching a completed, signed-off outcome on the first pass. Root cause: First-pass client reviews are not being brought to a conclusion — they stall waiting for partner sign-off and are handed to a different consultant, so the review has to be repeated rather than confirmed and closed.",
+        "workflow": "Lead-to-cash",
+        "stage": "Client Review",
+        "affected_case_ids": [
+          "NA-1048",
+          "NA-1049"
+        ],
+        "evidence": [
+          {
+            "kind": "metric",
+            "label": "repeated_entry_cases",
+            "detail": "measured across 2 case(s) at Client Review",
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": null,
+            "metric_label": "repeated_entry_cases",
+            "metric_value": 2.0,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "Client Review source row",
+            "detail": null,
+            "source_ref": "projects.xlsx:Sheet1:40",
+            "source_file": "projects.xlsx",
+            "sheet": "Sheet1",
+            "row": 40,
+            "case_id": null,
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "source_row",
+            "label": "Client Review source row",
+            "detail": null,
+            "source_ref": "projects.xlsx:Sheet1:46",
+            "source_file": "projects.xlsx",
+            "sheet": "Sheet1",
+            "row": 46,
+            "case_id": null,
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "NA-1048",
+            "detail": null,
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "NA-1048",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          },
+          {
+            "kind": "case_list",
+            "label": "NA-1049",
+            "detail": null,
+            "source_ref": null,
+            "source_file": null,
+            "sheet": null,
+            "row": null,
+            "case_id": "NA-1049",
+            "metric_label": null,
+            "metric_value": null,
+            "excerpt": null
+          }
+        ],
+        "metric_label": "repeated_entry_cases",
+        "metric_value": 2.0,
+        "detection_confidence": 0.55,
+        "data_quality_confidence": 0.97,
+        "impact": {
+          "category": "time_loss",
+          "currency": "£",
+          "revenue_at_risk": null,
+          "cost_incurred": 840.0,
+          "hours_at_risk": 8.0,
+          "capacity_pct": null,
+          "delivery_risk": "low",
+          "affected_case_count": 2,
+          "basis": "2 repeated step(s) × £420",
+          "is_projection": true
+        },
+        "recommended_action": "Make the first Client Review a confirm-and-close step by preparing sign-off in advance and keeping the review with one owner.",
+        "action_steps": [
+          "Circulate a short findings summary to the client and the signing partner two working days before the review so the meeting confirms conclusions rather than uncovering new questions.",
+          "Assign a single named consultant as owner of each engagement's review, so it is not re-run by a second person when it stalls.",
+          "Build the partner sign-off into the review itself — have the partner attend or pre-approve against the summary so the case does not sit 'awaiting sign-off' after the meeting.",
+          "Only re-book a second review by explicit exception, with a recorded reason, rather than as the default when sign-off is outstanding."
+        ],
+        "action_category": "process_intervention",
+        "action_template": null,
+        "owner": "Managing partner",
+        "due_date": "2026-08-10",
+        "status": "proposed",
+        "created_at": "2026-07-20",
+        "updated_at": "2026-07-20",
+        "source_records": [
+          "projects.xlsx:Sheet1:40",
+          "projects.xlsx:Sheet1:46"
+        ],
+        "intervention_id": null,
+        "rank_score": 6.31,
+        "rank_explanation": [
+          "£840 projected at risk (0% of the largest item) → 0.1 pts",
+          "low client-delivery risk → 4.0 pts",
+          "2 affected case(s), the queue's widest is 17 → 2.4 pts",
+          "due in 21 day(s) → 5.0 pts",
+          "detection confidence 55% scales 11.5 → 6.3 pts"
+        ],
+        "llm_payload": {
+          "bottleneck": {
+            "id": "BN002",
+            "type": "repetition",
+            "stage": "Client Review",
+            "metric_label": "repeated_entry_cases",
+            "metric_value": 2.0,
+            "affected_count": 2,
+            "evidence_excerpts": [
+              "2 cases show the '[ORG_1] pattern in the live event log.",
+              "[GPE_1] REVIEW for case [PERSON_1] on 2026-05-04T00:00:00 handled by [PERSON_3] (status: awaiting partner sign-off)",
+              "[GPE_1] REVIEW for case [PERSON_1] on 2026-05-18T00:00:00 handled by [PERSON_4] (status: awaiting partner sign-off)"
+            ]
+          },
+          "sme_context": {
+            "domain": "professional services consultancy",
+            "workflow_stages": [
+              "Lead",
+              "Qualification",
+              "Proposal",
+              "Won",
+              "Onboarding",
+              "Delivery",
+              "Client Review",
+              "Invoice",
+              "Paid"
+            ]
+          },
+          "past_resolutions": [
+            {
+              "resolution_id": "RES-ADV-007",
+              "resolution": "Client reviews ran twice on most engagements because the first one surfaced questions the team could have answered up front. Sent a short findings summary two days before the review so the meeting confirmed rather than discovered. Second reviews became the exception rather than the norm.",
+              "days_to_resolve": 13
+            },
+            {
+              "resolution_id": "RES-ADV-008",
+              "resolution": "Review sessions repeated because the client sent different attendees each time and each set asked the same questions. Agreed a fixed review panel at onboarding and required delegates to be briefed by their own side. Repeat sessions stopped for the clients who agreed to it.",
+              "days_to_resolve": 19
+            },
+            {
+              "resolution_id": "RES-ADV-009",
+              "resolution": "The same review was logged twice on the tracker because both the consultant and the practice manager recorded it. Made the consultant the only person who advances a delivery milestone. Duplicate entries stopped immediately.",
+              "days_to_resolve": 18
+            }
+          ]
+        },
+        "generated_by": "detector",
+        "execution": {
+          "route": "tracked",
+          "will_modify_files": false,
+          "explanation": "Process change. Approving starts a measurable intervention with a baseline and a review date; the system does not touch any files."
+        },
+        "sent_to_llm": {
+          "used_llm": true,
+          "payload": {
+            "bottleneck": {
+              "id": "BN002",
+              "type": "repetition",
+              "stage": "Client Review",
+              "metric_label": "repeated_entry_cases",
+              "metric_value": 2.0,
+              "affected_count": 2,
+              "evidence_excerpts": [
+                "2 cases show the '[ORG_1] pattern in the live event log.",
+                "[GPE_1] REVIEW for case [PERSON_1] on 2026-05-04T00:00:00 handled by [PERSON_3] (status: awaiting partner sign-off)",
+                "[GPE_1] REVIEW for case [PERSON_1] on 2026-05-18T00:00:00 handled by [PERSON_4] (status: awaiting partner sign-off)"
+              ]
+            },
+            "sme_context": {
+              "domain": "professional services consultancy",
+              "workflow_stages": [
+                "Lead",
+                "Qualification",
+                "Proposal",
+                "Won",
+                "Onboarding",
+                "Delivery",
+                "Client Review",
+                "Invoice",
+                "Paid"
+              ]
+            },
+            "past_resolutions": [
+              {
+                "resolution_id": "RES-ADV-007",
+                "resolution": "Client reviews ran twice on most engagements because the first one surfaced questions the team could have answered up front. Sent a short findings summary two days before the review so the meeting confirmed rather than discovered. Second reviews became the exception rather than the norm.",
+                "days_to_resolve": 13
+              },
+              {
+                "resolution_id": "RES-ADV-008",
+                "resolution": "Review sessions repeated because the client sent different attendees each time and each set asked the same questions. Agreed a fixed review panel at onboarding and required delegates to be briefed by their own side. Repeat sessions stopped for the clients who agreed to it.",
+                "days_to_resolve": 19
+              },
+              {
+                "resolution_id": "RES-ADV-009",
+                "resolution": "The same review was logged twice on the tracker because both the consultant and the practice manager recorded it. Made the consultant the only person who advances a delivery milestone. Duplicate entries stopped immediately.",
+                "days_to_resolve": 18
+              }
+            ]
+          },
+          "note": "Only the scrubbed payload shown here left this machine. Names and identifiers are replaced with placeholders before anything is sent."
+        }
+      }
+    ]
+  },
+  "interventions": {
+    "active": [],
+    "recently_validated": [],
+    "summary": {
+      "profile": "advisory",
+      "total": 0,
+      "by_status": {},
+      "validated_effective": 0,
+      "awaiting_review": 0,
+      "ineffective": 0
+    }
+  }
+}

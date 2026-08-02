@@ -1,0 +1,307 @@
+[
+  {
+    "intervention_id": "INT-FOY-3c72f3db",
+    "action_id": "ACT-FOY-0c2f5029",
+    "profile": "foyle",
+    "finding_key": "delay::booking confirmed::avg_delay_days",
+    "action_category": "case_action",
+    "title": "Booking Confirmed delay",
+    "recommended_action": "Review the 'Booking Confirmed' step against past resolutions",
+    "action_steps": [
+      "Review the 'Booking Confirmed' step with the staff who work it.",
+      "Compare the affected cases against the unaffected ones for what differs.",
+      "Consider the approach from RES-FOY-002: A batch of group bookings stalled before confirmation while one coordinator chased the same three host families. Introdu"
+    ],
+    "status": "outcome_review",
+    "owner": "oracle",
+    "due_date": null,
+    "review_date": "2026-03-29",
+    "success_metric": "average days to reach Booking Confirmed falls",
+    "metric_label": "avg_delay_days",
+    "baseline_value": 13.0,
+    "baseline_snapshot_id": "SNAP-FOY-efd6a6e4",
+    "expected_improvement_pct": 40.0,
+    "improvement_is_decrease": true,
+    "created_at": "2026-03-23T17:00:00+00:00",
+    "updated_at": "2026-03-30T17:00:00+00:00",
+    "outcome": {
+      "measured_at": "2026-05-04T17:00:00+00:00",
+      "baseline_value": 13.0,
+      "expected_value": 7.8,
+      "observed_value": 13.8,
+      "absolute_change": 0.8,
+      "percent_change": 6.2,
+      "direction": "worsened",
+      "effective": null,
+      "effective_reason": "Metric moved +6.2%, inside the 10% noise band — too small to call either way.",
+      "validated_by_human": false,
+      "validated_at": null,
+      "validated_by": null,
+      "baseline_snapshot_id": "SNAP-FOY-efd6a6e4",
+      "observed_snapshot_id": "SNAP-FOY-c23b38f6"
+    },
+    "history": [
+      {
+        "at": "2026-03-23T17:00:00+00:00",
+        "from_status": null,
+        "to_status": "proposed",
+        "actor": "oracle",
+        "note": "raised from the action queue"
+      },
+      {
+        "at": "2026-03-23T17:00:00+00:00",
+        "from_status": "proposed",
+        "to_status": "approved",
+        "actor": "oracle",
+        "note": "approved at Gate 2"
+      },
+      {
+        "at": "2026-03-23T17:00:00+00:00",
+        "from_status": "approved",
+        "to_status": "assigned",
+        "actor": "oracle",
+        "note": null
+      },
+      {
+        "at": "2026-03-23T17:00:00+00:00",
+        "from_status": "assigned",
+        "to_status": "in_progress",
+        "actor": "oracle",
+        "note": null
+      },
+      {
+        "at": "2026-03-23T17:00:00+00:00",
+        "from_status": "in_progress",
+        "to_status": "completed",
+        "actor": "oracle",
+        "note": null
+      },
+      {
+        "at": "2026-03-30T17:00:00+00:00",
+        "from_status": "completed",
+        "to_status": "outcome_review",
+        "actor": "oracle",
+        "note": "measured at tick_04"
+      }
+    ],
+    "decision_id": "replay-foyle-delay-booking-confirmed",
+    "case_snapshot": {
+      "type": "delay",
+      "stage": "Booking Confirmed",
+      "title": "Booking Confirmed delay",
+      "description": "2 cases show the 'Booking Confirmed' delay pattern (avg_delay_days=13).",
+      "affected_case_ids": [
+        "B-26S-001",
+        "B-26S-003"
+      ]
+    }
+  },
+  {
+    "intervention_id": "INT-FOY-2867e49c",
+    "action_id": "ACT-FOY-80d46bf4",
+    "profile": "foyle",
+    "finding_key": "rework::placement offer::loop_back_cases",
+    "action_category": "case_action",
+    "title": "Placement Offer rework",
+    "recommended_action": "Review the 'Placement Offer' step against past resolutions",
+    "action_steps": [
+      "Review the 'Placement Offer' step with the staff who work it.",
+      "Compare the affected cases against the unaffected ones for what differs.",
+      "Consider the approach from RES-FOY-014: A work-placement company withdrew after students were matched, forcing re-allocation of a whole group. Asked partner com"
+    ],
+    "status": "ineffective",
+    "owner": "oracle",
+    "due_date": null,
+    "review_date": "2026-03-29",
+    "success_metric": "bookings looping back to Placement Offer falls",
+    "metric_label": "loop_back_cases",
+    "baseline_value": 2.0,
+    "baseline_snapshot_id": "SNAP-FOY-efd6a6e4",
+    "expected_improvement_pct": 35.0,
+    "improvement_is_decrease": true,
+    "created_at": "2026-03-23T17:00:00+00:00",
+    "updated_at": "2026-04-13T17:00:00+00:00",
+    "outcome": {
+      "measured_at": "2026-04-13T17:00:00+00:00",
+      "baseline_value": 2.0,
+      "expected_value": 1.3,
+      "observed_value": 3.0,
+      "absolute_change": 1.0,
+      "percent_change": 50.0,
+      "direction": "worsened",
+      "effective": false,
+      "effective_reason": "loop_back_cases moved the wrong way: 2 → 3 (+50.0%).",
+      "validated_by_human": true,
+      "validated_at": "2026-04-13T17:00:00+00:00",
+      "validated_by": "oracle",
+      "baseline_snapshot_id": "SNAP-FOY-efd6a6e4",
+      "observed_snapshot_id": "SNAP-FOY-9c8be964"
+    },
+    "history": [
+      {
+        "at": "2026-03-23T17:00:00+00:00",
+        "from_status": null,
+        "to_status": "proposed",
+        "actor": "oracle",
+        "note": "raised from the action queue"
+      },
+      {
+        "at": "2026-03-23T17:00:00+00:00",
+        "from_status": "proposed",
+        "to_status": "approved",
+        "actor": "oracle",
+        "note": "approved at Gate 2"
+      },
+      {
+        "at": "2026-03-23T17:00:00+00:00",
+        "from_status": "approved",
+        "to_status": "assigned",
+        "actor": "oracle",
+        "note": null
+      },
+      {
+        "at": "2026-03-23T17:00:00+00:00",
+        "from_status": "assigned",
+        "to_status": "in_progress",
+        "actor": "oracle",
+        "note": null
+      },
+      {
+        "at": "2026-03-23T17:00:00+00:00",
+        "from_status": "in_progress",
+        "to_status": "completed",
+        "actor": "oracle",
+        "note": null
+      },
+      {
+        "at": "2026-03-30T17:00:00+00:00",
+        "from_status": "completed",
+        "to_status": "outcome_review",
+        "actor": "oracle",
+        "note": "measured at tick_04"
+      },
+      {
+        "at": "2026-04-13T17:00:00+00:00",
+        "from_status": "outcome_review",
+        "to_status": "ineffective",
+        "actor": "oracle",
+        "note": "loop_back_cases moved the wrong way: 2 → 3 (+50.0%)."
+      }
+    ],
+    "decision_id": "replay-foyle-rework-placement-offer",
+    "case_snapshot": {
+      "type": "rework",
+      "stage": "Placement Offer",
+      "title": "Placement Offer rework",
+      "description": "2 cases show the 'Placement Offer' rework pattern (loop_back_cases=2).",
+      "affected_case_ids": [
+        "B-26S-002",
+        "B-26S-005"
+      ]
+    }
+  },
+  {
+    "intervention_id": "INT-FOY-6b20db62",
+    "action_id": "ACT-FOY-0d242ac3",
+    "profile": "foyle",
+    "finding_key": "repetition::document collection::repeated_entry_cases",
+    "action_category": "case_action",
+    "title": "Document Collection repetition",
+    "recommended_action": "Review the 'Document Collection' step against past resolutions",
+    "action_steps": [
+      "Review the 'Document Collection' step with the staff who work it.",
+      "Compare the affected cases against the unaffected ones for what differs.",
+      "Consider the approach from RES-FOY-010: A temp covering the placements desk re-requested documents because the handover notes did not say where files were kept."
+    ],
+    "status": "ineffective",
+    "owner": "oracle",
+    "due_date": null,
+    "review_date": "2026-04-05",
+    "success_metric": "bookings repeating Document Collection falls",
+    "metric_label": "repeated_entry_cases",
+    "baseline_value": 2.0,
+    "baseline_snapshot_id": "SNAP-FOY-22e5269f",
+    "expected_improvement_pct": 50.0,
+    "improvement_is_decrease": true,
+    "created_at": "2026-03-30T17:00:00+00:00",
+    "updated_at": "2026-04-13T17:00:00+00:00",
+    "outcome": {
+      "measured_at": "2026-04-13T17:00:00+00:00",
+      "baseline_value": 2.0,
+      "expected_value": 1.0,
+      "observed_value": 3.0,
+      "absolute_change": 1.0,
+      "percent_change": 50.0,
+      "direction": "worsened",
+      "effective": false,
+      "effective_reason": "repeated_entry_cases moved the wrong way: 2 → 3 (+50.0%).",
+      "validated_by_human": true,
+      "validated_at": "2026-04-13T17:00:00+00:00",
+      "validated_by": "oracle",
+      "baseline_snapshot_id": "SNAP-FOY-22e5269f",
+      "observed_snapshot_id": "SNAP-FOY-9c8be964"
+    },
+    "history": [
+      {
+        "at": "2026-03-30T17:00:00+00:00",
+        "from_status": null,
+        "to_status": "proposed",
+        "actor": "oracle",
+        "note": "raised from the action queue"
+      },
+      {
+        "at": "2026-03-30T17:00:00+00:00",
+        "from_status": "proposed",
+        "to_status": "approved",
+        "actor": "oracle",
+        "note": "approved at Gate 2"
+      },
+      {
+        "at": "2026-03-30T17:00:00+00:00",
+        "from_status": "approved",
+        "to_status": "assigned",
+        "actor": "oracle",
+        "note": null
+      },
+      {
+        "at": "2026-03-30T17:00:00+00:00",
+        "from_status": "assigned",
+        "to_status": "in_progress",
+        "actor": "oracle",
+        "note": null
+      },
+      {
+        "at": "2026-03-30T17:00:00+00:00",
+        "from_status": "in_progress",
+        "to_status": "completed",
+        "actor": "oracle",
+        "note": null
+      },
+      {
+        "at": "2026-04-06T17:00:00+00:00",
+        "from_status": "completed",
+        "to_status": "outcome_review",
+        "actor": "oracle",
+        "note": "measured at tick_05"
+      },
+      {
+        "at": "2026-04-13T17:00:00+00:00",
+        "from_status": "outcome_review",
+        "to_status": "ineffective",
+        "actor": "oracle",
+        "note": "repeated_entry_cases moved the wrong way: 2 → 3 (+50.0%)."
+      }
+    ],
+    "decision_id": "replay-foyle-repetition-document-collection",
+    "case_snapshot": {
+      "type": "repetition",
+      "stage": "Document Collection",
+      "title": "Document Collection repetition",
+      "description": "2 cases show the 'Document Collection' repetition pattern (repeated_entry_cases=2).",
+      "affected_case_ids": [
+        "B-26S-004",
+        "B-26S-006"
+      ]
+    }
+  }
+]

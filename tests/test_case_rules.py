@@ -174,11 +174,6 @@ def _advisory_log() -> pd.DataFrame:
     return df
 
 
-def _advisory_gt() -> dict:
-    return json.loads(config.MESSY_PROFILES["advisory"]["gt_bottlenecks"]
-                      .read_text(encoding="utf-8"))
-
-
 def test_advisory_drive_carries_the_money_column() -> None:
     """The optional canonical `value` field is what makes revenue-at-risk
     ranking possible without any SME-specific code."""
@@ -188,45 +183,17 @@ def test_advisory_drive_carries_the_money_column() -> None:
     assert values.min() > 0
 
 
-def test_advisory_operational_patterns_are_all_present() -> None:
-    """Every pattern the profile claims to demonstrate is actually findable."""
+def test_advisory_stage_sla_breaches_cover_lead_and_proposal() -> None:
+    """The commercial demo's specific claim: uncontacted leads and proposals
+    stuck in approval are both caught by the stage_sla_breach rule. This is
+    the one advisory-specific assertion the parametrized suite below does not
+    carry, so it is kept here as its own test."""
     findings = detect_case_findings(_advisory_log(),
                                     config.MESSY_PROFILES["advisory"])
-    types = {f.type for f in findings}
-    for expected in ("stage_sla_breach", "unowned_case", "unrealised_value",
-                     "overloaded_owner", "key_person_dependency"):
-        assert expected in types, expected
-
     stages = {f.stage for f in findings if f.type == "stage_sla_breach"}
     # Uncontacted leads, proposals stuck in approval, and delivered work not
     # yet invoiced — the three the commercial demo leans on.
     assert {"Lead", "Proposal"} <= stages
-
-
-def test_advisory_parked_engagements_are_the_ones_flagged() -> None:
-    """The generator parked specific engagements; the rules — which never see
-    that intent — must land on the same ones."""
-    gt = _advisory_gt()
-    parked = gt["operational_intent"]["parked_at"]
-    findings = detect_case_findings(_advisory_log(),
-                                    config.MESSY_PROFILES["advisory"])
-    flagged = {c for f in findings if f.type == "stage_sla_breach"
-               for c in f.affected_cases}
-    stale = {c for cases in parked.values() for c in cases}
-    assert flagged <= stale, "no engagement was flagged that was not parked"
-    assert flagged, "the parked engagements should produce SLA breaches"
-    # Not every parked engagement breaches — some were parked recently. That
-    # asymmetry is the point: the generator says where things stopped, the
-    # rules decide independently whether stopping there is a problem yet.
-    assert flagged < stale
-
-
-def test_advisory_unowned_matches_the_seeded_intent() -> None:
-    gt = _advisory_gt()
-    findings = {f.type: f for f in detect_case_findings(
-        _advisory_log(), config.MESSY_PROFILES["advisory"])}
-    assert (findings["unowned_case"].affected_cases
-            == sorted(gt["operational_intent"]["unowned"]))
 
 
 def test_advisory_key_person_is_a_real_concentration() -> None:
@@ -275,6 +242,89 @@ def test_no_staff_names_survive_into_the_action_queue() -> None:
         assert name not in blob, name
         assert name.split()[0] not in blob, name
     assert "[PERSON_" in blob, "the placeholders should still be there"
+
+
+# ── The foyle profile's operational patterns ─────────────────────────────────
+
+def _drive_log(profile: str) -> pd.DataFrame:
+    """A profile's whole drive, read through its ground-truth mapping."""
+    from audit.schemas import ApprovedFileMapping, ApprovedMapping
+    from readers.mapped_reader import read_mapped
+
+    cfg = config.MESSY_PROFILES[profile]
+    gt = json.loads(cfg["gt_mapping"].read_text(encoding="utf-8"))
+    approved = ApprovedMapping(
+        profile=profile, approved_at="2026-07-31T00:00:00+00:00",
+        source_proposal_generated_at="2026-07-31T00:00:00+00:00",
+        files=[ApprovedFileMapping(**f) for f in gt["files"]])
+    rows, _ = read_mapped(cfg["dir"], approved)
+    df = pd.DataFrame(rows)
+    df["stage"] = df["activity"].str.strip().str.lower()
+    df["ts"] = pd.to_datetime(df["timestamp"], errors="coerce")
+    return df
+
+
+def _drive_gt(profile: str) -> dict:
+    return json.loads(config.MESSY_PROFILES[profile]["gt_bottlenecks"]
+                      .read_text(encoding="utf-8"))
+
+
+# Every profile's drive must exercise the case rules, and each profile
+# advertises a slightly different set — foyle and joinery carry no money
+# column, so `unrealised_value` cannot fire for them and deliberately does
+# not appear here.
+_EXPECTED_CASE_FINDINGS = {
+    "foyle": {"stage_sla_breach", "stalled_case", "unowned_case",
+              "overloaded_owner"},
+    "joinery": {"stage_sla_breach", "stalled_case", "unowned_case",
+                "overloaded_owner"},
+    "advisory": {"stage_sla_breach", "unowned_case", "unrealised_value",
+                 "overloaded_owner", "key_person_dependency"},
+}
+
+
+@pytest.mark.parametrize("profile", PROFILES)
+def test_every_drive_exercises_its_case_rules(profile: str) -> None:
+    findings = detect_case_findings(_drive_log(profile),
+                                    config.MESSY_PROFILES[profile])
+    types = {f.type for f in findings}
+    assert _EXPECTED_CASE_FINDINGS[profile] <= types
+
+
+@pytest.mark.parametrize("profile", PROFILES)
+def test_flagged_cases_are_a_strict_subset_of_the_parked_ones(profile: str) -> None:
+    """The circularity guard, on every profile: the generator records where it
+    parked each case, the rules decide independently whether that is a problem
+    yet — so some parked cases must go unflagged."""
+    gt = _drive_gt(profile)
+    parked = {c for cases in gt["operational_intent"]["parked_at"].values()
+              for c in cases}
+    findings = detect_case_findings(_drive_log(profile),
+                                    config.MESSY_PROFILES[profile])
+    flagged = {c for f in findings if f.type == "stage_sla_breach"
+               for c in f.affected_cases}
+    assert flagged, "the parked cases should produce SLA breaches"
+    assert flagged < parked
+
+
+@pytest.mark.parametrize("profile", PROFILES)
+def test_unowned_matches_the_seeded_intent(profile: str) -> None:
+    gt = _drive_gt(profile)
+    findings = _by_type(detect_case_findings(
+        _drive_log(profile), config.MESSY_PROFILES[profile]))
+    assert (findings["unowned_case"].affected_cases
+            == sorted(gt["operational_intent"]["unowned"]))
+
+
+@pytest.mark.parametrize("profile", ["foyle", "joinery"])
+def test_profiles_without_a_money_column_report_no_unrealised_value(
+        profile: str) -> None:
+    """Stated as a decision, not a silent gap: those two drives carry no value
+    column, so the commercial rule has nothing to work from. Adding one would
+    move the mapping ground truth, which is why it was not done."""
+    findings = detect_case_findings(_drive_log(profile),
+                                    config.MESSY_PROFILES[profile])
+    assert "unrealised_value" not in {f.type for f in findings}
 
 
 @pytest.mark.parametrize("profile", PROFILES)

@@ -1,0 +1,307 @@
+[
+  {
+    "intervention_id": "INT-JOI-c2160c53",
+    "action_id": "ACT-JOI-354aeb09",
+    "profile": "joinery",
+    "finding_key": "repetition::site survey::repeated_entry_cases",
+    "action_category": "case_action",
+    "title": "Site Survey repetition",
+    "recommended_action": "Review the 'Site Survey' step against past resolutions",
+    "action_steps": [
+      "Review the 'Site Survey' step with the staff who work it.",
+      "Compare the affected cases against the unaffected ones for what differs.",
+      "Consider the approach from RES-JOI-011: Big commercial jobs needed second visits because one surveyor could not cover everything. Sent two people on surveys ove"
+    ],
+    "status": "ineffective",
+    "owner": "oracle",
+    "due_date": null,
+    "review_date": "2026-04-05",
+    "success_metric": "jobs repeating Site Survey falls",
+    "metric_label": "repeated_entry_cases",
+    "baseline_value": 2.0,
+    "baseline_snapshot_id": "SNAP-JOI-4a30fff9",
+    "expected_improvement_pct": 50.0,
+    "improvement_is_decrease": true,
+    "created_at": "2026-03-30T17:00:00+00:00",
+    "updated_at": "2026-04-13T17:00:00+00:00",
+    "outcome": {
+      "measured_at": "2026-04-13T17:00:00+00:00",
+      "baseline_value": 2.0,
+      "expected_value": 1.0,
+      "observed_value": 3.0,
+      "absolute_change": 1.0,
+      "percent_change": 50.0,
+      "direction": "worsened",
+      "effective": false,
+      "effective_reason": "repeated_entry_cases moved the wrong way: 2 → 3 (+50.0%).",
+      "validated_by_human": true,
+      "validated_at": "2026-04-13T17:00:00+00:00",
+      "validated_by": "oracle",
+      "baseline_snapshot_id": "SNAP-JOI-4a30fff9",
+      "observed_snapshot_id": "SNAP-JOI-dbc3afa4"
+    },
+    "history": [
+      {
+        "at": "2026-03-30T17:00:00+00:00",
+        "from_status": null,
+        "to_status": "proposed",
+        "actor": "oracle",
+        "note": "raised from the action queue"
+      },
+      {
+        "at": "2026-03-30T17:00:00+00:00",
+        "from_status": "proposed",
+        "to_status": "approved",
+        "actor": "oracle",
+        "note": "approved at Gate 2"
+      },
+      {
+        "at": "2026-03-30T17:00:00+00:00",
+        "from_status": "approved",
+        "to_status": "assigned",
+        "actor": "oracle",
+        "note": null
+      },
+      {
+        "at": "2026-03-30T17:00:00+00:00",
+        "from_status": "assigned",
+        "to_status": "in_progress",
+        "actor": "oracle",
+        "note": null
+      },
+      {
+        "at": "2026-03-30T17:00:00+00:00",
+        "from_status": "in_progress",
+        "to_status": "completed",
+        "actor": "oracle",
+        "note": null
+      },
+      {
+        "at": "2026-04-06T17:00:00+00:00",
+        "from_status": "completed",
+        "to_status": "outcome_review",
+        "actor": "oracle",
+        "note": "measured at tick_05"
+      },
+      {
+        "at": "2026-04-13T17:00:00+00:00",
+        "from_status": "outcome_review",
+        "to_status": "ineffective",
+        "actor": "oracle",
+        "note": "repeated_entry_cases moved the wrong way: 2 → 3 (+50.0%)."
+      }
+    ],
+    "decision_id": "replay-joinery-repetition-site-survey",
+    "case_snapshot": {
+      "type": "repetition",
+      "stage": "Site Survey",
+      "title": "Site Survey repetition",
+      "description": "2 cases show the 'Site Survey' repetition pattern (repeated_entry_cases=2).",
+      "affected_case_ids": [
+        "J-26S-001",
+        "J-26S-007"
+      ]
+    }
+  },
+  {
+    "intervention_id": "INT-JOI-dde085d7",
+    "action_id": "ACT-JOI-3ab3af8e",
+    "profile": "joinery",
+    "finding_key": "delay::site work started::avg_delay_days",
+    "action_category": "case_action",
+    "title": "Site Work Started delay",
+    "recommended_action": "Review the 'Site Work Started' step against past resolutions",
+    "action_steps": [
+      "Review the 'Site Work Started' step with the staff who work it.",
+      "Compare the affected cases against the unaffected ones for what differs.",
+      "Consider the approach from RES-JOI-002: Jobs stalled between materials ordering and site start because supplier lead times were guessed. Recorded actual lead ti"
+    ],
+    "status": "outcome_review",
+    "owner": "oracle",
+    "due_date": null,
+    "review_date": "2026-04-12",
+    "success_metric": "average days to reach Site Work Started falls",
+    "metric_label": "avg_delay_days",
+    "baseline_value": 16.0,
+    "baseline_snapshot_id": "SNAP-JOI-834d24c0",
+    "expected_improvement_pct": 40.0,
+    "improvement_is_decrease": true,
+    "created_at": "2026-04-06T17:00:00+00:00",
+    "updated_at": "2026-04-13T17:00:00+00:00",
+    "outcome": {
+      "measured_at": "2026-05-04T17:00:00+00:00",
+      "baseline_value": 16.0,
+      "expected_value": 9.6,
+      "observed_value": 16.5,
+      "absolute_change": 0.5,
+      "percent_change": 3.1,
+      "direction": "worsened",
+      "effective": null,
+      "effective_reason": "Metric moved +3.1%, inside the 10% noise band — too small to call either way.",
+      "validated_by_human": false,
+      "validated_at": null,
+      "validated_by": null,
+      "baseline_snapshot_id": "SNAP-JOI-834d24c0",
+      "observed_snapshot_id": "SNAP-JOI-34823ef5"
+    },
+    "history": [
+      {
+        "at": "2026-04-06T17:00:00+00:00",
+        "from_status": null,
+        "to_status": "proposed",
+        "actor": "oracle",
+        "note": "raised from the action queue"
+      },
+      {
+        "at": "2026-04-06T17:00:00+00:00",
+        "from_status": "proposed",
+        "to_status": "approved",
+        "actor": "oracle",
+        "note": "approved at Gate 2"
+      },
+      {
+        "at": "2026-04-06T17:00:00+00:00",
+        "from_status": "approved",
+        "to_status": "assigned",
+        "actor": "oracle",
+        "note": null
+      },
+      {
+        "at": "2026-04-06T17:00:00+00:00",
+        "from_status": "assigned",
+        "to_status": "in_progress",
+        "actor": "oracle",
+        "note": null
+      },
+      {
+        "at": "2026-04-06T17:00:00+00:00",
+        "from_status": "in_progress",
+        "to_status": "completed",
+        "actor": "oracle",
+        "note": null
+      },
+      {
+        "at": "2026-04-13T17:00:00+00:00",
+        "from_status": "completed",
+        "to_status": "outcome_review",
+        "actor": "oracle",
+        "note": "measured at tick_06"
+      }
+    ],
+    "decision_id": "replay-joinery-delay-site-work-started",
+    "case_snapshot": {
+      "type": "delay",
+      "stage": "Site Work Started",
+      "title": "Site Work Started delay",
+      "description": "2 cases show the 'Site Work Started' delay pattern (avg_delay_days=16).",
+      "affected_case_ids": [
+        "J-26S-002",
+        "J-26S-003"
+      ]
+    }
+  },
+  {
+    "intervention_id": "INT-JOI-36d971a1",
+    "action_id": "ACT-JOI-7f7ded52",
+    "profile": "joinery",
+    "finding_key": "rework::site work started::loop_back_cases",
+    "action_category": "case_action",
+    "title": "Site Work Started rework",
+    "recommended_action": "Review the 'Site Work Started' step against past resolutions",
+    "action_steps": [
+      "Review the 'Site Work Started' step with the staff who work it.",
+      "Compare the affected cases against the unaffected ones for what differs.",
+      "Consider the approach from RES-JOI-005: Common fixings ran out mid-job, pausing site work while someone drove to the merchant. Kept a buffer stock of hinges, ru"
+    ],
+    "status": "ineffective",
+    "owner": "oracle",
+    "due_date": null,
+    "review_date": "2026-04-19",
+    "success_metric": "jobs looping back to Site Work Started falls",
+    "metric_label": "loop_back_cases",
+    "baseline_value": 2.0,
+    "baseline_snapshot_id": "SNAP-JOI-dbc3afa4",
+    "expected_improvement_pct": 35.0,
+    "improvement_is_decrease": true,
+    "created_at": "2026-04-13T17:00:00+00:00",
+    "updated_at": "2026-04-20T17:00:00+00:00",
+    "outcome": {
+      "measured_at": "2026-04-20T17:00:00+00:00",
+      "baseline_value": 2.0,
+      "expected_value": 1.3,
+      "observed_value": 3.0,
+      "absolute_change": 1.0,
+      "percent_change": 50.0,
+      "direction": "worsened",
+      "effective": false,
+      "effective_reason": "loop_back_cases moved the wrong way: 2 → 3 (+50.0%).",
+      "validated_by_human": true,
+      "validated_at": "2026-04-20T17:00:00+00:00",
+      "validated_by": "oracle",
+      "baseline_snapshot_id": "SNAP-JOI-dbc3afa4",
+      "observed_snapshot_id": "SNAP-JOI-01c9b51d"
+    },
+    "history": [
+      {
+        "at": "2026-04-13T17:00:00+00:00",
+        "from_status": null,
+        "to_status": "proposed",
+        "actor": "oracle",
+        "note": "raised from the action queue"
+      },
+      {
+        "at": "2026-04-13T17:00:00+00:00",
+        "from_status": "proposed",
+        "to_status": "approved",
+        "actor": "oracle",
+        "note": "approved at Gate 2"
+      },
+      {
+        "at": "2026-04-13T17:00:00+00:00",
+        "from_status": "approved",
+        "to_status": "assigned",
+        "actor": "oracle",
+        "note": null
+      },
+      {
+        "at": "2026-04-13T17:00:00+00:00",
+        "from_status": "assigned",
+        "to_status": "in_progress",
+        "actor": "oracle",
+        "note": null
+      },
+      {
+        "at": "2026-04-13T17:00:00+00:00",
+        "from_status": "in_progress",
+        "to_status": "completed",
+        "actor": "oracle",
+        "note": null
+      },
+      {
+        "at": "2026-04-20T17:00:00+00:00",
+        "from_status": "completed",
+        "to_status": "outcome_review",
+        "actor": "oracle",
+        "note": "measured at tick_07"
+      },
+      {
+        "at": "2026-04-20T17:00:00+00:00",
+        "from_status": "outcome_review",
+        "to_status": "ineffective",
+        "actor": "oracle",
+        "note": "loop_back_cases moved the wrong way: 2 → 3 (+50.0%)."
+      }
+    ],
+    "decision_id": "replay-joinery-rework-site-work-started",
+    "case_snapshot": {
+      "type": "rework",
+      "stage": "Site Work Started",
+      "title": "Site Work Started rework",
+      "description": "2 cases show the 'Site Work Started' rework pattern (loop_back_cases=2).",
+      "affected_case_ids": [
+        "J-26S-004",
+        "J-26S-006"
+      ]
+    }
+  }
+]

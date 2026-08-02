@@ -275,12 +275,21 @@ precision tasks — both privacy controls implemented and tested.
 
   | Profile | baseline macro-F1 | dynamic macro-F1 |
   |---|---|---|
-  | foyle | 0.524 | 1.000 |
-  | joinery | 0.523 | 1.000 |
+  | foyle | 0.486 | 1.000 |
+  | joinery | 0.487 | 1.000 |
   | advisory | 0.471 | 1.000 |
 
   The presence-based marker baseline collapses on structural repetition/rework — the
   argument for statistical detection, mirroring the mapping eval's baseline→LLM gap.
+  foyle and joinery moved from their earlier 0.524/0.523 once parked operational
+  cases were seeded alongside the structural patterns (below): recall held at 1.0
+  for every type on both profiles, throughout, but repetition/rework precision fell
+  further (foyle repetition F1 0.286→0.25, rework 0.286→0.207) because the baseline
+  flags any case that merely *passes through* a marker-named stage — the new parked
+  cases do exactly that without exhibiting the pattern. The gap between baseline and
+  dynamic therefore got wider, not narrower: a stronger result for statistical
+  detection, not a regression. advisory's drive was untouched by this plan, so its
+  figures stand unchanged.
 - **Case-level rules (`detection/case_rules.py`)** sit alongside the structural
   detector and answer the worker's question rather than the analyst's: which
   individual cases need attention. Six generic rules — `stage_sla_breach`,
@@ -291,25 +300,27 @@ precision tasks — both privacy controls implemented and tested.
   Circularity guard again: the advisory generator records only *where it parked
   each engagement*; the rules decide independently whether that breaches an SLA
   (and they flag strictly fewer engagements than were parked — a test asserts it).
+- **foyle and joinery now carry parked cases too**, seeded alongside their existing
+  structural delay/repetition/rework patterns (this is the cause of the detection
+  movement above). Same circularity guard as advisory: each generator records only
+  *where* a case was parked (stalled at a stage, left unowned, piled onto one
+  owner); `detection/case_rules.py` decides independently whether that breaches an
+  SLA, and flags strictly fewer cases than were parked. Neither drive carries a
+  money column, so `unrealised_value` is out of reach for foyle/joinery **by
+  design, not oversight** — a test pins that absence. This is what gives foyle and
+  joinery a populated action queue (12 items each) instead of the thin,
+  structural-only queue that was previously a P0 follow-up (TASKLIST.md).
 - **Mapping-agent metrics (the headline eval):** role/column accuracy + column **F1** across three conditions — heuristic baseline → LLM → human-approved. Current results (`outputs/eval_mapping_<profile>.json`):
 
   | Profile | baseline F1 | LLM F1 | human F1 |
   |---|---|---|---|
   | foyle | 0.846 | 0.968 | 1.000 |
   | joinery | 0.308 | 0.909 | 1.000 |
-  | advisory | 0.500 | *(not yet run online)* | 1.000 |
+  | advisory | 0.500 | 0.766 | 1.000 |
 
-  Baseline collapses on joinery's renamed-header fork — that gap is the argument for the LLM audit; the human gate closes the residual.
+  Baseline collapses on joinery's renamed-header fork — that gap is the argument for the LLM audit; the human gate closes the residual. Advisory's LLM figure is the weakest of the three online conditions — 0.766 against foyle's 0.968 and joinery's 0.909 — driven by precision (0.621, 11 column errors) rather than recall (1.0): the LLM proposal over-includes columns on this profile rather than missing them. Written plainly, not smoothed over.
 
-  ⚠️ **Two live caveats on this table.**
-  1. `advisory`'s proposal was generated `--offline`, so its baseline and "LLM"
-     conditions are the same heuristic. Run `python -m audit.run --profile
-     advisory` (online, costs one API call) to fill the middle column.
-  2. `foyle`'s **approved** mapping was re-approved in the browser and now
-     scores 0.800, not 1.000 — the documented mapping-drift hazard (§10).
-     `git checkout mappings/approved_foyle.json` restores the 1.000 figure.
-     Also, `outputs/ui_mapping_proposal_foyle.json` is currently an *offline*
-     proposal; the committed LLM one lives in `eval/results/`.
+  Foyle's human-approved condition is a genuine, mixed result rather than a clean 1.000 across the board: column F1 is 1.000, but `role_accuracy` is only 0.6, because the approver labelled `host families 2026.xlsx` as `ignore` and `staff phone list.xlsx` as `notes`, where ground truth says `reference` and `ignore` respectively. Every column mapping was corrected; two file roles were not. That is a real finding about Gate 1, not a defect to fix: the human reviewer catches column-level semantics reliably but can still mislabel what a whole file is for.
 - **Longitudinal replay (the "dynamic system" eval):** `synthetic/generate_stream.py`
   writes 9 cumulative weekly snapshots per profile (`stream_<p>/tick_NN/`) + a
   per-tick ground truth; `eval/replay.py` replays them through the unchanged
@@ -317,19 +328,37 @@ precision tasks — both privacy controls implemented and tested.
   loop (the write-up must state the approver is an oracle, not a human). Two
   curves out (`eval/plot_replay.py` → `outputs/replay_*_<p>.png`): detection F1
   tracking a moving truth (incl. an honest gap-threshold wobble at joinery tick 6
-  — precision dips, the gate rejects the FPs, F1 recovers), and learned-fix
-  retrieval climbing as *validated* fixes enter `sme_resolutions`. Eval-side
-  only: replay-learned entries are RES-RPL-prefixed in `outputs/`, dashboard
-  state untouched; default `--fresh` reset keeps runs reproducible.
+  — precision dips, the gate rejects the FPs, F1 recovers), and a learned-fix
+  retrieval curve intended to climb as *validated* fixes enter `sme_resolutions`
+  — see the measured result immediately below, which is that it did not, in this
+  9-tick window. Eval-side only: any replay-learned entries would be
+  RES-RPL-prefixed in `outputs/`, dashboard state untouched; default `--fresh`
+  reset keeps runs reproducible.
 
-  **The replay is now outcome-gated too.** The oracle approves, "does" the work,
-  and at a later tick the intervention is measured against that tick's analysis;
-  only a measured improvement is validated and embedded. Each tick record
-  carries both curves — `lifecycle.validated` (what the outcome-gated loop
-  trusts) and `lifecycle.approved_unmeasured` (what the old approval-gated loop
-  would have trusted by the same tick) — so the behaviour change is a *result*
-  rather than a silent regression. **Re-run `eval.replay` for both profiles and
-  re-cite; the learning curve is expected to shift right and may be lower.**
+  **The replay is now outcome-gated too, and has been re-run under that rule for
+  both profiles.** The oracle approves, "does" the work, and at a later tick the
+  intervention is measured against that tick's analysis; only a measured
+  improvement is validated and embedded. Each tick record carries both curves —
+  `lifecycle.validated` (what the outcome-gated loop trusts) and
+  `lifecycle.approved_unmeasured` (what the old approval-gated loop would have
+  trusted by the same tick). The measured result: **`lifecycle.validated` stays at
+  0 for the full 9-tick window, in both profiles** — no oracle-approved fix was
+  ever completed and re-measured against a later tick showing genuine
+  improvement, so nothing was promoted into `sme_resolutions`.
+  `lifecycle.approved_unmeasured` climbs to **3** in both profiles (foyle by tick
+  4, joinery by tick 6) and holds. The cause, traced to source: affected-case
+  counts only *grow* as more of the recording is revealed (2→3→4 per
+  intervention), so `actions/outcome.py::compare` can never return a measured
+  improvement inside this window — interventions land either `ineffective` or
+  inside the 10% noise band. `tests/test_replay.py` proves the validation path
+  does work when a finding genuinely disappears, so the mechanism is sound; the
+  replay simply cannot produce the counterfactual a measured improvement
+  requires. The previously cited "learned-hit rate 0 → 1 over the run" does
+  **not** survive outcome gating — under the new rule the honest end-of-replay
+  state is 3 fixes approved and tracked, 0 proven to work. `replay_learned_<p>.json`
+  is written only on a promotion, so it no longer exists for either profile;
+  `outputs/replay_pending_<p>.json` and `outputs/replay_interventions_<p>.json`
+  are the artefacts that substantiate both curves now.
 
   Second honesty note for the write-up: the stream is a *recording*, not a
   counterfactual. An intervention approved at tick t cannot change what tick
@@ -374,11 +403,11 @@ ingest path.
 - **Diagrams before code** for anything architectural — Emmett thinks visually.
 - Runs Claude Code in the VS Code sidebar, task-by-task, supervised.
 - **Windows:** call `.venv/Scripts/python.exe` explicitly (bare `python` hits the Store stub); set `PYTHONIOENCODING=utf-8` when status values contain `✔`.
-- **Mapping drift:** approving in the browser overwrites `mappings/approved_<profile>.json`. If eval numbers move unexpectedly, `git checkout mappings/approved_*.json`.
+- **Mapping drift:** approving in the browser overwrites `mappings/approved_<profile>.json`. If eval numbers move unexpectedly, do **not** run `git checkout mappings/approved_*.json` — the drifted foyle mapping was itself committed (`c92caef`), so that command restores the drift, not the fix. Recover from the last known-good commit instead: `git checkout <good-commit> -- mappings/approved_<profile>.json` (foyle's known-good mapping is in `a8e3437`).
 
 ---
 
-## 11. Current Status (2026-07-23)
+## 11. Current Status (2026-08-01)
 
 - **Re-architecture milestones M0–M6 all shipped**, plus the product-grade upgrade:
   RAG diagnosis agent, LangGraph loop, **dynamic detection** (statistical, 0..N
@@ -397,19 +426,28 @@ ingest path.
 - **Generalisability demonstrated on three SMEs:** foyle + joinery + **advisory**
   (Northstar Advisory) through one pipeline, zero new reader/detector/action code
   for SME #3.
-- **Eval numbers produced:** mapping F1 table (§7, with two live caveats),
-  detection baseline-vs-dynamic across all three profiles (§7).
+- **All four action-layer Priority-0 follow-ups are now closed** (TASKLIST.md):
+  the mapping F1 table is reproducible from `outputs/` for all three profiles,
+  the foyle mapping is back to its pre-drift state, the longitudinal replay has
+  been re-run and re-cited under the outcome-gated learning loop, and foyle +
+  joinery now carry parked operational cases so their action queues (12 items
+  each) demonstrate the same worker-facing product advisory does.
+- **Eval numbers produced:** mapping F1 table (§7, all three profiles online,
+  no outstanding caveats); detection baseline-vs-dynamic across all three
+  profiles, now measured against foyle/joinery's reseeded drives (§7); the
+  longitudinal replay curves under outcome gating, measured for both profiles (§7).
 - **§6a resolved** — LangGraph and Ollama are both in the artifact.
 - **React dashboard (hitl-react) live** — **Today** (action queue, expandable
   evidence, owner/due-date, progress + outcome-review controls, "what was sent
   to the AI"), Mapping Review (Gate 1), pipeline stepper, workflow DAG,
   Bottlenecks, Fixes + remediation diff, SME switch, payload modal.
-- Tests green: **193 passed** (`pytest -q`).
-- Dissertation Word draft exists (`Murray_B00810618_Dissertation_Draft.docx`) — Sections 1–4 written, later phases scaffolded. **Sections describing detection/eval need updating for the dynamic detector AND for the action layer.**
+- Tests green: **202 passed** (`pytest -q`).
+- Dissertation Word draft exists (`Murray_B00810618_Dissertation_Draft.docx`) — Sections 1–4 written, later phases scaffolded. **Sections describing detection/eval need updating for the dynamic detector, the action layer, and the reseeded/replay numbers above.**
 
-**On the horizon:** re-run `eval.replay` for foyle + joinery under the
-outcome-gated learning loop and re-cite the curves; run `audit.run --profile
-advisory` online to fill the LLM column of the mapping table; decide whether to
-restore `mappings/approved_foyle.json` from git (see §7 caveat 2); Phase 2–5
-build reports; supervisor sign-off on the consented Foyle export.
+**On the horizon:** Phase 2–5 build reports; supervisor sign-off on the
+consented Foyle export. A known, unfixed hazard carried into the write-up:
+`actions/build.py::_structural_items` joins diagnosis prose onto findings by
+`bn.id`, which `detection/dynamic.py` assigns by rank order rather than
+content — a future reseed that reorders the three structural pattern types
+would silently mis-attribute diagnosis text (see HANDOVER.md §8, TASKLIST.md).
 [YOU] install Ollama + `ollama pull qwen2.5:7b` for the anomaly-pass demo.

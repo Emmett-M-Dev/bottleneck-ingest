@@ -1,0 +1,44 @@
+[
+  {
+    "resolution_id": "RES-PND-FOY-001",
+    "profile": "foyle",
+    "bottleneck_type": "delay",
+    "stage": "Booking Confirmed",
+    "problem_description": "2 cases show the 'Booking Confirmed' delay pattern (avg_delay_days=13).",
+    "action_taken": "Review the 'Booking Confirmed' step against past resolutions: Review the 'Booking Confirmed' step with the staff who work it.; Compare the affected cases against the unaffected ones for what differs.; Consider the approach from RES-FOY-002: A batch of group bookings stalled before confirmation while one coordinator chased the same three host families. Introdu",
+    "outcome": "Approved at HITL Gate 2 on 2026-03-23. Not yet measured — awaiting an outcome review.",
+    "days_to_resolve": null,
+    "source": "pending",
+    "status": "approved_unmeasured",
+    "decision_id": "replay-foyle-delay-booking-confirmed",
+    "intervention_id": null
+  },
+  {
+    "resolution_id": "RES-PND-FOY-002",
+    "profile": "foyle",
+    "bottleneck_type": "rework",
+    "stage": "Placement Offer",
+    "problem_description": "2 cases show the 'Placement Offer' rework pattern (loop_back_cases=2).",
+    "action_taken": "Review the 'Placement Offer' step against past resolutions: Review the 'Placement Offer' step with the staff who work it.; Compare the affected cases against the unaffected ones for what differs.; Consider the approach from RES-FOY-014: A work-placement company withdrew after students were matched, forcing re-allocation of a whole group. Asked partner com",
+    "outcome": "Approved at HITL Gate 2 on 2026-03-23. Not yet measured — awaiting an outcome review.",
+    "days_to_resolve": null,
+    "source": "pending",
+    "status": "approved_unmeasured",
+    "decision_id": "replay-foyle-rework-placement-offer",
+    "intervention_id": null
+  },
+  {
+    "resolution_id": "RES-PND-FOY-003",
+    "profile": "foyle",
+    "bottleneck_type": "repetition",
+    "stage": "Document Collection",
+    "problem_description": "2 cases show the 'Document Collection' repetition pattern (repeated_entry_cases=2).",
+    "action_taken": "Review the 'Document Collection' step against past resolutions: Review the 'Document Collection' step with the staff who work it.; Compare the affected cases against the unaffected ones for what differs.; Consider the approach from RES-FOY-010: A temp covering the placements desk re-requested documents because the handover notes did not say where files were kept.",
+    "outcome": "Approved at HITL Gate 2 on 2026-03-30. Not yet measured — awaiting an outcome review.",
+    "days_to_resolve": null,
+    "source": "pending",
+    "status": "approved_unmeasured",
+    "decision_id": "replay-foyle-repetition-document-collection",
+    "intervention_id": null
+  }
+]

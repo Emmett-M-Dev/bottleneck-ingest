@@ -168,10 +168,22 @@ is the contract the FastAPI layer parses. Artefacts land in
 ```
 Replays the drive as it looked each week through the unchanged core: detection is
 re-scored per tick against a *moving* ground truth, and a **simulated (oracle)
-Gate-2 approver** feeds approvals to the learning loop so tick t+1 retrieves the
-fix approved at tick t (learned-hit rate 0 → 1 over the run — the learning-loop
-curve). Replay-learned entries live in `outputs/replay_learned_<p>.json`
-(RES-RPL ids) and its gate log in `outputs/replay_decisions_<p>.jsonl` — the
+Gate-2 approver** feeds approvals to the outcome-gated learning loop, which only
+promotes a fix once it is completed and *measured* as an improvement against a
+later tick's analysis. Measured result, both foyle and joinery: `lifecycle.validated`
+stays at **0** across all nine ticks — no oracle-approved fix was ever completed
+and re-measured showing genuine improvement, so nothing entered `sme_resolutions` —
+while `lifecycle.approved_unmeasured` (what the old, pre-outcome-gating loop would
+have trusted by the same tick) reaches **3** in both profiles and holds. Cause:
+affected-case counts only *grow* as more of a recording is revealed, so
+`actions/outcome.py::compare` cannot return a measured improvement inside this
+window; `tests/test_replay.py` confirms the validation path does work when a
+finding genuinely disappears, so this is the honest behaviour of a sound
+mechanism, not a bug. `outputs/replay_pending_<p>.json` (the approval audit
+trail) and `outputs/replay_interventions_<p>.json` (the lifecycle records) are
+the artefacts that substantiate both curves; `outputs/replay_learned_<p>.json`
+does **not** exist for either profile — it is written only on a promotion, and
+none occurred. The gate log lives in `outputs/replay_decisions_<p>.jsonl` — the
 dashboard's real learned file and decisions.jsonl are never touched. The default
 fresh reset rebuilds `sme_resolutions` from the seeded corpora for reproducibility.
 
@@ -192,17 +204,38 @@ Column-mapping **F1**, baseline (heuristic) → LLM → human-approved:
 |---|---|---|---|
 | foyle | 0.846 | 0.968 | 1.000 |
 | joinery | 0.308 | 0.909 | 1.000 |
+| advisory | 0.500 | 0.766 | 1.000 |
 
 Baseline collapses on joinery's renamed-header fork (`Job#/Phase/When/Who`) —
-that gap is the argument for the LLM audit. Human gate closes the residual
-(foyle: 1 correction; joinery: 2). Full JSON: `outputs/eval_mapping_<profile>.json`.
+that gap is the argument for the LLM audit. Advisory's LLM figure (0.766) is
+the weakest of the three — precision drops on that profile even though recall
+stays at 1.0. Human gate closes the residual (foyle: 1 correction; joinery: 2).
+Full JSON: `outputs/eval_mapping_<profile>.json`.
 
-## 7. Current state (2026-07-09)
+## 7. Current state (2026-08-01)
 
-- **All milestones M0–M6 shipped.** Two profiles run end-to-end through one pipeline.
-- Both repos committed & clean on `master`. Latest: `c861945` (ingest), `5274db9` (react).
-- Foyle drive back to its **reproducible 5-file** state (2 ad-hoc test sheets dropped this session; pipeline unwound to 114 events / 18 cases; `mappings/approved_*.json` browser-drift reverted).
-- Tests green (`pytest -q`): mapping/remediation/detection/ground-truth suites pass.
+- **All milestones M0–M6 shipped**, plus the action layer (§0). Three profiles —
+  foyle, joinery, advisory — run end-to-end through one pipeline.
+- **All four action-layer Priority-0 follow-ups are closed** (`TASKLIST.md`): the
+  mapping F1 table is reproducible from `outputs/` for all three profiles, the
+  foyle mapping is back to its pre-drift state (`e2eb650`), the longitudinal
+  replay has been re-run and re-cited under the outcome-gated learning loop
+  (§6a note below), and foyle + joinery now carry parked operational cases so
+  their action queues (12 items each) are no longer thin.
+- foyle and joinery's detection baseline macro-F1 moved from 0.524/0.523 to
+  0.486/0.487 once those parked cases were seeded — recall held at 1.0
+  throughout, only baseline precision fell further (the dynamic detector stayed
+  at 1.000 for both). advisory's drive is untouched; its 0.471 stands. See
+  `CLAUDE.md` §7 for the per-type detail.
+- The replay's honest result: `lifecycle.validated` stays at 0 for the full
+  9-tick window in both profiles under outcome gating; `lifecycle.approved_unmeasured`
+  (what the old approval-gated loop would have trusted) reaches 3 in both
+  (foyle tick 4, joinery tick 6). Two caveats that travel with these numbers
+  everywhere they're cited: the Gate-2 approver is a **simulated oracle, not a
+  human**, and the 9-tick stream is a **recording, not a counterfactual** — an
+  approval at tick *t* cannot change what tick *t+1* contains. See `CLAUDE.md`
+  §7 for the full mechanism.
+- Tests green (`pytest -q`): **202 passed.**
 
 ## 8. Gotchas & constraints (read before touching)
 
@@ -211,7 +244,7 @@ that gap is the argument for the LLM audit. Human gate closes the residual
 3. **`PYTHONIOENCODING=utf-8`** required — status values contain `✔` (✔); cp1252 default raises `UnicodeEncodeError`.
 4. **Zero raw PII to the API** — every sample cell passes through `scrub.anonymise` before the audit payload. There is a test asserting this.
 5. **`ANTHROPIC_API_KEY` in `bottleneck-ingest/.env`** (gitignored). The key was pasted in chat during development — **rotate it** at the Anthropic console before submission.
-6. **Mapping drift** — approving in the browser overwrites `mappings/approved_<profile>.json`. If eval numbers shift unexpectedly, `git checkout mappings/approved_*.json` to restore the committed mappings.
+6. **Mapping drift** — approving in the browser overwrites `mappings/approved_<profile>.json`. If eval numbers shift unexpectedly, do **not** `git checkout mappings/approved_*.json` — a drifted mapping can itself be committed (foyle's was, in `c92caef`), so that restores the drift. Recover from a known-good commit instead: `git checkout a8e3437 -- mappings/approved_foyle.json`.
 7. **Bottleneck count is DYNAMIC** — `detect_dynamic` returns 0..N structural findings; `detection/case_rules.py` adds 0..N case-level ones on top. `markers` in config are eval-only.
 8. **Windows `python` shim** — call `.venv/Scripts/python.exe` explicitly; bare `python` may hit the Store stub.
 9. **Subprocess stdout must be decoded as UTF-8 explicitly.** `subprocess.run(..., text=True)` decodes with the Windows ANSI codepage and raises `UnicodeDecodeError` on the `✔` in SME status values — which took down the API's action endpoints until fixed. Pass `encoding="utf-8", errors="replace"` alongside `PYTHONIOENCODING=utf-8` in the child env. Both are needed: the env var controls what the child *writes*, the encoding argument controls how the parent *reads*.
@@ -221,6 +254,8 @@ that gap is the argument for the LLM audit. Human gate closes the residual
 13. **Vite binds to IPv6.** `curl http://127.0.0.1:5173` fails; `http://localhost:5173` works. Only matters when smoke-testing from a shell.
 14. **Never leave two uvicorn instances on port 8000.** Uvicorn sets `SO_REUSEADDR`, so a second instance binds happily and Windows hands each connection to *either* one — so half the requests get served by whichever build that instance is running. The symptom is maddening: the dashboard shows correct data, then stale data, with no pattern. Check with `netstat -ano | Select-String ":8000\s+.*LISTENING"` and expect exactly one PID. A `--reload` parent killed from a wrapper can leave its worker alive, so kill by command line: `Get-CimInstance Win32_Process -Filter "Name='python.exe'" | Where-Object { $_.CommandLine -match 'uvicorn|multiprocessing-fork' } | Stop-Process -Force`.
 15. **A profile switch re-ingests, and that takes minutes.** The API's subprocess timeout is 900s for ingest-shaped work (`_TIMEOUT_INGEST`) and 180s for everything else; a timeout now returns a 504 with the command in it rather than dropping the connection. The dashboard clears the previous SME's queue on switch and says it is analysing — it must never render a queue whose `profile` differs from the one requested.
+16. **`actions/build.py::_structural_items` joins diagnosis prose onto findings by `bn.id`, which `detection/dynamic.py` assigns by RANK ORDER, not content.** It only lines up correctly because no reseed so far has reordered the three structural pattern types (delay/repetition/rework stayed BN001/BN002/BN003 for both foyle and joinery through the 2026-08-01 reseed). A future reseed that *does* reorder them would silently mis-attribute one bottleneck's diagnosis text to another — confirmed as a live risk, not a hypothetical, when a stale `ui_cases_<profile>.json` cache was caught doing exactly this position-keyed join during the action-queue rebuild. Fix = key the join on a content hash of `(type, stage, metric_label)` instead of `bn.id`; not done — tracked in `TASKLIST.md`.
+17. **`DIAGNOSE_OFFLINE` only reaches `bridge.export_messy`; `bridge.export_actions` never reads it and has no live-diagnosis path of its own.** The structural (delay/repetition/rework) items in an action queue get their diagnosis prose entirely from whichever `outputs/ui_cases_<profile>.json` cache already exists on disk — real LLM prose if that cache was last populated by an *online* `export_messy` run, template prose if it wasn't — regardless of how `export_actions` itself is invoked. Setting `DIAGNOSE_OFFLINE=1` before running `export_actions` has zero effect on it; if the queue needs to be guaranteed template-only, `export_messy --offline` (or with `DIAGNOSE_OFFLINE=1`) must be re-run first to refresh that cache.
 
 ## 9. What's next (candidates, none blocking)
 

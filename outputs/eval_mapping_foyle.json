@@ -1,0 +1,45 @@
+{
+  "profile": "foyle",
+  "model": "claude-opus-4-8",
+  "proposal_generated_at": "2026-08-01T09:27:27.984929+00:00",
+  "conditions": {
+    "baseline": {
+      "role_accuracy": 0.6,
+      "include_accuracy": 0.4,
+      "column_exact_accuracy": 0.826,
+      "column_precision": 1.0,
+      "column_recall": 0.733,
+      "column_f1": 0.846,
+      "column_errors": 4
+    },
+    "llm": {
+      "role_accuracy": 0.8,
+      "include_accuracy": 0.8,
+      "column_exact_accuracy": 0.957,
+      "column_precision": 0.938,
+      "column_recall": 1.0,
+      "column_f1": 0.968,
+      "column_errors": 1
+    },
+    "approved": {
+      "role_accuracy": 0.6,
+      "include_accuracy": 0.6,
+      "column_exact_accuracy": 1.0,
+      "column_precision": 1.0,
+      "column_recall": 1.0,
+      "column_f1": 1.0,
+      "column_errors": 0
+    }
+  },
+  "hitl": {
+    "action": "modify",
+    "corrections": {
+      "role_changes": 1,
+      "column_changes": 1,
+      "include_toggles": 1
+    },
+    "time_to_decision_seconds": 0.5,
+    "decided_at": "2026-07-05T16:31:37.885519+00:00"
+  },
+  "hitl_error_delta": 1
+}

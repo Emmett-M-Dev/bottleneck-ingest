@@ -1,7 +1,8 @@
 {
-  "generated_at": "2026-07-10T09:59:12.973476",
+  "generated_at": "2026-08-01T10:59:38.039377",
   "seed": 17,
-  "cases": 15,
+  "as_of": "2026-06-30T00:00:00",
+  "cases": 24,
   "bottlenecks": {
     "delay": [
       "J-1022",
@@ -16,6 +17,37 @@
       "J-1023",
       "J-1028",
       "J-1034"
+    ]
+  },
+  "operational_intent": {
+    "parked_at": {
+      "Quote Sent": [
+        "J-1036",
+        "J-1037"
+      ],
+      "Quote Accepted": [
+        "J-1038"
+      ],
+      "Materials Ordered": [
+        "J-1039",
+        "J-1040"
+      ],
+      "Site Work Started": [
+        "J-1041"
+      ],
+      "Snagging": [
+        "J-1042"
+      ],
+      "Invoice Sent": [
+        "J-1043"
+      ],
+      "Site Survey": [
+        "J-1044"
+      ]
+    },
+    "unowned": [
+      "J-1037",
+      "J-1043"
     ]
   }
 }

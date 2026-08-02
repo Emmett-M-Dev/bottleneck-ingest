@@ -1,0 +1,35 @@
+{
+  "profile": "advisory",
+  "model": "claude-opus-4-8",
+  "proposal_generated_at": "2026-08-01T09:25:55.799301+00:00",
+  "conditions": {
+    "baseline": {
+      "role_accuracy": 0.143,
+      "include_accuracy": 0.143,
+      "column_exact_accuracy": 0.684,
+      "column_precision": 1.0,
+      "column_recall": 0.333,
+      "column_f1": 0.5,
+      "column_errors": 12
+    },
+    "llm": {
+      "role_accuracy": 1.0,
+      "include_accuracy": 0.286,
+      "column_exact_accuracy": 0.711,
+      "column_precision": 0.621,
+      "column_recall": 1.0,
+      "column_f1": 0.766,
+      "column_errors": 11
+    },
+    "approved": {
+      "role_accuracy": 1.0,
+      "include_accuracy": 1.0,
+      "column_exact_accuracy": 1.0,
+      "column_precision": 1.0,
+      "column_recall": 1.0,
+      "column_f1": 1.0,
+      "column_errors": 0
+    }
+  },
+  "hitl_error_delta": 11
+}
