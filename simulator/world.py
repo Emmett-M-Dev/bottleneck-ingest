@@ -123,8 +123,15 @@ def day0_from_generator(profile: str) -> WorldState:
     """Import the existing hand-authored world as day 0.
 
     The generator uses the MODULE-LEVEL random, so it is seeded here before
-    build_events() is called. This is the one place in simulator/ that touches
-    module-level random; everything downstream uses WorldState.rng_for_day.
+    build_events() is called. This is NOT the only place in simulator/ that
+    touches module-level random: simulator/render.py also reseeds it (from
+    its own per-day rng) immediately before calling the frozen generator's
+    build_clients/build_timesheets, which read module-level random
+    internally. Both call sites reseed unconditionally right before the
+    module-random call they need, and each day's rng is a fresh
+    random.Random instance, so this stays deterministic in practice --
+    but "the one place" was no longer an accurate description once render.py
+    was written. Everywhere else in simulator/ uses WorldState.rng_for_day.
     """
     cfg = profile_config(profile)
     mod = importlib.import_module(cfg["generator"])
