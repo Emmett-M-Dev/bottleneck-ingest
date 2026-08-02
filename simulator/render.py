@@ -8,6 +8,7 @@ tick renders. Mess (stage spelling, the renamed-header fork, the duplicated
 from __future__ import annotations
 
 import importlib
+import io
 import os
 import random
 import tempfile
@@ -37,22 +38,28 @@ class _EngagementLike:
 def _write_atomic(df: pd.DataFrame, path: Path) -> None:
     """tmp-then-os.replace, matching actions/store.py:44-50.
 
-    pandas' openpyxl writer validates the destination's extension against
-    {'.xlsx', '.xlsm'} and rejects a bare '.tmp' suffix outright, so the temp
-    file keeps the real extension and is marked transient with a dot-prefix
-    instead. It is written in the same directory as the target so the final
-    os.replace stays on one volume (and therefore atomic).
+    pandas' openpyxl writer validates a string/PathLike destination's
+    extension against {'.xlsx', '.xlsm'} and rejects a '.tmp' suffix
+    outright — but that check only fires on string/PathLike targets, not
+    in-memory buffers. So the workbook is built into a BytesIO first
+    (bypassing the check entirely), then those bytes are written to a
+    genuine '.tmp'-suffixed file with plain binary I/O and atomically
+    replaced. A survivor from a crash between mkstemp and cleanup must never
+    look like a legitimate sheet to the repo's drive readers, both of which
+    glob '*.xlsx' (readers/excel_reader.py:51, audit/scan.py:82) — so the
+    temp file is never allowed to carry that extension, even transiently.
     """
     path.parent.mkdir(parents=True, exist_ok=True)
-    fd, tmp = tempfile.mkstemp(dir=str(path.parent), prefix=f".{path.stem}.",
-                               suffix=path.suffix)
-    os.close(fd)
+    buf = io.BytesIO()
+    df.to_excel(buf, index=False, engine="openpyxl")
+    fd, tmp = tempfile.mkstemp(dir=str(path.parent), suffix=".tmp")
     try:
-        df.to_excel(tmp, index=False, engine="openpyxl")
+        with os.fdopen(fd, "wb") as f:
+            f.write(buf.getvalue())
         os.replace(tmp, path)
-    finally:
-        if os.path.exists(tmp):
-            os.unlink(tmp)
+    except BaseException:
+        Path(tmp).unlink(missing_ok=True)
+        raise
 
 
 def _engagement_likes(world: WorldState, mod, rng: random.Random
@@ -99,6 +106,14 @@ def render(world: WorldState, out_dir: Path, rng: random.Random) -> list[str]:
     # Somebody saved a 'final' copy of the delivery sheet: older rows duplicated
     # verbatim, a few newer ones only there. Same rule as the static drive.
     fork_rows = delivery[:14] + delivery[-6:]
+
+    # build_clients/build_timesheets draw from the frozen generator's
+    # MODULE-LEVEL random (not `rng`) internally — generate_messy_advisory.py
+    # is frozen, so it cannot be changed to take an rng argument. Reseeding
+    # global random deterministically from our own rng, immediately before
+    # calling them, is what keeps those two reference sheets reproducible for
+    # a given seed.
+    random.seed(rng.random())
 
     writes = [
         ("leads.xlsx", mod._lead_frame(sales)),
