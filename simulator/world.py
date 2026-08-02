@@ -15,8 +15,6 @@ from datetime import datetime, timedelta
 
 from simulator.profiles import profile_config
 
-_ISO = "%Y-%m-%dT%H:%M:%S"
-
 
 def canon_stage(label: str, stage_order: list[str]) -> str:
     """Map a possibly-messy stage label onto the profile's canonical spelling.
@@ -33,19 +31,23 @@ class SimEvent:
     status: str
 
     def to_dict(self) -> dict:
-        return {"stage": self.stage, "ts": self.ts.strftime(_ISO),
+        return {"stage": self.stage, "ts": self.ts.isoformat(),
                 "actor": self.actor, "status": self.status}
 
     @staticmethod
     def from_dict(d: dict) -> "SimEvent":
-        return SimEvent(stage=d["stage"], ts=datetime.strptime(d["ts"], _ISO),
+        return SimEvent(stage=d["stage"], ts=datetime.fromisoformat(d["ts"]),
                         actor=d["actor"], status=d["status"])
 
 
 @dataclass
 class SimCase:
-    """Field names duck-type generate_messy_advisory.Engagement on purpose, so
-    that module's reference-sheet builders can be reused without a shim."""
+    """Case-level field names (cid, client, value) duck-type
+    generate_messy_advisory.Engagement so the case object can be passed where
+    an Engagement is expected. However, events holds SimEvent dataclasses with
+    canonical stage names, not the dict shape with 'activity' keys that
+    generator builders expect. Any generator builder that subscripts events
+    requires an adapter supplying the dict form."""
     cid: str
     client: str
     value: float
@@ -100,20 +102,20 @@ class WorldState:
     def to_dict(self) -> dict:
         return {
             "profile": self.profile, "seed": self.seed, "day": self.day,
-            "start_date": self.start_date.strftime(_ISO),
+            "start_date": self.start_date.isoformat(),
             "cases": {k: v.to_dict() for k, v in self.cases.items()},
-            "params": self.params, "next_case_num": self.next_case_num,
-            "intent": self.intent,
+            "params": dict(self.params), "next_case_num": self.next_case_num,
+            "intent": dict(self.intent),
         }
 
 
 def from_dict(d: dict) -> WorldState:
     return WorldState(
         profile=d["profile"], seed=d["seed"], day=d["day"],
-        start_date=datetime.strptime(d["start_date"], _ISO),
+        start_date=datetime.fromisoformat(d["start_date"]),
         cases={k: SimCase.from_dict(v) for k, v in d["cases"].items()},
         params=dict(d["params"]), next_case_num=d["next_case_num"],
-        intent=d["intent"],
+        intent=dict(d["intent"]),
     )
 
 

@@ -62,3 +62,24 @@ def test_day0_import_loads_the_advisory_world():
 def test_day0_import_is_reproducible():
     a, b = day0_from_generator("advisory"), day0_from_generator("advisory")
     assert a.to_dict() == b.to_dict()
+
+
+def test_datetime_round_trip_preserves_microseconds():
+    ts_with_micros = datetime(2026, 1, 1, 12, 30, 45, 123456)
+    event = SimEvent(stage="Lead", ts=ts_with_micros, actor="A", status="done")
+    back = SimEvent.from_dict(event.to_dict())
+    assert back.ts == ts_with_micros
+    assert back.ts.microsecond == 123456
+
+
+def test_to_dict_returns_independent_copies_of_params_and_intent():
+    w = WorldState(profile="advisory", seed=7, day=0,
+                   start_date=datetime(2026, 7, 20), cases={}, params={},
+                   next_case_num=1, intent={})
+    d = w.to_dict()
+    # Mutate the original world's params and intent
+    w.params["new_key"] = 0.5
+    w.intent["new_field"] = "value"
+    # Verify the dict returned by to_dict() was not affected
+    assert "new_key" not in d["params"]
+    assert "new_field" not in d["intent"]
