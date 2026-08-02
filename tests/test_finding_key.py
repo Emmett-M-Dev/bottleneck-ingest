@@ -139,10 +139,15 @@ def test_fallback_only_applies_to_legacy_exports():
 
 
 def test_export_messy_emits_finding_key():
-    """Verify that bridge/export_messy.py emits finding_key in case dicts.
+    """Verify that bridge/export_messy.py emits finding_key in BOTH case-building paths:
+    1. Structural bottlenecks (for bn in detected loop)
+    2. Anomaly observations (_anomaly_cases function)
 
-    We use static source analysis to avoid the heavy import (spaCy via pipeline.diagnose).
-    If someone removes or breaks the finding_key emission, this test fails immediately."""
+    Uses static source analysis to avoid heavy spaCy import via pipeline.diagnose.
+    Brittleness note: regex matching is sensitive to whitespace and key order.
+    This is acceptable because: (a) the patterns are in fixed auto-generated code
+    regions, (b) casual reformatting (e.g., line breaks) would need multiple
+    changes to break both patterns, (c) CI runs this on every commit."""
     import re
     from pathlib import Path
 
@@ -153,8 +158,14 @@ def test_export_messy_emits_finding_key():
     assert "from detection.detect import finding_key" in source, \
         "finding_key must be imported from detection.detect"
 
-    # Check that the case dict includes finding_key emission
-    # Look for the pattern where case_id and finding_key are both assigned
-    pattern = r'"case_id":\s*bn\.id,\s*"finding_key":\s*finding_key\(bn\)'
-    assert re.search(pattern, source), \
-        'case dict must contain "case_id": bn.id, "finding_key": finding_key(bn)'
+    # Check Path 1: structural bottleneck case dicts (bn loop, line ~185)
+    # Pattern: case_id and finding_key assigned in the case dict literal
+    bn_pattern = r'"case_id":\s*bn\.id,\s*"finding_key":\s*finding_key\(bn\)'
+    assert re.search(bn_pattern, source), \
+        'Structural path: case dict must contain "case_id": bn.id, "finding_key": finding_key(bn)'
+
+    # Check Path 2: anomaly case dicts (_anomaly_cases, line ~146)
+    # Pattern: case_id (AN-style) and finding_key (anomaly::stage::title)
+    anomaly_pattern = r'"case_id":\s*f"AN\{i:03d\}",\s*"finding_key":\s*f"anomaly::{_canon\(f\.stage\)}::{_canon\(f\.title\)}"'
+    assert re.search(anomaly_pattern, source), \
+        'Anomaly path: case dict must contain "case_id": f"AN{i:03d}", "finding_key": f"anomaly::{_canon(f.stage)}::{_canon(f.title)}"'
