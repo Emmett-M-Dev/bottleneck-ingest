@@ -237,6 +237,29 @@ Full JSON: `outputs/eval_mapping_<profile>.json`.
   §7 for the full mechanism.
 - Tests green (`pytest -q`): **202 passed.**
 
+## Running the simulator (System 2)
+
+The simulator generates the SME's operational reality; the product reads the
+drive it writes. They share nothing else.
+
+    # start a fresh world at day 0 and render it
+    .venv/Scripts/python.exe -m simulator.cli --profile advisory --reset
+
+    # advance a week; approvals in the action store change what happens
+    .venv/Scripts/python.exe -m simulator.cli --profile advisory --advance 7
+
+    # analyse the simulated drive with the unchanged product
+    .venv/Scripts/python.exe ingest.py --source messy --profile advisory \
+        --drive data/sim/advisory/drive
+
+Add `--llm` to fill message wording with Claude (cached per seed/day/message,
+so a replay is free and offline). Without it, deterministic templates are used
+and nothing calls out.
+
+State lives in `data/sim/advisory/`: `state.json` (world + day + params),
+`drive/` (what the product ingests), `inbox.jsonl` (every message), `cache/`
+(LLM fills). Delete the directory to start over.
+
 ## 8. Gotchas & constraints (read before touching)
 
 1. **No `temperature` / sampling params on Opus 4.8** — 400 error. Determinism comes from schema + closed vocab. Model id `claude-opus-4-8`.
