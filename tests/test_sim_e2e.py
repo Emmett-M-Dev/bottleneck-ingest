@@ -53,21 +53,36 @@ inspection, and are fixed here rather than transcribed:
    `unrealised_value` was chosen instead, and clears far more of its
    affected cases when approved than the untouched world clears on its own
    -- but IMPORTANT: the untouched world is not inert here either, and this
-   module used to claim it was (wrongly). Two organic channels clear
-   `unrealised_value` cases with zero approval:
+   module used to claim it was (wrongly). THREE organic channels clear
+   `unrealised_value` cases with zero approval (fix-round-2 review
+   instrumented the control arm over 150 trials and attributed every
+   clearance to one of them: drift 114, `payment_made` 29,
+   `progress_update` 13 -- the third was missing from an earlier draft of
+   this docstring, which claimed only two):
 
      (a) `_drift` can walk a case straight through `Invoice -> Paid` in one
          step when it is already sitting at `Invoice` (two of this world's
          16 affected cases -- `NA-1061`, `NA-1062` -- start exactly there).
          A single day's drift clears such a case with probability
-         `1 - stall_prob["stall_prob.Invoice"]` = 0.45.
+         `1 - stall_prob["stall_prob.Invoice"]` = 0.45. The dominant channel
+         (114/150 = 76% of measured control-arm clearances).
      (b) `worker.py::apply_message`'s `payment_made` branch performs the
          BYTE-FOR-BYTE IDENTICAL event append as the approved effect
          (`case.add(terminal, world.current_date, case.owner or "", "done")`)
          -- a client can simply report paying, with no action approved at
-         all.
+         all (29/150 = 19%).
+     (c) `worker.py::apply_message`'s `progress_update` branch
+         (`simulator/worker.py:76`) calls the same `advance_case` that
+         drift uses -- so an ordinary "please move this on" message on a
+         case already sitting at `Invoice` also walks it straight to
+         `Paid`, again with zero approval (13/150 = 9%, the smallest of the
+         three but not negligible).
 
-   So the honest claim is a difference in MAGNITUDE, not a difference
+   This makes the corrected claim STRONGER, not weaker: the untouched world
+   has three independent, unrelated routes to clearing these cases, and the
+   approved arm still beats it by a wide, measured margin (below) despite
+   all three working against the comparison. So the honest claim is a
+   difference in MAGNITUDE, not a difference
    between "changes" and "does not change": sampling many alternate day-1
    RNG realisations of this same day-0 world (60 paired trials, each arm
    given the identical trial-labelled stream so the comparison is
@@ -112,12 +127,39 @@ PROFILE_CFG = config.MESSY_PROFILES["advisory"]
 
 FINDING_TYPE = "unrealised_value"
 
-# Fix-round-1: chosen from the sampled distribution (see module docstring
-# and task-10-report.md), not from this one seed's actual gap of 8. It sits
-# above the highest untouched-arm clearance observed in either sample (3 in
-# a 60-trial local sample, 4 in review's larger one) and well below the
-# lowest approved-arm clearance observed in either (5 and 1 respectively),
-# so it is not a threshold this specific run just barely clears.
+# The assertion below is on the PAIRED GAP (approved_cleared - control_cleared
+# for the SAME RNG stream), so that -- not the two arms' marginal distributions
+# -- is the statistic this margin has to be justified against. Fix-round-2
+# review's independent 300-trial paired sample (paired the same way this test
+# pairs its own two arms -- see task-10-report.md):
+#
+#   control  mean 1.07  min 0  max 3   {0:73, 1:147, 2:65, 3:15}
+#   approved mean 8.61  min 4  max 13
+#   gap      mean 7.54  min 1  max 12
+#     margin 3 -> fails  2/300 (0.7%)
+#     margin 4 -> fails  5/300 (1.7%)   <- shipped
+#     margin 5 -> fails 18/300 (6.0%)
+#
+# 4 was kept, not raised to 5: the failure rate roughly quadruples between 4
+# and 5, so 4 is the better-supported point on this curve, not a threshold
+# picked to be comfortable. It is an honestly disclosed ~1.7% chance that,
+# on some other RNG realisation of this same day-0 world, this assertion
+# would fail even though the underlying causal claim (approving clears more
+# than not approving) still holds -- a false negative on the test, not a
+# false claim in the docstring.
+#
+# Brittleness (separate from seed-to-seed variance above): simulating an
+# unrelated upstream change to RNG stream consumption by burning N extra
+# draws before this test's own draws begin, N=0..30, broke this assertion in
+# 1/31 cases (~3%) and left 4/31 more (~13% total) sitting exactly at the
+# threshold with zero headroom. So a future change elsewhere in simulator/
+# that shifts how many random draws happen before this test's day runs has
+# a real, non-trivial chance of flipping this assertion -- and when it does,
+# the failure message below will (misleadingly) read as "background
+# clearance caught up", not "an unrelated RNG-consumption change moved the
+# stream position". Recorded here so a future maintainer chasing a red
+# MAGNITUDE_MARGIN failure checks that before concluding the simulator's
+# effect model regressed.
 MAGNITUDE_MARGIN = 4
 
 
@@ -151,9 +193,10 @@ def _item(finding_type: str, case_ids) -> ActionItem:
 
 
 def test_approving_an_action_reduces_the_finding_the_product_reports(tmp_path):
-    """Not just "the count went down" (drift and organic payment_made
-    messages can do that on their own -- see module docstring) but that the
-    reduction is CAUSED by the worker's recorded effect: every case_id the
+    """Not just "the count went down" (drift and two kinds of organic
+    message -- payment_made, progress_update -- can all do that on their
+    own; see module docstring) but that the reduction is CAUSED by the
+    worker's recorded effect: every case_id the
     worker logged as `outcome == "applied"` must be a case_id that actually
     left the finding. Disabling `worker.py::_effect` (verified by hand: see
     task-10-report.md fix-round-1 section) leaves `len(after) < len(before)`
@@ -214,8 +257,8 @@ def test_the_untouched_world_clears_far_fewer_cases_than_the_approved_action(tmp
 
     assert approved_cleared >= control_cleared + MAGNITUDE_MARGIN, (
         f"approved clearance ({approved_cleared}) must beat the untouched "
-        f"world's own background clearance ({control_cleared}, via "
-        f"Invoice->Paid drift and/or organic payment_made messages -- see "
+        f"world's own background clearance ({control_cleared}, via drift "
+        f"and/or organic payment_made / progress_update messages -- see "
         f"module docstring) by a wide margin, not merely exceed it: got a "
         f"gap of {approved_cleared - control_cleared}, needed at least "
         f"{MAGNITUDE_MARGIN}")
