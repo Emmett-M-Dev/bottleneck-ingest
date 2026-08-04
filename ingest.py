@@ -187,9 +187,23 @@ def event_log_owner_path():
     return config.OUTPUTS / "event_log_profile.txt"
 
 
-def _write_event_log_owner(source: str, profile: str | None) -> None:
+def _write_event_log_owner(source: str, profile: str | None,
+                           drive=None) -> None:
+    """Stamp whose data `outputs/event_log.parquet` currently holds.
+
+    When `--drive` points somewhere other than the profile's configured
+    folder (a later real snapshot, e.g. `messy_advisory_followup/`, OR the
+    simulator's `data/sim/<profile>/drive/`), the stamp records the actual
+    drive path alongside the profile — not just the plain profile name —
+    so a later run can tell simulated/alternate-snapshot data from the
+    profile's default static drive by reading this one file. Absent
+    `--drive`, behaviour is unchanged: the stamp is exactly `profile or
+    source`, as before."""
     config.OUTPUTS.mkdir(parents=True, exist_ok=True)
-    event_log_owner_path().write_text(profile or source, encoding="utf-8")
+    owner = profile or source
+    if drive is not None:
+        owner = f"{owner}@{Path(drive).as_posix()}"
+    event_log_owner_path().write_text(owner, encoding="utf-8")
 
 
 def _write_event_log(records: list[NormalisedRecord]) -> int:
@@ -259,7 +273,7 @@ def run(source: str, profile: str | None = None, mapping_path=None,
     reset_collection()  # rebuild the vector store from scratch for this source
     n_chunks = embed_chunks(chunk_records(records))
     n_events = _write_event_log(records)
-    _write_event_log_owner(source, profile)
+    _write_event_log_owner(source, profile, drive)
 
     print()
     for line in summaries:

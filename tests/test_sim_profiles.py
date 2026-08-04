@@ -16,9 +16,25 @@ def test_advisory_profile_is_wired():
     cfg = profile_config("advisory")
     for field in ("generator", "stage_order", "first_stage", "terminal_stages",
                   "arrival_rate_per_day", "params", "effect_prob",
-                  "process_param_delta", "process_effect_prob", "personas",
-                  "intents"):
+                  "process_param_delta", "process_effect_prob",
+                  "business_description", "fallback_details", "intents"):
         assert field in cfg, f"missing {field}"
+
+
+def test_personas_is_not_dead_config():
+    """F3(c): profiles.py used to carry a `personas` list nothing read --
+    it looked like the knob that made personas per-SME and was not.
+    Deleted rather than wired (see simulator/intents.py's module docstring
+    for why); this test pins the deletion so the dead key can't creep back."""
+    assert "personas" not in profile_config("advisory")
+
+
+def test_no_business_vocabulary_hardcoded_in_compose_module():
+    """F3(b): compose.py must source business description + fallback detail
+    vocabulary from the profile, not bake advisory-specific strings in as
+    module-level constants."""
+    import simulator.compose as compose_mod
+    assert not hasattr(compose_mod, "_FALLBACK_DETAIL")
 
 
 def test_every_wired_finding_type_has_a_probability():

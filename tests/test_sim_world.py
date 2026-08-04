@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from simulator.world import (SimCase, SimEvent, WorldState, canon_stage,
-                             day0_from_generator, from_dict)
+from simulator.world import (SimCase, SimEvent, WorldState, _next_case_num,
+                             canon_stage, day0_from_generator, from_dict)
 
 
 def _case():
@@ -70,6 +70,16 @@ def test_datetime_round_trip_preserves_microseconds():
     back = SimEvent.from_dict(event.to_dict())
     assert back.ts == ts_with_micros
     assert back.ts.microsecond == 123456
+
+
+def test_next_case_num_is_derived_not_a_literal_start():
+    """F3(a): next_case_num must be derived from the imported cases' own
+    trailing digits, not a literal per-SME starting constant hardcoded in
+    engine code -- so a profile whose ids number from elsewhere (e.g. a
+    joinery profile from 2001) can never collide with advisory's 1041."""
+    assert _next_case_num(["JOB-2001", "JOB-2002", "JOB-2005"]) == 2006
+    assert _next_case_num(["NA-1041"]) == 1042
+    assert _next_case_num([]) == 1
 
 
 def test_to_dict_returns_independent_copies_of_params_and_intent():

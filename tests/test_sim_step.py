@@ -1,5 +1,6 @@
 import random
 
+from actions.models import ActionItem
 from simulator import step as step_mod
 from simulator import worker as worker_mod
 from simulator.profiles import profile_config
@@ -171,3 +172,172 @@ def test_day_result_serialises(tmp_path):
     d = results[0].to_dict()
     assert set(d) >= {"day", "date", "messages", "row_changes", "effects",
                       "files"}
+
+
+# ── F1: a multi-day --advance must not re-apply an already-applied approval ─
+# simulator/cli.py's `--advance N` is the documented default workflow
+# (HANDOVER.md) and calls advance() once per day with the SAME approved-items
+# list, since nothing writes back to the action store. Measured on the real
+# advisory world before this fix: one approved stalled_case walked a single
+# case through 4 stage advances in 5 days; one approved delay process
+# intervention shifted stall_prob.Proposal on 5 of 6 days.
+
+def test_repeated_advance_does_not_reapply_an_approved_effect(tmp_path):
+    w = day0_from_generator("advisory")
+    cid = next(c for c, k in w.cases.items() if k.owner == "")
+    per_case_item = ActionItem(
+        action_id="A-unowned", profile="advisory",
+        finding_key="unowned_case::x::y", finding_type="unowned_case",
+        title="t", summary="s", workflow="Lead-to-cash", stage="Lead",
+        affected_case_ids=[cid], status="approved",
+        created_at="2026-07-20", updated_at="2026-07-20")
+    process_item = ActionItem(
+        action_id="A-delay", profile="advisory",
+        finding_key="delay::x::y", finding_type="delay",
+        title="t", summary="s", workflow="Lead-to-cash", stage="Proposal",
+        affected_case_ids=[], status="approved",
+        action_category="process_intervention",
+        created_at="2026-07-20", updated_at="2026-07-20")
+
+    before_param = w.params["stall_prob.Proposal"]
+    for _ in range(5):
+        advance(w, [per_case_item, process_item], drive_dir=tmp_path / "drive",
+               cache_dir=tmp_path / "cache", use_llm=False)
+
+    applied_case_effects = [e for e in w.intent["effects"]
+                            if e["action_id"] == "A-unowned"
+                            and e["outcome"] == "applied"]
+    applied_process_effects = [e for e in w.intent["effects"]
+                               if e["action_id"] == "A-delay"
+                               and e["outcome"] == "applied"]
+    # Never more than one success recorded for either item, across the
+    # whole 5-day window -- the invariant under test.
+    assert len(applied_case_effects) <= 1
+    assert len(applied_process_effects) <= 1
+    # unowned_case's effect_prob is 0.95, so across 5 days a success is
+    # virtually certain -- non-emptiness makes the <=1 assertion above
+    # non-vacuous rather than trivially true on zero applications.
+    assert applied_case_effects, (
+        "expected at least one success across 5 days at effect_prob=0.95")
+    if applied_process_effects:
+        delta = CFG["process_param_delta"]["delay"]["stall_prob.Proposal"]
+        expected = max(CFG["param_floor"], before_param + delta)
+        assert w.params["stall_prob.Proposal"] == expected
+
+
+# ── F6: repetition_prob / rework_prob are wired into _drift ─────────────────
+# Before this fix these two parameters were written by apply_approved's
+# process-param branch but read by nothing -- an approved repetition/rework
+# process intervention changed nothing, and the simulator could never
+# generate either pattern organically (only delay). These tests prove the
+# mechanism exists and that lowering the parameter genuinely reduces it.
+
+def _stalled_world():
+    """Every case guaranteed to stall today (stall_prob forced to 1.0 for
+    every stage), so repetition/rework's own draws are the only source of
+    randomness left."""
+    w = day0_from_generator("advisory")
+    for k in list(w.params):
+        if k.startswith("stall_prob."):
+            w.params[k] = 1.0
+    return w
+
+
+def test_drift_can_repeat_the_current_stage():
+    w = _stalled_world()
+    w.params["repetition_prob"] = 1.0
+    w.params["rework_prob"] = 0.0
+    live_before = {cid: (c.stage, len(c.events))
+                   for cid, c in w.cases.items()
+                   if c.stage not in CFG["terminal_stages"]}
+    assert live_before, "fixture needs at least one live case"
+
+    moved = step_mod._drift(w, CFG, random.Random(1), set())
+
+    for cid, (stage, n) in live_before.items():
+        assert cid in moved
+        assert w.cases[cid].stage == stage, "repetition must NOT change stage"
+        assert len(w.cases[cid].events) == n + 1, (
+            "repetition must add exactly one duplicate entry")
+
+
+def test_drift_can_rework_back_one_stage():
+    w = _stalled_world()
+    w.params["repetition_prob"] = 0.0
+    w.params["rework_prob"] = 1.0
+    order = CFG["stage_order"]
+    live_before = {cid: c.stage for cid, c in w.cases.items()
+                   if c.stage not in CFG["terminal_stages"]
+                   and order.index(c.stage) > 0}
+    assert live_before, "fixture needs a live case with a previous stage"
+
+    moved = step_mod._drift(w, CFG, random.Random(1), set())
+
+    for cid, stage in live_before.items():
+        assert cid in moved
+        assert w.cases[cid].stage == order[order.index(stage) - 1], (
+            "rework must step back exactly one stage")
+
+
+def test_repetition_and_rework_are_mutually_exclusive_on_the_same_case():
+    """Both probabilities at 1.0: repetition is checked first in _drift, so
+    it must win -- a case must never get both a duplicate entry AND a
+    backward step on the same day."""
+    w = _stalled_world()
+    w.params["repetition_prob"] = 1.0
+    w.params["rework_prob"] = 1.0
+    cid = next(cid for cid, c in w.cases.items()
+              if c.stage not in CFG["terminal_stages"])
+    before_stage = w.cases[cid].stage
+    before_n = len(w.cases[cid].events)
+
+    step_mod._drift(w, CFG, random.Random(1), set())
+
+    assert w.cases[cid].stage == before_stage
+    assert len(w.cases[cid].events) == before_n + 1
+
+
+def test_lower_repetition_prob_reduces_repetition_incidence():
+    def _incidence(rep_prob, trials=40):
+        hits = 0
+        for s in range(trials):
+            w = _stalled_world()
+            w.params["repetition_prob"] = rep_prob
+            w.params["rework_prob"] = 0.0
+            cid = next(cid for cid, c in w.cases.items()
+                      if c.stage not in CFG["terminal_stages"])
+            before_n = len(w.cases[cid].events)
+            step_mod._drift(w, CFG, random.Random(s), set())
+            if len(w.cases[cid].events) > before_n:
+                hits += 1
+        return hits
+
+    high = _incidence(0.9)
+    low = _incidence(0.05)
+    assert high > low, (
+        f"an approved intervention lowering repetition_prob must reduce "
+        f"incidence: high={high} low={low}")
+
+
+def test_lower_rework_prob_reduces_rework_incidence():
+    def _incidence(rework_prob, trials=40):
+        hits = 0
+        order = CFG["stage_order"]
+        for s in range(trials):
+            w = _stalled_world()
+            w.params["repetition_prob"] = 0.0
+            w.params["rework_prob"] = rework_prob
+            cid = next(cid for cid, c in w.cases.items()
+                      if c.stage not in CFG["terminal_stages"]
+                      and order.index(c.stage) > 0)
+            before_stage = w.cases[cid].stage
+            step_mod._drift(w, CFG, random.Random(s), set())
+            if w.cases[cid].stage != before_stage:
+                hits += 1
+        return hits
+
+    high = _incidence(0.9)
+    low = _incidence(0.05)
+    assert high > low, (
+        f"an approved intervention lowering rework_prob must reduce "
+        f"incidence: high={high} low={low}")

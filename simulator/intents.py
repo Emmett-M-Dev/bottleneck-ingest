@@ -1,7 +1,15 @@
 """What arrives in the SME's inbox on a given day.
 
 Generic: an intent knows whether it needs a live case and who tends to send it,
-never which SME it belongs to. Weights and personas come from the profile.
+never which SME it belongs to. Weights come from the profile (`cfg["intents"]`).
+
+CATALOGUE's `persona` field is descriptive metadata only — nothing in
+simulator/ reads it, so it is deliberately fixed here rather than sourced
+from a profile key: a persona label ("client contact", "subcontractor", ...)
+that nothing consumes is not a real per-SME knob, and giving it one would
+just move the same decoration into config without making it do anything
+(F3 review; simulator/profiles.py used to carry a dead `personas` list on
+exactly this premise — removed rather than wired, for the same reason).
 """
 
 from __future__ import annotations

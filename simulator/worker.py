@@ -53,6 +53,38 @@ def advance_case(world: WorldState, case, cfg: dict, rng: random.Random,
     return f"{case.cid}"
 
 
+def prev_stage(case, cfg: dict) -> str | None:
+    order = cfg["stage_order"]
+    try:
+        i = order.index(case.stage)
+    except ValueError:
+        return None
+    return order[i - 1] if i > 0 else None
+
+
+def repeat_stage(world: WorldState, case) -> None:
+    """A literal duplicate entry at the case's CURRENT stage — the
+    repetition pattern (done-twice data entry; `detection/dynamic.py`'s
+    `_repetition_stages`). Public — step.py's drift phase calls it when a
+    stalled case rolls into `repetition_prob`."""
+    case.add(case.stage, world.current_date, case.owner or "", _OPEN)
+
+
+def rework_case(world: WorldState, case, cfg: dict) -> bool:
+    """A genuine backward transition to the case's PREVIOUS stage — the
+    rework pattern (scope reopened; `detection/dynamic.py`'s
+    `_rework_stages`). Returns False for a case already at the first
+    stage — there is nothing to step back to, so this is a no-op, not a
+    failed roll (same "no-op is not applied" rule as `_effect`, F5). Public
+    — step.py's drift phase calls it when a stalled case rolls into
+    `rework_prob`."""
+    prev = prev_stage(case, cfg)
+    if prev is None:
+        return False
+    case.add(prev, world.current_date, case.owner or "", _OPEN)
+    return True
+
+
 def apply_message(world: WorldState, msg, rng: random.Random,
                   cfg: dict) -> str | None:
     """Type one message into the sheets. Returns a row ref, or None if the
@@ -97,18 +129,28 @@ def apply_message(world: WorldState, msg, rng: random.Random,
 
 def _effect(world: WorldState, case, finding_type: str, cfg: dict,
             rng: random.Random) -> bool:
+    """True means the case was genuinely changed; False covers both a failed
+    attempt and a no-op (the case already satisfied the finding). Collapsing
+    a no-op into True would credit an approval with a clearance it did not
+    cause — exactly the confound `tests/test_sim_e2e.py` exists to exclude
+    (F5). Deliberately returning False here rather than short-circuiting
+    BEFORE the caller's probability roll: that keeps this function's RNG
+    consumption identical to before the fix (zero added/removed draws),
+    which matters because the RNG stream position is load-bearing for
+    `test_sim_e2e.py`'s magnitude-margin assertion (see that module's
+    docstring on stream-position brittleness)."""
     if finding_type in ("stage_sla_breach", "stalled_case"):
         return advance_case(world, case, cfg, rng) is not None
     if finding_type == "unowned_case":
         if case.owner:
-            return True
+            return False    # no-op: already owned, nothing changed
         case.add(case.stage, world.current_date,
                  rng.choice(_people(world) or ["Unassigned"]), _OPEN)
         return True
     if finding_type == "unrealised_value":
         terminal = cfg["terminal_stages"][-1]
         if case.stage == terminal:
-            return True
+            return False    # no-op: already terminal, nothing changed
         case.add(terminal, world.current_date, case.owner or "", _DONE)
         return True
     if finding_type in ("overloaded_owner", "key_person_dependency"):
@@ -128,7 +170,33 @@ def apply_approved(world: WorldState, items, rng: random.Random,
     (machine-executable-template skip; process-intervention param shift) —
     but one record per entry in `affected_case_ids` for the wired per-case
     path, since each affected case gets its own independent probability
-    draw and its own outcome."""
+    draw and its own outcome.
+
+    Idempotent across repeated calls with the SAME still-`approved` item.
+    Nothing here writes back to the action store — `status` stays
+    `"approved"` for as long as the item is, and a multi-day `--advance`
+    (the documented default workflow, `simulator/cli.py`) calls this once
+    per day with that same list. Without a dedup check a case would be
+    re-advanced, or a process parameter re-shifted, once per day for every
+    day the item stayed approved (F1). The guard: a per-case effect whose
+    `(action_id, case_id)` already has outcome `"applied"` in
+    `world.intent["effects"]` is skipped outright — no new rng draw, no new
+    record; a process-intervention item whose `action_id` has already
+    shifted its parameter once is skipped the same way. A `"failed"` draw is
+    NOT remembered here, so a case/item that hasn't yet succeeded is retried
+    on a later day exactly as before — only a genuine success is
+    idempotent."""
+    done_case_effects = {
+        (e["action_id"], e["case_id"])
+        for e in world.intent.get("effects", [])
+        if e["outcome"] == "applied" and e["case_id"] is not None
+    }
+    done_process_items = {
+        e["action_id"]
+        for e in world.intent.get("effects", [])
+        if e["outcome"] == "applied" and e["case_id"] is None
+    }
+
     out: list[dict] = []
     for item in items:
         if item.status not in _ACTIONABLE_STATUSES:
@@ -150,22 +218,34 @@ def apply_approved(world: WorldState, items, rng: random.Random,
                      if item.action_category == "process_intervention"
                      else None)
             if delta is None:
-                outcome = "unwired"
+                out.append({"action_id": item.action_id,
+                            "finding_type": item.finding_type,
+                            "case_id": None, "outcome": "unwired"})
+            elif item.action_id in done_process_items:
+                # Already shifted this parameter once for this approved
+                # item — a process fix that landed does not land again
+                # every day it stays approved (F1).
+                continue
             elif rng.random() < cfg["process_effect_prob"][item.finding_type]:
                 floor = cfg["param_floor"]
                 for key, d in delta.items():
                     world.params[key] = max(floor, world.params.get(key, 0) + d)
-                outcome = "applied"
+                out.append({"action_id": item.action_id,
+                            "finding_type": item.finding_type,
+                            "case_id": None, "outcome": "applied"})
             else:
-                # Draw failed: the parameter must not move.
-                outcome = "failed"
-            out.append({"action_id": item.action_id,
-                        "finding_type": item.finding_type,
-                        "case_id": None, "outcome": outcome})
+                # Draw failed: the parameter must not move. Not remembered,
+                # so a later day retries it.
+                out.append({"action_id": item.action_id,
+                            "finding_type": item.finding_type,
+                            "case_id": None, "outcome": "failed"})
             continue
 
         p = cfg["effect_prob"][item.finding_type]
         for cid in item.affected_case_ids:
+            if (item.action_id, cid) in done_case_effects:
+                # Already applied for this case under this approval (F1).
+                continue
             case = world.cases.get(cid)
             if case is None:
                 continue

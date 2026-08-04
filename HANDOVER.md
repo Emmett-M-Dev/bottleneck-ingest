@@ -260,6 +260,20 @@ State lives in `data/sim/advisory/`: `state.json` (world + day + params),
 `drive/` (what the product ingests), `inbox.jsonl` (every message), `cache/`
 (LLM fills). Delete the directory to start over.
 
+> ⚠️ **`outputs/event_log.parquet` is ONE global file (gotcha 11 below) — the
+> ingest command above OVERWRITES it with simulated data.** Every advisory
+> figure cited in `CLAUDE.md` §7 (mapping F1, detection F1, the replay curves)
+> was derived from the static `data/synthetic/messy_advisory/` drive, not from
+> the simulator. Ingesting a sim drive and then re-running an eval script
+> without re-ingesting first silently re-derives those numbers from simulated
+> data with nothing on disk marking that as unusual (the two are still
+> distinguishable after the fact — the owner stamp records the drive path,
+> `advisory@data/sim/advisory/drive` vs. plain `advisory` — but nothing stops
+> a script from reading whichever one happens to be on disk). **Before
+> re-running any evaluation, re-ingest the static drive:**
+>
+>     .venv/Scripts/python.exe ingest.py --source messy --profile advisory
+
 ## 8. Gotchas & constraints (read before touching)
 
 1. **No `temperature` / sampling params on Opus 4.8** — 400 error. Determinism comes from schema + closed vocab. Model id `claude-opus-4-8`.
@@ -277,7 +291,7 @@ State lives in `data/sim/advisory/`: `state.json` (world + day + params),
 13. **Vite binds to IPv6.** `curl http://127.0.0.1:5173` fails; `http://localhost:5173` works. Only matters when smoke-testing from a shell.
 14. **Never leave two uvicorn instances on port 8000.** Uvicorn sets `SO_REUSEADDR`, so a second instance binds happily and Windows hands each connection to *either* one — so half the requests get served by whichever build that instance is running. The symptom is maddening: the dashboard shows correct data, then stale data, with no pattern. Check with `netstat -ano | Select-String ":8000\s+.*LISTENING"` and expect exactly one PID. A `--reload` parent killed from a wrapper can leave its worker alive, so kill by command line: `Get-CimInstance Win32_Process -Filter "Name='python.exe'" | Where-Object { $_.CommandLine -match 'uvicorn|multiprocessing-fork' } | Stop-Process -Force`.
 15. **A profile switch re-ingests, and that takes minutes.** The API's subprocess timeout is 900s for ingest-shaped work (`_TIMEOUT_INGEST`) and 180s for everything else; a timeout now returns a 504 with the command in it rather than dropping the connection. The dashboard clears the previous SME's queue on switch and says it is analysing — it must never render a queue whose `profile` differs from the one requested.
-16. **`actions/build.py::_structural_items` joins diagnosis prose onto findings by `bn.id`, which `detection/dynamic.py` assigns by RANK ORDER, not content.** It only lines up correctly because no reseed so far has reordered the three structural pattern types (delay/repetition/rework stayed BN001/BN002/BN003 for both foyle and joinery through the 2026-08-01 reseed). A future reseed that *does* reorder them would silently mis-attribute one bottleneck's diagnosis text to another — confirmed as a live risk, not a hypothetical, when a stale `ui_cases_<profile>.json` cache was caught doing exactly this position-keyed join during the action-queue rebuild. Fix = key the join on a content hash of `(type, stage, metric_label)` instead of `bn.id`; not done — tracked in `TASKLIST.md`.
+16. **FIXED — `actions/build.py::_structural_items` used to join diagnosis prose onto findings by `bn.id`, which `detection/dynamic.py` assigns by RANK ORDER, not content.** It only lined up correctly because no reseed so far had reordered the three structural pattern types (delay/repetition/rework stayed BN001/BN002/BN003 for both foyle and joinery through the 2026-08-01 reseed). A future reseed that *did* reorder them would have silently mis-attributed one bottleneck's diagnosis text to another — confirmed as a live risk, not a hypothetical, when a stale `ui_cases_<profile>.json` cache was caught doing exactly this position-keyed join during the action-queue rebuild. Fixed in `1167a6e` ("Key diagnosis prose to findings by content, not rank order"): `detection/detect.py::finding_key(bn)` returns a content-based key `f"{bn.type}::{stage}::{bn.metric_label}"`, stable across two analyses of different data (unlike `bn.id`), and the join in `actions/build.py` plus both exporters now key on it instead of `bn.id`.
 17. **`DIAGNOSE_OFFLINE` only reaches `bridge.export_messy`; `bridge.export_actions` never reads it and has no live-diagnosis path of its own.** The structural (delay/repetition/rework) items in an action queue get their diagnosis prose entirely from whichever `outputs/ui_cases_<profile>.json` cache already exists on disk — real LLM prose if that cache was last populated by an *online* `export_messy` run, template prose if it wasn't — regardless of how `export_actions` itself is invoked. Setting `DIAGNOSE_OFFLINE=1` before running `export_actions` has zero effect on it; if the queue needs to be guaranteed template-only, `export_messy --offline` (or with `DIAGNOSE_OFFLINE=1`) must be re-run first to refresh that cache.
 
 ## 9. What's next (candidates, none blocking)

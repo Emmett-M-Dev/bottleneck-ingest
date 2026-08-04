@@ -63,10 +63,16 @@ ADVISORY: dict = {
     "process_effect_prob": {"delay": 0.60, "repetition": 0.50, "rework": 0.50},
     "param_floor": 0.02,
 
-    "personas": [
-        {"id": "client", "label": "client contact"},
-        {"id": "prospect", "label": "new enquiry"},
-        {"id": "supplier", "label": "subcontractor"},
+    # How compose.py describes the SME to the LLM when filling message slots
+    # (simulator/compose.py's prompt). Engine code must never name a
+    # business type itself.
+    "business_description": "a small consultancy",
+
+    # Deterministic (non-LLM) filler for a message's "what this is about"
+    # slot — and the fallback whenever the LLM path is off/unavailable.
+    "fallback_details": [
+        "the March intake", "the reporting pack", "next quarter's phasing",
+        "the site visit dates", "the draft findings", "the onboarding pack",
     ],
 
     # Which intents can fire, and their relative weights.

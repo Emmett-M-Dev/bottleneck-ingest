@@ -172,19 +172,19 @@ Work through these **top to bottom**. Do not skip ahead. Mark [x] as you go.
   Code comments in `hitl-react/api/main.py` and some bridge files say the opposite.
   Do a search-and-replace pass when touching those files.
 
-- [ ] **Latent bug: structural diagnosis join keys on rank order, not content.**
-  `actions/build.py::_structural_items` joins diagnosis prose onto detected
+- [x] **FIXED — structural diagnosis join used to key on rank order, not content.**
+  `actions/build.py::_structural_items` joined diagnosis prose onto detected
   bottlenecks by `bn.id`, and `detection/dynamic.py` assigns `id` purely by
-  rank order (`f"BN{i:03d}"`). It has only ever lined up by luck — confirmed
+  rank order (`f"BN{i:03d}"`). It had only ever lined up by luck — confirmed
   during the 2026-08-01 action-queue rebuild, when a stale `ui_cases_<profile>.json`
   cache (predating the foyle/joinery reseed) happened to still match because
   the reseed didn't reorder the three structural types. A future reseed that
-  *does* reorder delay/repetition/rework would silently mis-attribute one
-  bottleneck's diagnosis text to another, with no error raised. Fix = key the
-  join on a content hash of `(type, stage, metric_label)` instead of `bn.id`.
-  Not fixed by the eval-debt plan (out of its "no `.py` changes" scope) —
-  carried here as a known hazard for whoever next touches `actions/build.py`.
-  See HANDOVER.md §8 gotcha 16.
+  *did* reorder delay/repetition/rework would have silently mis-attributed one
+  bottleneck's diagnosis text to another, with no error raised. Fixed in
+  `1167a6e` ("Key diagnosis prose to findings by content, not rank order"):
+  `detection/detect.py::finding_key(bn)` returns a content hash of
+  `(type, stage, metric_label)`, and the join in `actions/build.py` plus both
+  exporters now key on it instead of `bn.id`. See HANDOVER.md §8 gotcha 16.
 
 ### 🟡 Priority 2 — Write-up artefacts (before report submission)
 
@@ -249,5 +249,5 @@ Work through these **top to bottom**. Do not skip ahead. Mark [x] as you go.
 11. **Dashboard-triggered exports attempt one Claude diagnosis call per bottleneck** (~30–90 s per export) plus one local Ollama anomaly call. Set `DIAGNOSE_OFFLINE=1` in the hitl-react API server env (or pass `--offline`) to force templates + skip the anomaly pass without code changes.
 12. **Ollama is optional** — no local model = anomaly pass silently absent, nothing breaks. For the demo: install Ollama for Windows + `ollama pull qwen2.5:7b`. **RAM:** 7b needs ~6 GB free to load; on Emmett's 8 GB laptop it fails (`unable to allocate CPU_REPACK buffer`). This machine runs `qwen2.5:1.5b` instead — set `OLLAMA_MODEL=qwen2.5:1.5b` in the hitl-react API server env (and any CLI shell running a live export). Code default stays 7b (the dissertation claim); the env knob is the per-machine override. Verified working end-to-end on 1.5b (produces 3 anomaly findings on foyle).
 13. **`sme_resolutions` now also holds learned entries** (`RES-LRN-…`, source="learned", from `data/learned/`). `pipeline.embed_resolutions --reset` wipes them from the collection — re-run `python -m pipeline.learn`'s embed (or re-approve) after a reset, or just re-run `python -c "from pipeline.learn import embed_learned; embed_learned('<p>')"`.
-14. **`actions/build.py::_structural_items` joins diagnosis prose by `bn.id`, a rank-order id, not a content key** — a future reseed that reorders the structural pattern types would silently mis-attribute diagnosis text between bottlenecks. Not a hypothetical: this is exactly what a stale `ui_cases_<profile>.json` cache was found doing (correctly, by luck) after the 2026-08-01 foyle/joinery reseed. See TASKLIST Priority 1 and HANDOVER.md §8 gotcha 16.
+14. **FIXED — `actions/build.py::_structural_items` used to join diagnosis prose by `bn.id`, a rank-order id, not a content key.** A future reseed that reordered the structural pattern types would have silently mis-attributed diagnosis text between bottlenecks — not a hypothetical: this is exactly what a stale `ui_cases_<profile>.json` cache was found doing (correctly, by luck) after the 2026-08-01 foyle/joinery reseed. Fixed in `1167a6e`: the join now keys on `detection/detect.py::finding_key(bn)`, a content hash of `(type, stage, metric_label)`. See TASKLIST Priority 1 and HANDOVER.md §8 gotcha 16.
 15. **`DIAGNOSE_OFFLINE` does not protect every export** — only `bridge/export_messy.py` reads it. `bridge/export_actions.py` has no live-diagnosis path at all; its structural items' diagnosis text comes entirely from whatever `outputs/ui_cases_<profile>.json` cache is already on disk. Setting the env var before running `export_actions` alone does nothing — refresh the cache with `export_messy --offline` (or `DIAGNOSE_OFFLINE=1`) first if template-only text is required.

@@ -47,10 +47,10 @@ TEMPLATES: dict[str, dict[str, str]] = {
     },
 }
 
-_FALLBACK_DETAIL = [
-    "the March intake", "the reporting pack", "next quarter's phasing",
-    "the site visit dates", "the draft findings", "the onboarding pack",
-]
+# Sender names are generic across business types (unlike "detail" or the
+# business description), so they stay here rather than in the profile —
+# simulator/profiles.py's own rule is stages/people/clients, not every name
+# that could plausibly sign an email.
 _FALLBACK_SENDER = ["R. Hughes", "M. Doherty", "S. Cassidy", "P. Neill",
                     "A. Lynch", "T. Bradley"]
 
@@ -72,10 +72,11 @@ class Message:
         return asdict(self)
 
 
-def _fallback_slots(case, rng: random.Random) -> dict[str, str]:
+def _fallback_slots(case, rng: random.Random,
+                    fallback_details: list[str]) -> dict[str, str]:
     value = getattr(case, "value", 0) or 0
     return {
-        "detail": rng.choice(_FALLBACK_DETAIL),
+        "detail": rng.choice(fallback_details),
         "sender": rng.choice(_FALLBACK_SENDER),
         "figure": f"£{int(value):,}" if value else "£8,000",
     }
@@ -85,7 +86,8 @@ def _cache_path(cache_dir: Path, seed: int, day: int, msg_id: str) -> Path:
     return Path(cache_dir) / f"{seed}-{day}-{msg_id}.json"
 
 
-def _llm_slots(intent_id: str, case, model: str) -> dict[str, str] | None:
+def _llm_slots(intent_id: str, case, model: str,
+               business_description: str) -> dict[str, str] | None:
     """Ask Claude for slot values. Returns None on any failure — the caller
     falls back, so a missing key or a flaky network degrades the prose, never
     the run."""
@@ -96,7 +98,7 @@ def _llm_slots(intent_id: str, case, model: str) -> dict[str, str] | None:
         client = anthropic.Anthropic()
         prompt = (
             "You are writing ONE short, plain business email from a client to "
-            "a small consultancy. Reply with JSON only, keys exactly: "
+            f"{business_description}. Reply with JSON only, keys exactly: "
             "detail, sender, figure. 'detail' is a short noun phrase (max 8 "
             "words) about the work. 'sender' is a plausible name. 'figure' is "
             f"a money amount with a pound sign. The email intent is "
@@ -113,19 +115,25 @@ def _llm_slots(intent_id: str, case, model: str) -> dict[str, str] | None:
 
 
 def compose(intent, *, day: int, seq: int, case, rng: random.Random,
-            cache_dir, use_llm: bool, seed: int = 0,
+            cache_dir, use_llm: bool, cfg: dict, seed: int = 0,
             model: str | None = None, start_date=None) -> Message:
+    """`cfg` is the profile block (simulator/profiles.py) — REQUIRED, not
+    defaulted, so this module can never fall back to naming a business type
+    itself (CLAUDE.md §3: onboarding an SME must be a config block, not an
+    engine-code edit). Reads `cfg["business_description"]` and
+    `cfg["fallback_details"]`."""
     import config
 
     msg_id = f"M{day:03d}-{seq:02d}"
     cache = _cache_path(cache_dir, seed, day, msg_id)
 
-    slots = _fallback_slots(case, rng)
+    slots = _fallback_slots(case, rng, cfg["fallback_details"])
     if cache.exists():
         slots.update(json.loads(cache.read_text(encoding="utf-8")))
     elif use_llm:
         got = _llm_slots(intent.id, case,
-                         model or config.DIAGNOSE_MODEL_DEFAULT)
+                         model or config.DIAGNOSE_MODEL_DEFAULT,
+                         cfg["business_description"])
         if got:
             slots.update(got)
             cache.parent.mkdir(parents=True, exist_ok=True)

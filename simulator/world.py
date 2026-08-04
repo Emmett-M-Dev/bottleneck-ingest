@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import importlib
 import random
+import re
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
@@ -21,6 +22,17 @@ def canon_stage(label: str, stage_order: list[str]) -> str:
     Unknown labels pass through unchanged rather than being dropped."""
     lookup = {s.strip().lower(): s for s in stage_order}
     return lookup.get(str(label).strip().lower(), str(label).strip())
+
+
+def _next_case_num(case_ids) -> int:
+    """The next case number, derived from the imported cases' own trailing
+    digits rather than a literal per-SME starting constant (CLAUDE.md §3:
+    onboarding an SME must be a config block, never an engine-code edit —
+    a profile whose ids number from a different start, e.g. joinery from
+    2001, must not collide with advisory's 1041)."""
+    nums = [int(m.group(1)) for cid in case_ids
+            for m in [re.search(r"(\d+)$", str(cid))] if m]
+    return (max(nums) + 1) if nums else 1
 
 
 @dataclass
@@ -150,7 +162,7 @@ def day0_from_generator(profile: str) -> WorldState:
     return WorldState(
         profile=profile, seed=mod.SEED, day=0, start_date=mod.AS_OF,
         cases=cases, params=dict(cfg["params"]),
-        next_case_num=1041 + len(engagements),
+        next_case_num=_next_case_num(cases),
         intent={"stage_order": list(order), "structural": structural,
                 "operational": operational, "arrivals": {}, "effects": []},
     )
