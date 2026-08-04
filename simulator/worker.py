@@ -185,7 +185,58 @@ def apply_approved(world: WorldState, items, rng: random.Random,
     shifted its parameter once is skipped the same way. A `"failed"` draw is
     NOT remembered here, so a case/item that hasn't yet succeeded is retried
     on a later day exactly as before — only a genuine success is
-    idempotent."""
+    idempotent.
+
+    Two semantics here are surprising enough to be worth spelling out
+    explicitly, rather than leaving a future reader to discover them by
+    reading the RNG stream:
+
+    (a) THE DEDUP GUARD IS KEYED ON action_id, WHICH IS PER-FINDING, NOT
+    PER-APPROVAL. `action_id = make_action_id(profile, finding_key)`
+    (`actions/models.py`) is `sha1(profile|finding_key)` — deterministic
+    from the finding's identity alone, not from which particular approval
+    produced it. And the guard reads `world.intent["effects"]`, which is
+    never pruned or reset — it is the forever-lived history of every effect
+    this world has ever recorded. So the real semantics are "apply this
+    finding's effect once for the lifetime of the world", not "once per
+    approval". Concretely: a recurring finding that gets approved → worked
+    → validated → later re-detected (same finding_key, so the same
+    action_id) → re-approved will NEVER take effect again — the dedup guard
+    silently treats the second approval as already-satisfied. Measured: after
+    one process intervention succeeded, 30 further re-approvals of the same
+    action_id produced zero new effect records and zero further parameter
+    movement (`tests/test_sim_worker.py::test_repeated_process_intervention_calls_shift_the_param_only_once`
+    exercises this shape, though at a smaller N). This is a real limitation,
+    not a bug being fixed here: the error direction is conservative — it
+    makes the product look LESS responsive to a repeat approval than it
+    would be, never more — so it is acceptable to carry forward, but a
+    future change that wants "act again on a re-approval" must key the dedup
+    on something that changes per approval (e.g. the intervention_id or an
+    approval timestamp), not on action_id alone.
+
+    (b) A NO-OP EFFECT REPORTS "failed" AND IS DELIBERATELY NOT DEDUPED, SO
+    IT RE-ROLLS EVERY DAY IT STAYS APPROVED. `_effect`'s no-op branches
+    (`unowned_case` on a case that already has an owner; `unrealised_value`
+    on a case already at the terminal stage) return `False`, which this
+    function folds into `outcome: "failed"` alongside genuine failed rolls
+    (see `_effect`'s own docstring, F5) — and `"failed"` is exactly the
+    outcome this guard does NOT remember, by design, so a genuinely-failed
+    roll gets retried later. A permanent no-op gets the same treatment: it
+    re-rolls and re-records "failed" every single day, forever, because
+    nothing about the case ever changes to make the finding stop matching.
+    Measured: 25 already-owned cases approved for `unowned_case` over a
+    20-day `--advance` produced 500 effect records (25 × 20), every one a
+    "failed" no-op — not because anything failed to roll, but because the
+    case was already owned before the first day. That inflates
+    `world.intent["effects"]` (and therefore `state.json`) with records
+    that look like failed attempts, and would badly misrepresent the
+    worker's success rate to anyone computing one from this log by counting
+    `applied / (applied + failed)` — the denominator grows daily for a
+    case that was never actionable in the first place. Not fixed here
+    (would require distinguishing "no-op" from "failed" in the outcome
+    vocabulary, which F5's fix explicitly declined to do to protect the RNG
+    stream — see `_effect`'s docstring); flagged so nobody mistakes the
+    effects log for the worker's real hit rate without accounting for it."""
     done_case_effects = {
         (e["action_id"], e["case_id"])
         for e in world.intent.get("effects", [])

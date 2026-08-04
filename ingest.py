@@ -273,7 +273,10 @@ def run(source: str, profile: str | None = None, mapping_path=None,
     reset_collection()  # rebuild the vector store from scratch for this source
     n_chunks = embed_chunks(chunk_records(records))
     n_events = _write_event_log(records)
-    _write_event_log_owner(source, profile, drive)
+    # Only `--source messy` actually reads `drive` (via `_read_messy` above) —
+    # for every other source it's an unused CLI argument, so it must not leak
+    # into the owner stamp as if the data underneath it came from that path.
+    _write_event_log_owner(source, profile, drive if source == "messy" else None)
 
     print()
     for line in summaries:

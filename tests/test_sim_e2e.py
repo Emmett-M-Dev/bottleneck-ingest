@@ -54,33 +54,47 @@ inspection, and are fixed here rather than transcribed:
    affected cases when approved than the untouched world clears on its own
    -- but IMPORTANT: the untouched world is not inert here either, and this
    module used to claim it was (wrongly). THREE organic channels clear
-   `unrealised_value` cases with zero approval (fix-round-2 review
-   instrumented the control arm over 150 trials: 156 clearances were
+   `unrealised_value` cases with zero approval. These counts were
+   RE-MEASURED after the simulator's drift phase gained structural
+   repetition/rework (`simulator/step.py::_drift`, F6 in the final-fix-wave
+   review -- a stalled case now always consumes two extra rng draws for a
+   repetition/rework roll before the day's remaining draws happen, which
+   shifts the exact realisation every later roll in the same day sees, even
+   though none of the three channels below changed mechanically). Control
+   arm instrumented over 150 trials post-change: 165 clearances were
    observed in total -- more than one channel can fire within a single
-   trial, which is why 156 > 150 -- attributed as drift 114, `payment_made`
-   29, `progress_update` 13. The third was missing from an earlier draft of
-   this docstring, which claimed only two; a later draft divided each count
-   by the 150-trial figure instead of the 156-clearance figure and
-   overcounted to 104% -- fixed here by stating the raw counts above rather
-   than a derived share, since raw counts (with the trial count alongside)
-   cannot drift out of sync with each other the way a percentage can):
+   trial, which is why 165 > 150 -- attributed as drift 119, `payment_made`
+   38, `progress_update` 8 (measured with a standalone scratchpad harness,
+   `measure_sim_e2e.py`, NOT committed to the repo, built for this
+   re-measurement: `mode_channels` reruns the exact `_frame`/`_affected`
+   helpers below against `simulator.step.advance`, attributing each cleared
+   case to whichever applied message touched it that day, else drift; see
+   task-10-report.md for the original methodology this reproduces). No
+   fourth channel appeared in
+   this sample -- expected, since repetition/rework can never reach a
+   terminal stage (`_repetition_stages`/`_rework_stages` only ever re-enter
+   or step back one stage), so it cannot itself become a new route to
+   clearing `unrealised_value`; this was checked for explicitly, not
+   assumed, and would be called out here prominently if it had appeared:
 
      (a) `_drift` can walk a case straight through `Invoice -> Paid` in one
          step when it is already sitting at `Invoice` (two of this world's
          16 affected cases -- `NA-1061`, `NA-1062` -- start exactly there).
          A single day's drift clears such a case with probability
-         `1 - world.params["stall_prob.Invoice"]` = 0.45. The dominant
-         channel (114 of the 156 clearances).
+         `1 - world.params["stall_prob.Invoice"]` = 0.45 -- a parameter
+         fact, unaffected by the drift change, since a single `rng.random()`
+         draw is uniform regardless of how many draws preceded it. The
+         dominant channel (119 of the 165 clearances).
      (b) `worker.py::apply_message`'s `payment_made` branch performs the
          BYTE-FOR-BYTE IDENTICAL event append as the approved effect
          (`case.add(terminal, world.current_date, case.owner or "", "done")`)
          -- a client can simply report paying, with no action approved at
-         all (29 of the 156).
+         all (38 of the 165).
      (c) `worker.py::apply_message`'s `progress_update` branch
          (`simulator/worker.py:76`) calls the same `advance_case` that
          drift uses -- so an ordinary "please move this on" message on a
          case already sitting at `Invoice` also walks it straight to
-         `Paid`, again with zero approval (13 of the 156, the smallest of
+         `Paid`, again with zero approval (8 of the 165, the smallest of
          the three but not negligible).
 
    This makes the corrected claim STRONGER, not weaker: the untouched world
@@ -110,13 +124,19 @@ inspection, and are fixed here rather than transcribed:
 
 The real (non-sampled) run below uses this world's actual, fixed generator
 seed -- deterministic, not chosen for a favourable outcome -- for exactly one
-day: `before=16`, untouched-arm `after=16` (0 cleared), approved-arm
-`after=8` (8 cleared, all 8 of them cases the worker itself recorded as
-`outcome == "applied"`). That specific untouched-arm zero is itself one
-sample from the distribution described above, not a structural guarantee --
-which is exactly why the assertions below compare magnitudes and tie the
-reduction to the worker's own effect records, rather than asserting the
-untouched arm stays exactly static.
+day. RE-MEASURED post-F6 (repetition/rework in `_drift` shifts the rng
+stream position from what the untouched/approved arms previously saw, per
+the note above): `before=16`, untouched-arm `after=15` (1 cleared -- via one
+of the three organic channels above, not zero as the pre-F6 run happened to
+land on), approved-arm `after=7` (9 cleared, of which 8 are cases the
+worker itself recorded as `outcome == "applied"` -- the 9th cleared via an
+organic channel within the SAME day, on top of the approved effect, which is
+exactly why the test below asserts `applied <= (before - after)`, a subset,
+rather than equality). Both untouched-arm figures (the old 0 and the new 1)
+are single samples from the distribution described above, not a structural
+guarantee -- which is exactly why the assertions below compare magnitudes
+and tie the reduction to the worker's own effect records, rather than
+asserting the untouched arm stays exactly static.
 """
 
 from __future__ import annotations
@@ -147,6 +167,35 @@ FINDING_TYPE = "unrealised_value"
 #     margin 3 -> fails  2/300 (0.7%)
 #     margin 4 -> fails  5/300 (1.7%)   <- shipped
 #     margin 5 -> fails 18/300 (6.0%)
+#
+# RE-MEASURED for the closeout review, on BOTH the pre-change tree (commit
+# 292aac4, before F6 added repetition/rework to `_drift`) and the current
+# post-change tree, 300 paired trials each, same pairing methodology as
+# above (a per-trial-labelled `WorldState.rng_for_day`, both arms of a trial
+# sharing that trial's stream so the comparison stays apples-to-apples).
+# Own independently-run sample (standalone scratchpad harness,
+# `measure_sim_e2e.py`, not committed -- `python measure_sim_e2e.py <repo>
+# paired 300`):
+#
+#   pre-change   control mean 1.18  approved mean 8.51  gap mean 7.33
+#                margin 4 -> fails 13/300 (4.3%)
+#   post-change  control mean 1.15  approved mean 8.54  gap mean 7.39
+#                margin 4 -> fails  5/300 (1.7%)
+#
+# MAGNITUDE_MARGIN = 4 holds on both trees: both failure rates stay in the
+# low single digits, both gap means sit comfortably above the margin
+# (~7.3-7.4 vs a threshold of 4), and the qualitative shape from the
+# original 300-trial sample above is intact. The two failure counts are not
+# identical (13 vs 5) -- that is real sampling noise, not a sign the margin
+# is unsafe on one tree and not the other: at a base rate in the low single
+# digits, 300 Bernoulli-ish paired trials have real run-to-run variance
+# (a fail-count difference this size is within roughly 2-3 standard
+# deviations of a shared ~3% true rate, given the trial-to-trial
+# correlation this statistic actually has). Stated plainly rather than
+# rounded together: the drift-behaviour change (F6) did not break the
+# margin, but it also did not leave the tail behaviour byte-identical --
+# the honest read is "the margin survived unchanged as a design decision,
+# with normal sampling variance in exactly how much headroom it has."
 #
 # 4 was kept, not raised to 5: the failure rate roughly quadruples between 4
 # and 5, so 4 is the better-supported point on this curve, not a threshold
@@ -291,7 +340,9 @@ def test_the_rendered_drive_is_ingestable_by_the_product(tmp_path):
     assert events, "the simulated drive must read through the approved mapping"
     # Not just "some events came through" -- every case in the simulated
     # world must round-trip through the approved mapping with none dropped
-    # and none fabricated (measured: 186 events, 27/27 cases, exact match).
+    # and none fabricated (measured post-F6: 190 events -- up from the
+    # pre-F6 186, since repetition/rework append extra event rows to
+    # stalled cases -- 27/27 cases, exact match).
     ingested_case_ids = {e["case_id"] for e in events}
     assert ingested_case_ids == set(world.cases), (
         "the rendered drive must be ingestable for every case the "
