@@ -441,13 +441,30 @@ ingest path.
   evidence, owner/due-date, progress + outcome-review controls, "what was sent
   to the AI"), Mapping Review (Gate 1), pipeline stepper, workflow DAG,
   Bottlenecks, Fixes + remediation diff, SME switch, payload modal.
-- Tests green: **202 passed** (`pytest -q`).
+- Tests green: **284 passed** (`pytest -q`).
+- **World simulator shipped (P1)** — `simulator/`: a per-SME world that advances
+  a day at a time, renders the messy drive the product ingests through its
+  existing `--drive` flag, and — the point — lets **approved ActionItems change
+  what happens next**, so a finding's affected-case count can finally fall.
+  Advisory wired; the product is unchanged and unaware. Spec and plan in
+  `docs/superpowers/`. P2 (eval rewire) and P3 (dashboard demo) not started.
 - Dissertation Word draft exists (`Murray_B00810618_Dissertation_Draft.docx`) — Sections 1–4 written, later phases scaffolded. **Sections describing detection/eval need updating for the dynamic detector, the action layer, and the reseeded/replay numbers above.**
 
+**Fixed (was "a known, unfixed hazard"):** diagnosis prose is no longer joined
+to findings by `bn.id`. `detection/detect.py::finding_key` derives a stable
+content key (`type::stage::metric_label`); `actions/build.py` joins on it and
+falls back to the positional id only for a wholly legacy export, and both
+exporters emit it. `DetectedBottleneck.id` and `CaseFinding.id` are assigned by
+**rank order** and must never be used as a join key across two analyses.
+
 **On the horizon:** Phase 2–5 build reports; supervisor sign-off on the
-consented Foyle export. A known, unfixed hazard carried into the write-up:
-`actions/build.py::_structural_items` joins diagnosis prose onto findings by
-`bn.id`, which `detection/dynamic.py` assigns by rank order rather than
-content — a future reseed that reorders the three structural pattern types
-would silently mis-attribute diagnosis text (see HANDOVER.md §8, TASKLIST.md).
-[YOU] install Ollama + `ollama pull qwen2.5:7b` for the anomaly-pass demo.
+consented Foyle export.
+
+**Documentation debt, deliberately not yet done** (needs a write-up pass, not a
+code pass): Ollama was trialled in development and removed on resource grounds,
+so §4, §6, §6a and §9 still describe an anomaly pass and a local-inference
+privacy control the artifact no longer has — §9 must go from two implemented
+controls to one. §7's replay curves predate the simulator. And the
+"SME #2 is a config block and zero engine code" claim is **not yet fully true
+for `simulator/`**: `simulator/render.py` still hard-codes advisory filenames
+and generator method names. Do not overclaim it.
