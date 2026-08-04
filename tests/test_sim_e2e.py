@@ -55,28 +55,33 @@ inspection, and are fixed here rather than transcribed:
    -- but IMPORTANT: the untouched world is not inert here either, and this
    module used to claim it was (wrongly). THREE organic channels clear
    `unrealised_value` cases with zero approval (fix-round-2 review
-   instrumented the control arm over 150 trials and attributed every
-   clearance to one of them: drift 114, `payment_made` 29,
-   `progress_update` 13 -- the third was missing from an earlier draft of
-   this docstring, which claimed only two):
+   instrumented the control arm over 150 trials: 156 clearances were
+   observed in total -- more than one channel can fire within a single
+   trial, which is why 156 > 150 -- attributed as drift 114, `payment_made`
+   29, `progress_update` 13. The third was missing from an earlier draft of
+   this docstring, which claimed only two; a later draft divided each count
+   by the 150-trial figure instead of the 156-clearance figure and
+   overcounted to 104% -- fixed here by stating the raw counts above rather
+   than a derived share, since raw counts (with the trial count alongside)
+   cannot drift out of sync with each other the way a percentage can):
 
      (a) `_drift` can walk a case straight through `Invoice -> Paid` in one
          step when it is already sitting at `Invoice` (two of this world's
          16 affected cases -- `NA-1061`, `NA-1062` -- start exactly there).
          A single day's drift clears such a case with probability
-         `1 - stall_prob["stall_prob.Invoice"]` = 0.45. The dominant channel
-         (114/150 = 76% of measured control-arm clearances).
+         `1 - world.params["stall_prob.Invoice"]` = 0.45. The dominant
+         channel (114 of the 156 clearances).
      (b) `worker.py::apply_message`'s `payment_made` branch performs the
          BYTE-FOR-BYTE IDENTICAL event append as the approved effect
          (`case.add(terminal, world.current_date, case.owner or "", "done")`)
          -- a client can simply report paying, with no action approved at
-         all (29/150 = 19%).
+         all (29 of the 156).
      (c) `worker.py::apply_message`'s `progress_update` branch
          (`simulator/worker.py:76`) calls the same `advance_case` that
          drift uses -- so an ordinary "please move this on" message on a
          case already sitting at `Invoice` also walks it straight to
-         `Paid`, again with zero approval (13/150 = 9%, the smallest of the
-         three but not negligible).
+         `Paid`, again with zero approval (13 of the 156, the smallest of
+         the three but not negligible).
 
    This makes the corrected claim STRONGER, not weaker: the untouched world
    has three independent, unrelated routes to clearing these cases, and the
@@ -92,8 +97,11 @@ inspection, and are fixed here rather than transcribed:
    in that sample; fix-round-1 review's own independent, larger sample:
    mean 0.72, up to 4), while the approved arm clears far more (mean ~9,
    never fewer than 5 in that sample; review's sample: mean 8.38, never
-   fewer than 1) -- and the approved arm beat the control arm in every
-   single paired trial taken, in both samples. `key_person_dependency` was
+   fewer than 1) -- and the approved arm beat the control arm in 60/60
+   paired trials in the local sample, and 119/120 in review's larger one at
+   this same one-day window (the exact outcome of that one trial was not
+   reported back; review also reports 120/120 once the window is extended
+   to day 3). `key_person_dependency` was
    also considered and rejected as a MAIN-test candidate: its finding is
    monotonically non-decreasing under this world regardless of approval,
    because `affected_cases` accumulates historical events at a stage and the
