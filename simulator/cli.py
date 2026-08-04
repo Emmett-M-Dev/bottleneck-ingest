@@ -108,8 +108,13 @@ def main(argv=None) -> None:
         result = advance(world, approved, drive_dir=paths["drive"],
                          cache_dir=paths["cache"], use_llm=args.llm)
         append_inbox(args.profile, result.messages)
+        # Commit per day, matching step.py's own invariant ("the day is the
+        # unit of truth"): if the process is killed mid-batch, state.json
+        # must never lag behind an already-written inbox/drive for a day
+        # that fully completed, or a resume would replay that day and
+        # append duplicate (but well-formed) msg_id lines.
+        save_world(world)
         days.append(result.to_dict())
-    save_world(world)
 
     print(json.dumps({"profile": args.profile, "day": world.day,
                       "date": world.current_date.date().isoformat(),
