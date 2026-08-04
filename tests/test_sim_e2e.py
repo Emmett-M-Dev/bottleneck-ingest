@@ -4,8 +4,8 @@ Before the simulator, the world was a fixed recording: an approved fix could
 never change what the NEXT analysis saw, so a finding's affected-case count
 could only ever grow, and `actions/outcome.py::compare` could never observe an
 improvement. This module proves the arrow now exists: an approved action
-measurably reduces what the product reports at a later day, and doing nothing
-does not.
+measurably reduces what the product reports at a later day, by more than the
+untouched world reduces it on its own.
 
 Two things in the original task brief for this test turned out to be wrong on
 inspection, and are fixed here rather than transcribed:
@@ -30,6 +30,10 @@ inspection, and are fixed here rather than transcribed:
    reached a terminal/revenue stage stop being recognised as finished. `_frame`
    below reproduces the real ingest casing convention exactly, not just the
    column name, so the case rules see what the product actually hands them.
+   (Fix-round-1 review compared `_frame`'s output against the real
+   `read_mapped` -> `load_event_log` path directly and found identical
+   affected-case sets for all six finding types -- this fidelity is now
+   independently confirmed, not just argued.)
 
 2. Which finding type the test can honestly use. The brief suggested
    `unowned_case`, reasoning that `worker.py::_effect`'s `unowned_case` branch
@@ -40,37 +44,56 @@ inspection, and are fixed here rather than transcribed:
    doesn't roll a stall, and `advance_case` assigns
    `case.owner or rng.choice(_people(world))` -- i.e. ordinary, un-approved
    drift ALSO clears unowned cases, for free, as a side effect of moving them
-   on. Measured directly (see the investigation notes in
-   `.superpowers/sdd/2026-08-02-simulator-core-p1/task-10-report.md`): with no
-   approval at all, the day-0 world's 2 unowned cases drop to 0 within two
-   days of drift alone. A control built on `unowned_case` would therefore be
-   measuring drift, not intervention -- exactly the failure mode the brief
-   warned against. `stage_sla_breach` and `stalled_case` share the same
-   problem: their approved effect (`advance_case`) is the literal thing drift
-   already does to every untouched case, so drift alone clears 6 of 8
-   `stage_sla_breach` cases within a single day on this world.
+   on. Measured directly: with no approval at all, the day-0 world's 2
+   unowned cases drop to 0 within two days of drift alone. `stage_sla_breach`
+   and `stalled_case` share the same problem: their approved effect
+   (`advance_case`) is the literal thing drift already does to every
+   untouched case.
 
-   `unrealised_value` does not have this problem. Its approved effect
-   (`worker.py::_effect`) moves a case straight to the terminal/revenue stage
-   in one step -- something ordinary one-stage-at-a-time drift cannot do to a
-   case that starts several stages away, and does not do to this world's
-   affected cases within a single day: measured, the day-0 world's 16
-   unrealised-value cases are the exact same 16 one day later with no
-   approval (set-equal, not just same count). With the action approved, the
-   same single day clears half of them (16 -> 8, deterministically -- the
-   simulator's RNG is seeded per (seed, day), not per process, so this is not
-   a flaky draw). `key_person_dependency` was also considered and rejected:
-   its finding is monotonically non-decreasing under this world regardless of
-   approval, because `affected_cases` accumulates historical events at a
-   stage and the approved effect (an extra event by a different actor) does
-   not remove a case that already has a top-actor event on record -- so it
-   would make a fine second control but cannot demonstrate a reduction at all.
+   `unrealised_value` was chosen instead, and clears far more of its
+   affected cases when approved than the untouched world clears on its own
+   -- but IMPORTANT: the untouched world is not inert here either, and this
+   module used to claim it was (wrongly). Two organic channels clear
+   `unrealised_value` cases with zero approval:
 
-Both tests below run the world for exactly one day, deliberately: it is the
-shortest possible window, so it is also the strongest possible control (the
-smallest opportunity for anything else -- an organic `payment_made` message, a
-new arrival, ordinary drift -- to also move the number) while still being
-large enough for the approved effect to show up clearly.
+     (a) `_drift` can walk a case straight through `Invoice -> Paid` in one
+         step when it is already sitting at `Invoice` (two of this world's
+         16 affected cases -- `NA-1061`, `NA-1062` -- start exactly there).
+         A single day's drift clears such a case with probability
+         `1 - stall_prob["stall_prob.Invoice"]` = 0.45.
+     (b) `worker.py::apply_message`'s `payment_made` branch performs the
+         BYTE-FOR-BYTE IDENTICAL event append as the approved effect
+         (`case.add(terminal, world.current_date, case.owner or "", "done")`)
+         -- a client can simply report paying, with no action approved at
+         all.
+
+   So the honest claim is a difference in MAGNITUDE, not a difference
+   between "changes" and "does not change": sampling many alternate day-1
+   RNG realisations of this same day-0 world (60 paired trials, each arm
+   given the identical trial-labelled stream so the comparison is
+   apples-to-apples -- see `task-10-report.md`, fix-round-1 section, for the
+   sampling code and the full distribution) shows the untouched world
+   typically clears a small handful of cases on its own (mean ~1.3, up to 3
+   in that sample; fix-round-1 review's own independent, larger sample:
+   mean 0.72, up to 4), while the approved arm clears far more (mean ~9,
+   never fewer than 5 in that sample; review's sample: mean 8.38, never
+   fewer than 1) -- and the approved arm beat the control arm in every
+   single paired trial taken, in both samples. `key_person_dependency` was
+   also considered and rejected as a MAIN-test candidate: its finding is
+   monotonically non-decreasing under this world regardless of approval,
+   because `affected_cases` accumulates historical events at a stage and the
+   approved effect (an extra event by a different actor) does not remove a
+   case that already has a top-actor event on record there.
+
+The real (non-sampled) run below uses this world's actual, fixed generator
+seed -- deterministic, not chosen for a favourable outcome -- for exactly one
+day: `before=16`, untouched-arm `after=16` (0 cleared), approved-arm
+`after=8` (8 cleared, all 8 of them cases the worker itself recorded as
+`outcome == "applied"`). That specific untouched-arm zero is itself one
+sample from the distribution described above, not a structural guarantee --
+which is exactly why the assertions below compare magnitudes and tie the
+reduction to the worker's own effect records, rather than asserting the
+untouched arm stays exactly static.
 """
 
 from __future__ import annotations
@@ -88,6 +111,14 @@ from simulator.world import day0_from_generator
 PROFILE_CFG = config.MESSY_PROFILES["advisory"]
 
 FINDING_TYPE = "unrealised_value"
+
+# Fix-round-1: chosen from the sampled distribution (see module docstring
+# and task-10-report.md), not from this one seed's actual gap of 8. It sits
+# above the highest untouched-arm clearance observed in either sample (3 in
+# a 60-trial local sample, 4 in review's larger one) and well below the
+# lowest approved-arm clearance observed in either (5 and 1 respectively),
+# so it is not a threshold this specific run just barely clears.
+MAGNITUDE_MARGIN = 4
 
 
 def _frame(world) -> pd.DataFrame:
@@ -120,37 +151,74 @@ def _item(finding_type: str, case_ids) -> ActionItem:
 
 
 def test_approving_an_action_reduces_the_finding_the_product_reports(tmp_path):
+    """Not just "the count went down" (drift and organic payment_made
+    messages can do that on their own -- see module docstring) but that the
+    reduction is CAUSED by the worker's recorded effect: every case_id the
+    worker logged as `outcome == "applied"` must be a case_id that actually
+    left the finding. Disabling `worker.py::_effect` (verified by hand: see
+    task-10-report.md fix-round-1 section) leaves `len(after) < len(before)`
+    true -- the day still moves some of these cases via ordinary drift/
+    messages -- but empties the `applied` set, so the assertion below, unlike
+    a bare count comparison, fails when the mechanism under test is gutted."""
     world = day0_from_generator("advisory")
     before = _affected(_frame(world), FINDING_TYPE)
     assert before, f"expected {FINDING_TYPE} cases in the day-0 world"
 
     approved = [_item(FINDING_TYPE, before)]
-    advance(world, approved, drive_dir=tmp_path / "drive",
-            cache_dir=tmp_path / "cache", use_llm=False)
+    result = advance(world, approved, drive_dir=tmp_path / "drive",
+                     cache_dir=tmp_path / "cache", use_llm=False)
 
     after = _affected(_frame(world), FINDING_TYPE)
     assert len(after) < len(before), (
         "an approved unrealised_value action must reduce the count the "
         "product reports -- this is the arrow the pre-baked stream never had")
 
+    applied = {e["case_id"] for e in result.effects if e["outcome"] == "applied"}
+    assert applied, (
+        "no case was recorded as applied -- the reduction above (if any) "
+        "cannot be attributed to the approved action at all")
+    assert applied <= (before - after), (
+        "every case_id the worker recorded as applied must be a case that "
+        "actually left the finding -- otherwise the reduction could be "
+        "coming from drift or an organic message, not the approval")
 
-def test_doing_nothing_does_not_reduce_it(tmp_path):
-    """The control: without the approval, the count must not fall for the same
-    reason. Otherwise the reduction above proves nothing.
 
-    `unowned_case` -- the brief's original suggestion -- fails this control on
-    this world (drift alone clears it); see the module docstring. This uses
-    the same one-day window as the main test above so the two are a fair,
-    like-for-like comparison: same world, same day, only the approval differs."""
-    world = day0_from_generator("advisory")
-    before = _affected(_frame(world), FINDING_TYPE)
-    advance(world, [], drive_dir=tmp_path / "drive",
-            cache_dir=tmp_path / "cache", use_llm=False)
-    after = _affected(_frame(world), FINDING_TYPE)
-    assert after == before, (
-        f"{FINDING_TYPE} cases should not clear themselves without "
-        "intervention -- one day of arrivals/messages/drift with nothing "
-        "approved must leave this exact set of cases unchanged")
+def test_the_untouched_world_clears_far_fewer_cases_than_the_approved_action(tmp_path):
+    """The comparison that matters: not "the untouched world is static" (it
+    is not -- see module docstring) but that approving the action clears
+    MANY MORE cases than leaving the world alone does, by a wide, evidence-
+    based margin (`MAGNITUDE_MARGIN`). Both arms start from the identical
+    day-0 world (the generator's seed is fixed, so two independent
+    `day0_from_generator` calls produce provably identical starting state --
+    asserted below, not assumed) and are each advanced exactly one day, so
+    this is a fair, like-for-like comparison: same starting world, same
+    length of time, only the approval differs."""
+    world_ctrl = day0_from_generator("advisory")
+    before_ctrl = _affected(_frame(world_ctrl), FINDING_TYPE)
+
+    world_main = day0_from_generator("advisory")
+    before_main = _affected(_frame(world_main), FINDING_TYPE)
+    assert before_ctrl == before_main, (
+        "both arms must start from the identical day-0 world")
+
+    advance(world_ctrl, [], drive_dir=tmp_path / "drive_ctrl",
+            cache_dir=tmp_path / "cache_ctrl", use_llm=False)
+    after_ctrl = _affected(_frame(world_ctrl), FINDING_TYPE)
+    control_cleared = len(before_ctrl - after_ctrl)
+
+    approved = [_item(FINDING_TYPE, before_main)]
+    advance(world_main, approved, drive_dir=tmp_path / "drive_main",
+            cache_dir=tmp_path / "cache_main", use_llm=False)
+    after_main = _affected(_frame(world_main), FINDING_TYPE)
+    approved_cleared = len(before_main - after_main)
+
+    assert approved_cleared >= control_cleared + MAGNITUDE_MARGIN, (
+        f"approved clearance ({approved_cleared}) must beat the untouched "
+        f"world's own background clearance ({control_cleared}, via "
+        f"Invoice->Paid drift and/or organic payment_made messages -- see "
+        f"module docstring) by a wide margin, not merely exceed it: got a "
+        f"gap of {approved_cleared - control_cleared}, needed at least "
+        f"{MAGNITUDE_MARGIN}")
 
 
 def test_the_rendered_drive_is_ingestable_by_the_product(tmp_path):
@@ -170,3 +238,10 @@ def test_the_rendered_drive_is_ingestable_by_the_product(tmp_path):
 
     events, _docs = read_mapped(tmp_path / "drive", approved)
     assert events, "the simulated drive must read through the approved mapping"
+    # Not just "some events came through" -- every case in the simulated
+    # world must round-trip through the approved mapping with none dropped
+    # and none fabricated (measured: 186 events, 27/27 cases, exact match).
+    ingested_case_ids = {e["case_id"] for e in events}
+    assert ingested_case_ids == set(world.cases), (
+        "the rendered drive must be ingestable for every case the "
+        "simulator holds, not just some of them")

@@ -235,7 +235,7 @@ Full JSON: `outputs/eval_mapping_<profile>.json`.
   human**, and the 9-tick stream is a **recording, not a counterfactual** — an
   approval at tick *t* cannot change what tick *t+1* contains. See `CLAUDE.md`
   §7 for the full mechanism.
-- Tests green (`pytest -q`): **202 passed.**
+- Tests green (`pytest -q`): **263 passed.**
 
 ## Running the simulator (System 2)
 
