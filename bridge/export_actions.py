@@ -166,15 +166,31 @@ def _assert_event_log_belongs_to(profile: str) -> None:
     `outputs/event_log.parquet` is one global file that each profile overwrites
     in turn, so an unguarded build silently produces a queue whose branding says
     one business and whose findings belong to another. Ingestion stamps the
-    owner; this is the check that makes the stamp worth writing."""
+    owner; this is the check that makes the stamp worth writing.
+
+    The stamp is `profile` for a plain ingest, or `f"{profile}@{drive}"` when
+    `--drive` pointed somewhere other than the profile's configured folder — a
+    later real snapshot (`messy_advisory_followup/`) or the simulator's
+    `data/sim/<profile>/drive/` (`ingest.py::_write_event_log_owner`). Only the
+    profile part of the stamp is the identity check here: `--drive` re-analysis
+    of the SAME profile is a documented, legitimate workflow (CLAUDE.md §4b —
+    it's what makes `validated` outcomes reachable at all), not a cross-profile
+    mismatch. We still warn on the alternate-drive case so a user building a
+    queue off non-default data notices, but we never block it."""
     from ingest import event_log_owner_path
 
     marker = event_log_owner_path()
     owner = marker.read_text(encoding="utf-8").strip() if marker.exists() else None
-    if owner and owner != profile:
+    if not owner:
+        return
+    owner_profile, _, drive = owner.partition("@")
+    if owner_profile != profile:
         raise WrongProfileError(
             f"The event log currently holds '{owner}' data, not '{profile}'. "
             f"Re-ingest first:  python ingest.py --source messy --profile {profile}")
+    if drive:
+        print(f"Note: building the '{profile}' queue from an alternate drive "
+              f"({drive}), not the profile's default static folder.")
 
 
 def build(profile: str, *, cases: list[dict] | None = None,

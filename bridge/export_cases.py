@@ -21,7 +21,7 @@ import json
 from datetime import datetime, timezone
 
 import config
-from detection.detect import DetectedBottleneck, detect_all, load_event_log
+from detection.detect import DetectedBottleneck, detect_all, finding_key, load_event_log
 from pipeline.embed import query
 
 # ── Authored content per bottleneck type ─────────────────────────────────────
@@ -181,6 +181,7 @@ def build_cases() -> list[dict]:
         tpl = _TEMPLATES[bn.type]
         cases.append({
             "case_id": bn.id,
+            "finding_key": finding_key(bn),
             "detected_at": detected_at,
             "title": tpl["title"],
             "workflow_area": tpl["workflow_area"],

@@ -342,3 +342,30 @@ def stream_gt_path(profile: str) -> Path:
 
 def replay_log_path(profile: str) -> Path:
     return OUTPUTS / f"replay_{profile}.jsonl"
+
+
+# ── Live SME simulator (simulator/) ──────────────────────────────────────────
+# The simulator writes a drive that the product ingests exactly like any other
+# messy drive: ingest.py --source messy --profile <p> --drive <sim drive>.
+# Nothing in the pipeline core reads anything else under DATA_SIM.
+DATA_SIM = ROOT / "data" / "sim"
+
+
+def sim_dir(profile: str) -> Path:
+    return DATA_SIM / profile
+
+
+def sim_drive_dir(profile: str) -> Path:
+    return sim_dir(profile) / "drive"
+
+
+def sim_state_path(profile: str) -> Path:
+    return sim_dir(profile) / "state.json"
+
+
+def sim_inbox_path(profile: str) -> Path:
+    return sim_dir(profile) / "inbox.jsonl"
+
+
+def sim_cache_dir(profile: str) -> Path:
+    return sim_dir(profile) / "cache"

@@ -187,6 +187,39 @@ def test_build_allows_an_unstamped_event_log(isolated_outputs) -> None:
     _assert_event_log_belongs_to("joinery")
 
 
+def test_build_allows_a_same_profile_alternate_drive_stamp(
+        isolated_outputs, capsys) -> None:
+    """`--drive` re-analysis of the SAME profile (e.g. a later snapshot of the
+    same SME's drive, or the simulator's world) must not be treated as a
+    cross-profile mismatch — CLAUDE.md §4b names this as the mechanism that
+    makes a `validated` outcome reachable at all. This must keep working even
+    though ingestion now stamps `f"{profile}@{drive}"` for a --drive ingest."""
+    from bridge.export_actions import _assert_event_log_belongs_to
+
+    marker = isolated_outputs / "event_log_profile.txt"
+    marker.write_text("advisory@data/sim/advisory/drive", encoding="utf-8")
+
+    _assert_event_log_belongs_to("advisory")   # must not raise
+
+    out = capsys.readouterr().out
+    assert "data/sim/advisory/drive" in out     # warns, but doesn't block
+
+
+def test_build_still_refuses_a_different_profiles_alternate_drive_stamp(
+        isolated_outputs) -> None:
+    """The alternate-drive carve-out must not swallow real cross-profile
+    contamination — only the profile segment before '@' is allowed to differ
+    in meaning; a genuinely different profile still raises."""
+    from bridge.export_actions import (WrongProfileError,
+                                       _assert_event_log_belongs_to)
+
+    marker = isolated_outputs / "event_log_profile.txt"
+    marker.write_text("advisory@data/sim/advisory/drive", encoding="utf-8")
+
+    with pytest.raises(WrongProfileError):
+        _assert_event_log_belongs_to("joinery")
+
+
 def test_capacity_items_are_not_swallowed_by_delivery_risks(isolated_outputs) -> None:
     """Capacity findings carry a delivery risk too, so section order decides
     where they land. Capacity must get first refusal or the section renders

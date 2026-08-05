@@ -37,7 +37,7 @@ from datetime import datetime, timezone
 
 import config
 from bridge.export_cases import _evidence, _load_record_texts, _utc_now_iso
-from detection.detect import load_event_log
+from detection.detect import finding_key, load_event_log
 from detection.dynamic import detect_dynamic
 
 # Type-generic fallbacks — stage is interpolated, so they cover ANY stage the
@@ -103,6 +103,11 @@ _TYPE_FALLBACKS: dict[str, dict] = {
 }
 
 
+def _canon(text: str) -> str:
+    """Canonicalise text for key derivation: strip and lowercase."""
+    return str(text or "").strip().lower()
+
+
 def _severity(bn, total_cases: int) -> str:
     share = bn.affected_count / total_cases if total_cases else 0.0
     if bn.type == "delay":
@@ -142,6 +147,7 @@ def _anomaly_cases(df, profile: str, detected_at: str) -> list[dict]:
     labels = {s.strip().lower(): s for s in stage_order}
     return [{
         "case_id": f"AN{i:03d}",
+        "finding_key": f"anomaly::{_canon(f.stage)}::{_canon(f.title)}",
         "type": "anomaly",
         "stage": labels.get(f.stage, f.stage.title()),
         "detected_at": detected_at,
@@ -183,6 +189,7 @@ def build_cases(profile: str, offline: bool = False, client=None) -> list[dict]:
                "metric": bn.metric_value}
         case = {
             "case_id": bn.id,
+            "finding_key": finding_key(bn),
             "type": bn.type,
             "stage": bn.stage,
             "detected_at": detected_at,
