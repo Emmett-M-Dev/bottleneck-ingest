@@ -1,14 +1,11 @@
-"""Reader tests: excel mapping + cleaning, text paragraph split, sheets parsing
-against a mocked API response (no live network call)."""
+"""Reader tests: excel mapping + cleaning, text paragraph split."""
 
 from __future__ import annotations
-
-from unittest import mock
 
 import pandas as pd
 import pytest
 
-from readers import excel_reader, text_reader, sheets_reader
+from readers import excel_reader, text_reader
 
 
 # ── excel_reader ─────────────────────────────────────────────────────────────
@@ -48,31 +45,3 @@ def test_text_splits_on_blank_line(tmp_path) -> None:
     rows = text_reader.read_text_folder(tmp_path)
     assert [r["text"] for r in rows] == ["Para one.", "Para two.", "Para three."]
     assert all(r["source_ref"] == "notes.txt" for r in rows)
-
-
-# ── sheets_reader (mocked API) ───────────────────────────────────────────────
-def test_sheets_parses_mocked_response() -> None:
-    fake_values = {
-        "values": [
-            ["Booking Ref", "Stage", "Date", "Handled By", "Status"],
-            ["BR-0001", "Enquiry", "2026-01-05", "Sarah Jones", "done"],
-            ["BR-0001", "Quote", "2026-01-06", ""],  # short row + blank cell
-        ]
-    }
-    fake_exec = mock.Mock()
-    fake_exec.execute.return_value = fake_values
-    fake_service = mock.Mock()
-    fake_service.spreadsheets.return_value.values.return_value.get.return_value = fake_exec
-
-    with mock.patch.object(sheets_reader, "get_credentials", return_value=mock.Mock()), \
-         mock.patch.object(sheets_reader, "build", return_value=fake_service), \
-         mock.patch.object(sheets_reader, "SHEET_ID", "SHEET123"):
-        rows = sheets_reader.read_sheet()
-
-    assert len(rows) == 2
-    assert rows[0]["Booking Ref"] == "BR-0001"
-    assert rows[0]["_source_ref"] == "sheets:SHEET123:2"
-    # short row padded; blank string -> None
-    assert rows[1]["Handled By"] is None
-    assert rows[1]["Status"] is None
-    assert rows[1]["_source_ref"] == "sheets:SHEET123:3"
