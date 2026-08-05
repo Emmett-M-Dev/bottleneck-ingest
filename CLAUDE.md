@@ -224,12 +224,12 @@ The word "audit" previously conflated three things. They are now separated:
 | RAG diagnosis agent | **Claude API — `claude-opus-4-8`** | `pipeline/diagnose.py`. Same call pattern; scrubbed payload; template fallback. |
 | Vector store | **ChromaDB** | Powers the RAG resolution store. |
 | Embeddings | **sentence-transformers** | |
-| HITL UI (current) | **React** (`hitl-react`) | Vite + Tailwind + `@xyflow/react`. FastAPI backend in `hitl-react/api/` acts as a thin orchestrator — shells out to the pipeline venv. |
-| HITL UI (legacy) | **Streamlit** (`hitl-interface`) | Superseded by hitl-react for the mapping/dashboard flow; kept for provider abstractions + fixtures. |
+| HITL UI (current) | **React** — `../hitl-react`, a **SEPARATE repo and a sibling of this one**, NOT a subdirectory | Vite + Tailwind + `@xyflow/react`. FastAPI backend in `../hitl-react/api/` is a thin orchestrator that shells out to *this* repo's venv. It resolves the pipeline as `_HERE.parent.parent / "bottleneck-ingest"`, so the sibling relationship is load-bearing. Looking for it inside this repo finds nothing. |
+| HITL UI (legacy) | **Streamlit** — `../hitl-interface`, also a sibling repo | Superseded by hitl-react; `hitl-react/api/main.py` still points at its `fixtures/cases.json` as a fallback. |
 | File parsing | **openpyxl**, **pandas** | Excel + tabular. `engine="openpyxl"`. |
 | Parquet | **fastparquet** (NOT pyarrow) | Pinned. See constraint below. |
 | Email execution | **smtplib** | |
-| Env | Python + venv (per repo) | Version-pinned. `bottleneck-ingest/.venv`; `hitl-react/api/.venv` (py3.14). |
+| Env | Python + venv (per repo) | Version-pinned. `bottleneck-ingest/.venv`; `../hitl-react/api/.venv` (py3.14). |
 | Dev in | Jupyter + VS Code | Task-by-task, supervised. |
 
 **Parquet:** use **`fastparquet`**, NOT `pyarrow`. Importing pyarrow eagerly loads the
