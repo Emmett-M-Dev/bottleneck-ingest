@@ -31,7 +31,7 @@ from datetime import date, datetime, timezone
 import config
 from actions import store
 from actions.build import build_action_items, build_snapshot, data_quality_confidence
-from actions.execute import execution_reason, route
+from actions.execute import _assert_snapshot_is_clean, execution_reason, route
 from actions.models import ActionItem
 from actions.outcome import review as review_outcomes
 from actions.outcome import summarise
@@ -75,6 +75,21 @@ def _ui_item(item: ActionItem) -> dict:
                  "Nothing about this item was sent to a language model."),
     }
     return payload
+
+
+# Provenance has three states and the UI must be able to tell them apart:
+#   ""        the profile's own default drive — trusted, no banner
+#   "<path>"  an alternate drive — banner names it
+#   unknown   a snapshot written before provenance was recorded. approve and
+#             review refuse it (actions/execute.py fails closed), so the UI has
+#             to warn rather than render it as clean.
+UNKNOWN_SOURCE_DRIVE = "unknown (snapshot predates provenance tracking)"
+
+
+def _ui_source_drive(snapshot) -> str:
+    if snapshot is None:
+        return ""
+    return UNKNOWN_SOURCE_DRIVE if snapshot.source_drive is None else snapshot.source_drive
 
 
 def build_ui_actions(profile: str, items: list[ActionItem],
@@ -135,7 +150,13 @@ def build_ui_actions(profile: str, items: list[ActionItem],
         # demo simulator's synthetic week) — the dashboard's TodayTab shows an
         # amber strip naming it, so a simulated queue is never mistaken for
         # the SME's live spreadsheets. See CLAUDE.md §4b / actions/execute.py.
-        "source_drive": snapshot.source_drive if snapshot else "",
+        #
+        # A snapshot predating source_drive carries None, meaning provenance is
+        # UNKNOWN. That must not serialise as null: null is falsy in JS, so the
+        # banner would render the queue as clean while approve/review refuse it
+        # at the button — the worst combination. Surface it as a string the
+        # banner will show, matching the fail-closed rule on the Python side.
+        "source_drive": _ui_source_drive(snapshot),
         "totals": {
             "open_items": len(live),
             "revenue_at_risk": round(sum(i.impact.revenue_at_risk or 0
@@ -225,9 +246,17 @@ def build(profile: str, *, cases: list[dict] | None = None,
     fresh = build_action_items(profile, df, cases=cases, as_of=as_of)
     merged = store.merge_actions(store.load_actions(profile), fresh)
     ranked = rank(merged, today=date.fromisoformat(_analysis_date(merged)[:10]))
-    store.save_actions(profile, ranked)
-
     snapshot = build_snapshot(profile, df, fresh, as_of=as_of)
+
+    # Check provenance BEFORE anything is written. review_outcomes refuses a
+    # snapshot of unknown or alternate-drive origin, and until this check moved
+    # up here that refusal landed mid-build: the action store and the snapshot
+    # log were already updated while ui_actions_<p>.json was not, so the
+    # dashboard showed a stale queue over a newer store.
+    if do_review:
+        _assert_snapshot_is_clean(profile, snapshot, context="observation")
+
+    store.save_actions(profile, ranked)
     store.append_snapshot(profile, snapshot)
 
     if do_review:

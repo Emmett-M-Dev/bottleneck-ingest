@@ -278,3 +278,27 @@ def test_read_model_builds_for_every_profile(profile: str, isolated_outputs) -> 
                           snapshot=_snapshot())
     assert ui["case_noun"] and ui["workflow"]
     assert ui["ui"]["brand"]
+
+
+def test_unknown_provenance_is_surfaced_not_serialised_as_null():
+    """A snapshot predating provenance tracking must NOT reach the UI as null.
+
+    null is falsy in JS, so the dashboard's alternate-drive banner would treat
+    an unknown-provenance queue as clean while approve and review refuse it at
+    the button — the worst combination. Surface it as a visible string."""
+    from actions.models import AnalysisSnapshot
+    from bridge.export_actions import UNKNOWN_SOURCE_DRIVE, _ui_source_drive
+
+    legacy = AnalysisSnapshot(snapshot_id="S1", profile="advisory",
+                              taken_at="2026-07-20", source_drive=None)
+    default = AnalysisSnapshot(snapshot_id="S2", profile="advisory",
+                               taken_at="2026-07-20", source_drive="")
+    alt = AnalysisSnapshot(snapshot_id="S3", profile="advisory",
+                           taken_at="2026-07-20",
+                           source_drive="data/sim/advisory/drive")
+
+    assert _ui_source_drive(legacy) == UNKNOWN_SOURCE_DRIVE
+    assert _ui_source_drive(legacy)          # truthy, so the banner shows
+    assert _ui_source_drive(default) == ""   # falsy, so it does not
+    assert _ui_source_drive(alt) == "data/sim/advisory/drive"
+    assert _ui_source_drive(None) == ""
