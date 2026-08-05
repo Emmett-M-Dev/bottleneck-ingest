@@ -1,21 +1,19 @@
 """Ingestion CLI.
 
-    python ingest.py --source local         # data/synthetic/ (xlsx + txt)
-    python ingest.py --source sheets        # live mock Google Sheet
-    python ingest.py --source all           # both, deduplicated by source_ref
-    python ingest.py --source foyle         # six local Foyle sheets (data/synthetic/foyle/)
-    python ingest.py --source foyle-tracker         # streamlined placement tracker (local xlsx)
-    python ingest.py --source foyle-tracker-sheets  # the same tracker live from a Drive sheet
-    python ingest.py --source foyle-sheets  # the same six sheets live from a Drive folder
-    python ingest.py --source messy --profile foyle   # messy drive via APPROVED mapping
+    python ingest.py --source messy --profile advisory       # the SME's messy drive
+    python ingest.py --source messy --profile advisory \
+        --drive data/sim/advisory/drive                      # a different snapshot
+    python ingest.py --source local                          # data/synthetic/ (xlsx + txt)
 
-The messy path enforces the HITL gate ordering: it hard-errors unless a
-human-approved mapping exists (audit agent proposes -> dashboard Mapping
-Review approves -> only then does ingestion run).
+`messy` is the path everything current uses. It enforces the HITL gate
+ordering: it hard-errors unless a human-approved mapping exists (audit agent
+proposes -> dashboard Mapping Review approves -> only then does ingestion run).
+
+`--drive` re-reads a DIFFERENT snapshot through the same approved mapping — a
+later week of the same drive, or a simulated one — which is what makes outcome
+measurement possible without a second trip through Gate 1.
 
 Each mode: read -> scrub -> normalise -> write parquet + jsonl -> embed into ChromaDB.
-The local and sheets paths produce identical output shapes, so downstream detection
-and RAG cannot tell mock from real.
 """
 
 from __future__ import annotations
@@ -65,70 +63,6 @@ def _read_local() -> tuple[list[NormalisedRecord], str]:
     return records, summary
 
 
-def _read_sheets() -> tuple[list[NormalisedRecord], str]:
-    from readers.sheets_reader import read_sheet  # imported lazily so local mode needs no creds
-    rows = read_sheet()
-    records = normalise_structured(rows, source_type="sheets")
-    summary = f"[sheets] Read {len(rows)} rows from Google Sheet (mock env)"
-    return records, summary
-
-
-def _read_foyle() -> tuple[list[NormalisedRecord], str]:
-    from readers.foyle_reader import read_foyle  # lazy: only this path needs the foyle sheets
-    event_rows, doc_rows = read_foyle()
-    records = (
-        normalise_foyle_events(event_rows)
-        + normalise_text(doc_rows, source_type="foyle_text")
-    )
-    summary = (
-        f"[foyle]  Derived {len(event_rows)} events from 6 sheets, "
-        f"{len(doc_rows)} text snippets (sheet rows + 3 emails)"
-    )
-    return records, summary
-
-
-def _read_foyle_tracker() -> tuple[list[NormalisedRecord], str]:
-    from readers.foyle_tracker_reader import read_foyle_tracker  # lazy: only this path reads the tracker
-    event_rows, doc_rows = read_foyle_tracker()
-    records = (
-        normalise_foyle_events(event_rows)
-        + normalise_text(doc_rows, source_type="foyle_text")
-    )
-    summary = (
-        f"[foyle-tracker] Derived {len(event_rows)} events from the placement tracker, "
-        f"{len(doc_rows)} cohort snippets"
-    )
-    return records, summary
-
-
-def _read_foyle_tracker_sheets() -> tuple[list[NormalisedRecord], str]:
-    from readers.foyle_tracker_reader import read_foyle_tracker_sheets  # lazy: needs google libs + creds
-    event_rows, doc_rows = read_foyle_tracker_sheets()
-    records = (
-        normalise_foyle_events(event_rows)
-        + normalise_text(doc_rows, source_type="foyle_text")
-    )
-    summary = (
-        f"[foyle-tracker-sheets] Derived {len(event_rows)} events from the live tracker "
-        f"sheet, {len(doc_rows)} cohort snippets"
-    )
-    return records, summary
-
-
-def _read_foyle_sheets() -> tuple[list[NormalisedRecord], str]:
-    from readers.foyle_sheets_reader import read_foyle_sheets  # lazy: needs google libs + creds
-    event_rows, doc_rows = read_foyle_sheets()
-    records = (
-        normalise_foyle_events(event_rows)
-        + normalise_text(doc_rows, source_type="foyle_text")
-    )
-    summary = (
-        f"[foyle-sheets] Derived {len(event_rows)} events from the Drive folder, "
-        f"{len(doc_rows)} sheet-row snippets"
-    )
-    return records, summary
-
-
 def _read_messy(profile: str, mapping_path=None,
                 drive=None) -> tuple[list[NormalisedRecord], str]:
     from audit.schemas import load_approved  # lazy: pydantic only on this path
@@ -160,13 +94,6 @@ def _read_messy(profile: str, mapping_path=None,
         f"(approved {approved.approved_at[:19]})"
     )
     return records, summary
-
-
-def _dedup(records: list[NormalisedRecord]) -> list[NormalisedRecord]:
-    seen: dict[str, NormalisedRecord] = {}
-    for rec in records:
-        seen.setdefault(rec.record_id, rec)
-    return list(seen.values())
 
 
 def _write_records(records: list[NormalisedRecord]) -> int:
@@ -238,33 +165,10 @@ def run(source: str, profile: str | None = None, mapping_path=None,
         records += recs
         summaries.append(summ)
 
-    if source in ("local", "all"):
+    if source == "local":
         recs, summ = _read_local()
         records += recs
         summaries.append(summ)
-    if source in ("sheets", "all"):
-        recs, summ = _read_sheets()
-        records += recs
-        summaries.append(summ)
-    if source == "foyle":
-        recs, summ = _read_foyle()
-        records += recs
-        summaries.append(summ)
-    if source == "foyle-tracker":
-        recs, summ = _read_foyle_tracker()
-        records += recs
-        summaries.append(summ)
-    if source == "foyle-tracker-sheets":
-        recs, summ = _read_foyle_tracker_sheets()
-        records += recs
-        summaries.append(summ)
-    if source == "foyle-sheets":
-        recs, summ = _read_foyle_sheets()
-        records += recs
-        summaries.append(summ)
-
-    if source == "all":
-        records = _dedup(records)
 
     n_scrubbed = sum(len(rec.scrubbed_entities) for rec in records)
     # Order matters: jsonl + embed (chroma/hnswlib) before the parquet write, because
@@ -291,9 +195,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="SME ops ingestion pipeline")
     parser.add_argument(
         "--source",
-        choices=["local", "sheets", "all", "foyle", "foyle-tracker",
-                 "foyle-tracker-sheets", "foyle-sheets", "messy"],
-        default="local",
+        choices=["messy", "local"],
+        default="messy",
     )
     parser.add_argument("--profile", choices=sorted(config.MESSY_PROFILES),
                         default=None, help="SME profile for --source messy")

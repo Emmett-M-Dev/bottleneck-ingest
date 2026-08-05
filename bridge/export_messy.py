@@ -6,9 +6,6 @@
 Detection is DYNAMIC (detection.dynamic.detect_dynamic): every stage is
 scanned for outlier delays, duplicate entries and backward loops, so the
 export carries 0..N bottleneck cases — the count is a property of the data.
-On top, an advisory LLM anomaly pass (local Ollama model, detection.anomaly)
-can add "AI-spotted — unverified" cards; it is skipped silently when offline
-or when no local model is running.
 
 Per bottleneck the RAG diagnosis agent (pipeline/diagnose.py, Claude) supplies
 the description, suggested fix, confidence and retrieved past resolutions;
@@ -135,36 +132,6 @@ def _estimated_cost(bn, profile: str) -> dict | None:
     return {"amount": int(amount), "currency": cur, "basis": basis}
 
 
-def _anomaly_cases(df, profile: str, detected_at: str) -> list[dict]:
-    """Advisory cards from the local-LLM anomaly pass. [] when unavailable."""
-    from detection.anomaly import build_stage_stats, propose_anomalies
-
-    stage_order = config.MESSY_PROFILES[profile]["stage_order"]
-    domain = config.MESSY_PROFILES[profile].get("ui", {}).get(
-        "domain", "small business operations")
-    stats = build_stage_stats(df, stage_order)
-    findings = propose_anomalies(stats, domain=domain)
-    labels = {s.strip().lower(): s for s in stage_order}
-    return [{
-        "case_id": f"AN{i:03d}",
-        "finding_key": f"anomaly::{_canon(f.stage)}::{_canon(f.title)}",
-        "type": "anomaly",
-        "stage": labels.get(f.stage, f.stage.title()),
-        "detected_at": detected_at,
-        "title": f.title,
-        "workflow_area": labels.get(f.stage, f.stage.title()),
-        "severity": f.severity,
-        "confidence": None,
-        "description": f.narrative,
-        "evidence": [],
-        "suggested_fix": None,
-        "retrieved_resolutions": [],
-        "estimated_cost": None,
-        "llm_payload": None,
-        "status": "advisory",
-    } for i, f in enumerate(findings, start=1)]
-
-
 def build_cases(profile: str, offline: bool = False, client=None) -> list[dict]:
     from pipeline.diagnose import _build_payload  # loads spaCy for the scrub
 
@@ -229,8 +196,6 @@ def build_cases(profile: str, offline: bool = False, client=None) -> list[dict]:
                 print(f"[diagnose] {bn.id}: fell back to the authored template ({exc})")
         cases.append(case)
 
-    if not offline:
-        cases.extend(_anomaly_cases(df, profile, detected_at))
     return cases
 
 
@@ -321,7 +286,6 @@ def append_history(profile: str, cases: list[dict], workflow: dict,
              "estimated_cost": (c.get("estimated_cost") or {}).get("amount")}
             for c in cases if c["type"] != "anomaly"
         ],
-        "anomaly_count": sum(1 for c in cases if c["type"] == "anomaly"),
         "messy_cells": _messy_cells(profile),
     }
     path = history_path(profile)

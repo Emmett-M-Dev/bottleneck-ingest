@@ -220,28 +220,6 @@ def _structural_items(profile: str, df: pd.DataFrame, as_of: date,
     return items
 
 
-def _anomaly_items(profile: str, cases: list[dict], as_of: date,
-                   dq: float) -> list[ActionItem]:
-    """Advisory local-LLM observations. They enter the queue clearly badged and
-    low-confidence — a suggestion to check something, not a finding."""
-    items: list[ActionItem] = []
-    for case in cases:
-        if case.get("type") != "anomaly":
-            continue
-        stage = case.get("stage", "")
-        key = f"anomaly::{_canon(stage)}::{_canon(case.get('title', ''))}"
-        items.append(_make_item(
-            profile, finding_key=key, finding_type="anomaly", stage=stage,
-            title=case.get("title", "AI-spotted observation"),
-            summary=case.get("description", ""), affected=[],
-            evidence=[EvidenceReference(
-                kind="excerpt", label="Local model observation",
-                detail=case.get("description", ""))],
-            metric_label=None, metric_value=None, case_details=[],
-            as_of=as_of, dq_confidence=dq, generated_by="llm_anomaly"))
-    return items
-
-
 def _is_masked(name: str | None) -> bool:
     """Staff names are replaced with placeholders during ingestion, so a
     finding about a PERSON names a placeholder, not a colleague."""
@@ -375,7 +353,6 @@ def build_action_items(profile: str, df: pd.DataFrame, *,
         *_structural_items(profile, df, as_of_date, dq, diagnosis_by_id, is_legacy_export),
         *_case_rule_items(profile, df, as_of_date, dq),
         *_data_quality_items(profile, as_of_date, dq),
-        *_anomaly_items(profile, cases, as_of_date, dq),
     ]
 
 

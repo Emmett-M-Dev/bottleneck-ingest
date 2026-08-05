@@ -49,8 +49,9 @@ Real Foyle data is only ever used as a **one-off, consented, supervisor-signed-o
 audit killed the earlier synthetic 6-sheet / `foyle-tracker` model. The pipeline now
 ingests **messy per-SME synthetic drives** — a folder of deliberately messy
 spreadsheets per profile: `data/synthetic/messy_<profile>/*.xlsx`, ingested via
-`ingest.py --source messy --profile <p>`. Older sources (`foyle`, `foyle-tracker`,
-`sheets`, `all`) still exist but are legacy.
+`ingest.py --source messy --profile <p>`. The older sources (`foyle`,
+`foyle-tracker`, `foyle-tracker-sheets`, `foyle-sheets`, `sheets`, `all`) were
+**removed on 2026-08-05** — see §11. `messy` and `local` are the only two left.
 
 `ingest.py --drive <path>` re-analyses a **later snapshot of the same drive**
 through the same approved mapping (no second trip through Gate 1). That is what
@@ -105,7 +106,6 @@ Think of it like an **electrical plug adapter**: the appliance (the pipeline cor
    │  FIXED PIPELINE CORE  │  ← IDENTICAL across SMEs. The academic constant.
    │  1. Bottleneck detection (detect_dynamic: statistical scan of EVERY
    │     stage, 0..N findings — delay / repetition / rework, no marker config)
-   │     + advisory local-LLM anomaly pass (Ollama, "AI-spotted" cards)
    │  2. RAG diagnosis (over the resolution store, incl. LEARNED fixes)
    │  3. Fix suggestion (+ per-profile cost model)
    └──────────┬───────────┘
@@ -222,7 +222,6 @@ The word "audit" previously conflated three things. They are now separated:
 | Pipeline orchestration | **LangGraph** (`pipeline/agent.py`) + sequential CLI modules | `detect → retrieve → diagnose → gate → execute` StateGraph; the CLI modules (`ingest.py` etc.) remain the per-step entry points. |
 | Mapping-inference agent | **Claude API — `claude-opus-4-8`** | `audit/infer.py` only. `messages.parse` with a Pydantic schema. **No `temperature`** (400s on Opus 4.8). Zero raw PII in the payload (scrubbed first). |
 | RAG diagnosis agent | **Claude API — `claude-opus-4-8`** | `pipeline/diagnose.py`. Same call pattern; scrubbed payload; template fallback. |
-| Anomaly pass (exploratory) | **Ollama — local, `qwen2.5:7b`** | `pipeline/llm.py` + `detection/anomaly.py`. Aggregate stats only; skips silently when absent. |
 | Vector store | **ChromaDB** | Powers the RAG resolution store. |
 | Embeddings | **sentence-transformers** | |
 | HITL UI (current) | **React** (`hitl-react`) | Vite + Tailwind + `@xyflow/react`. FastAPI backend in `hitl-react/api/` acts as a thin orchestrator — shells out to the pipeline venv. |
@@ -238,23 +237,37 @@ Arrow C++ runtime, which **segfaults in-process** with chroma/hnswlib + torch on
 Pinned intentionally — do not "helpfully" swap it. Relatedly, `audit/` and `remediate/`
 run as **separate processes** and must **never import chromadb / pyarrow / torch**.
 
-### 6a. ✅ LangGraph & Ollama — claim vs build (RESOLVED)
+### 6a. LangGraph ✅ shipped · Ollama ❌ trialled and withdrawn
 
-Both original design claims are now implemented — the write-up can assert them:
+One of the two original design claims shipped. The other was trialled and
+withdrawn, and that is a finding rather than a gap.
 
-- **LangGraph** — `pipeline/agent.py`: `detect → retrieve → diagnose → gate → execute`
-  StateGraph (langgraph 1.2.8 pinned). Gate 2 is a conditional edge; a fresh run pauses
-  `awaiting_gate` and writes `outputs/agent_run_<profile>_<ts>.json`; `--resume` reads
-  the dashboard's decisions and re-enters at the gate (two-phase run, no checkpointer).
-- **Ollama** — hybrid local/cloud division of labour (`pipeline/llm.py`):
-  the exploratory **anomaly pass** (`detection/anomaly.py`) runs on a local model
-  (`qwen2.5:7b` default; `OLLAMA_MODEL`/`OLLAMA_URL` env), zero marginal cost, payload
-  never leaves the machine; **Claude keeps the two precision tasks** (mapping inference,
-  RAG diagnosis) with the zero-PII scrub as their privacy control. No local model
-  running = the pass silently skips; nothing breaks.
+- **LangGraph — shipped.** `pipeline/agent.py`: `detect → retrieve → diagnose →
+  gate → execute` StateGraph (langgraph 1.2.8 pinned). Gate 2 is a conditional
+  edge; a fresh run pauses `awaiting_gate` and writes
+  `outputs/agent_run_<profile>_<ts>.json`; `--resume` reads the dashboard's
+  decisions and re-enters at the gate (two-phase run, no checkpointer).
 
-Write-up framing: local inference for exploratory analysis, cloud + scrub for
-precision tasks — both privacy controls implemented and tested.
+- **Ollama — trialled in development, then removed.** A local `qwen2.5:7b`
+  drove an exploratory anomaly pass during development. Running it locally
+  proved too compute-heavy on the development machine, so it was uninstalled
+  and the work moved to the Claude API. The pass itself was removed on
+  2026-08-05 (`pipeline/llm.py`, `detection/anomaly.py`, and the "AI-spotted"
+  cards) — with no engine it could never fire, and the stored queues confirmed
+  it: zero `llm_anomaly` items across all three profiles.
+
+**Write it up as a finding, in the past tense.** §3 argues the SME AI adoption
+gap is driven by resource constraints rather than technical sophistication.
+First-hand evidence that local inference on a single commodity machine was
+materially taxing supports that argument, and it is an observation rather than
+an assertion — which is more than the original hybrid claim offered.
+
+Two constraints on how it is written:
+- It is **not** a privacy control of the delivered system. §9 has one
+  implemented control, the zero-PII scrub, not two.
+- [YOU] For this to be a finding rather than an anecdote it needs a number
+  beside it — machine spec, the model, and rough observed latency or memory
+  pressure, labelled as approximate. Without one a viva panel will say so.
 
 ---
 
@@ -267,8 +280,7 @@ precision tasks — both privacy controls implemented and tested.
   STRUCTURAL patterns (outlier gaps, literal duplicate stage entries, genuine backward
   transitions), so ground truth is known before detection runs. Detection is **dynamic**
   (`detection/dynamic.py`) — 0..N findings per run, no marker config; the count is a
-  property of the data. An advisory local-LLM anomaly pass can add "AI-spotted" cards
-  on top (not evaluated against ground truth).
+  property of the data.
 - **Circularity guard:** generating *and* evaluating on data designed by the same person is a validity risk. Injection logic (`synthetic/generate_messy_*.py`) and detection logic (`detection/dynamic.py`) are cleanly separated; the detector does not know the injection rules.
 - **Detection metrics (`eval/score_detection.py`):** P/R/F1 per pattern type, marker
   baseline vs dynamic detector, against the seeded ground truth:
@@ -371,15 +383,20 @@ precision tasks — both privacy controls implemented and tested.
 
 ## 8. Mock Google Environment
 
-A **mock Google Workspace** exists to demonstrate real API connectivity *without* real data:
+A **mock Google Workspace** was built early on to demonstrate real API
+connectivity *without* real data:
 
 - GCP project: `foyle-mock-pipeline`
 - Account: `foyle.mock.sme@gmail.com`
 - APIs: Google Sheets, Google Drive; OAuth creds in `google_oauth.json`
 
-Used by the legacy `--source sheets` / `foyle-sheets` paths. The current messy-drive
-flow reads local folders, not Sheets — the mock is a connectivity demo, not the primary
-ingest path.
+**The code that used it is gone** (2026-08-05). It served the `--source sheets`
+and `--source foyle-sheets` paths, both removed along with their readers — the
+messy-drive flow reads local folders, and nothing had called the Sheets path in
+a long time. The GCP project and credentials still exist outside the repo.
+
+Write it up as what it was: an early connectivity spike that proved the
+approach and was then superseded, not a component of the delivered system.
 
 ---
 
@@ -411,7 +428,7 @@ ingest path.
 
 - **Re-architecture milestones M0–M6 all shipped**, plus the product-grade upgrade:
   RAG diagnosis agent, LangGraph loop, **dynamic detection** (statistical, 0..N
-  findings, no markers), local-LLM anomaly pass (Ollama), learning loop, cost
+  findings, no markers), learning loop, cost
   model, impact history + sparklines, zero-PII payload viewer.
 - **Action layer shipped (2026-07-23)** — `actions/`: ActionItem / Intervention /
   InterventionOutcome / BusinessImpact / EvidenceReference / AnalysisSnapshot,
@@ -436,7 +453,7 @@ ingest path.
   no outstanding caveats); detection baseline-vs-dynamic across all three
   profiles, now measured against foyle/joinery's reseeded drives (§7); the
   longitudinal replay curves under outcome gating, measured for both profiles (§7).
-- **§6a resolved** — LangGraph and Ollama are both in the artifact.
+- **§6a** — LangGraph is in the artifact. Ollama was trialled and withdrawn.
 - **React dashboard (hitl-react) live** — **Today** (action queue, expandable
   evidence, owner/due-date, progress + outcome-review controls, "what was sent
   to the AI"), Mapping Review (Gate 1), pipeline stepper, workflow DAG,
@@ -460,11 +477,27 @@ exporters emit it. `DetectedBottleneck.id` and `CaseFinding.id` are assigned by
 **On the horizon:** Phase 2–5 build reports; supervisor sign-off on the
 consented Foyle export.
 
-**Documentation debt, deliberately not yet done** (needs a write-up pass, not a
-code pass): Ollama was trialled in development and removed on resource grounds,
-so §4, §6, §6a and §9 still describe an anomaly pass and a local-inference
-privacy control the artifact no longer has — §9 must go from two implemented
-controls to one. §7's replay curves predate the simulator. And the
-"SME #2 is a config block and zero engine code" claim is **not yet fully true
-for `simulator/`**: `simulator/render.py` still hard-codes advisory filenames
-and generator method names. Do not overclaim it.
+**Simplification pass, 2026-08-05.** ~2,100 lines removed. Every published
+number was re-verified afterwards and none moved (detection macro-F1:
+foyle 0.486/1.000, joinery 0.487/1.000, advisory 0.471/1.000 — identical to §7).
+
+Removed: the five superseded ingest sources (`sheets`, `all`, `foyle`,
+`foyle-tracker`, `foyle-tracker-sheets`, `foyle-sheets`) with their four
+readers, two generators and three exporters; and the local-LLM anomaly pass.
+`--source messy` and `--source local` remain.
+
+**Deliberately kept, with reasons:**
+- `--source local` — it pulls `excel_reader`/`text_reader`, imported
+  non-lazily and reading the ops-notes text files. Removing it is a separate,
+  more careful question than removing obviously-dead Foyle paths.
+- `config.py`'s marker constants, `detect_all`, `bridge/export_cases.py` —
+  these thread into `detection/detect.py::detect_generic`, which produces the
+  **marker baseline** in §7's detection table. ~30 lines of dead strings is not
+  worth risking a cited number. `export_cases.py` also still holds shared
+  helpers that `export_messy.py` imports.
+- `synthetic/generate_stream.py` — live until P2 retargets the replay.
+
+**Still outstanding (write-up, not code):** §7's replay curves predate the
+simulator. And the "SME #2 is a config block and zero engine code" claim is
+**not yet fully true for `simulator/`** — `simulator/render.py` hard-codes
+advisory filenames and generator method names. Do not overclaim it.

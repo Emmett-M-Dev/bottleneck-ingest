@@ -66,7 +66,7 @@ def _ui_item(item: ActionItem) -> dict:
         "explanation": execution_reason(item),
     }
     payload["sent_to_llm"] = {
-        "used_llm": item.llm_payload is not None or item.generated_by == "llm_anomaly",
+        "used_llm": item.llm_payload is not None,
         "payload": item.llm_payload,
         "note": ("Only the scrubbed payload shown here left this machine. "
                  "Names and identifiers are replaced with placeholders before "

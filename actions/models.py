@@ -175,7 +175,7 @@ class ActionItem(BaseModel):
     rank_score: float = 0.0
     rank_explanation: list[str] = Field(default_factory=list)
     llm_payload: Optional[dict] = None      # exactly what was sent to an LLM, or None
-    generated_by: Literal["detector", "case_rule", "llm_anomaly"] = "detector"
+    generated_by: Literal["detector", "case_rule"] = "detector"
 
     @property
     def is_machine_executable(self) -> bool:

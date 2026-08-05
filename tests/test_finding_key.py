@@ -139,9 +139,9 @@ def test_fallback_only_applies_to_legacy_exports():
 
 
 def test_export_messy_emits_finding_key():
-    """Verify that bridge/export_messy.py emits finding_key in BOTH case-building paths:
-    1. Structural bottlenecks (for bn in detected loop)
-    2. Anomaly observations (_anomaly_cases function)
+    """Verify that bridge/export_messy.py emits finding_key on the case dicts
+    it builds from structural bottlenecks — the only case-building path left
+    since the local-LLM anomaly pass was removed.
 
     Uses static source analysis to avoid heavy spaCy import via pipeline.diagnose.
     Brittleness note: regex matching is sensitive to whitespace and key order.
@@ -158,14 +158,16 @@ def test_export_messy_emits_finding_key():
     assert "from detection.detect import finding_key" in source, \
         "finding_key must be imported from detection.detect"
 
-    # Check Path 1: structural bottleneck case dicts (bn loop, line ~185)
-    # Pattern: case_id and finding_key assigned in the case dict literal
+    # The structural bottleneck case dicts: case_id and finding_key must be
+    # assigned together in the dict literal.
     bn_pattern = r'"case_id":\s*bn\.id,\s*"finding_key":\s*finding_key\(bn\)'
     assert re.search(bn_pattern, source), \
         'Structural path: case dict must contain "case_id": bn.id, "finding_key": finding_key(bn)'
 
-    # Check Path 2: anomaly case dicts (_anomaly_cases, line ~146)
-    # Pattern: case_id (AN-style) and finding_key (anomaly::stage::title)
-    anomaly_pattern = r'"case_id":\s*f"AN\{i:03d\}",\s*"finding_key":\s*f"anomaly::{_canon\(f\.stage\)}::{_canon\(f\.title\)}"'
-    assert re.search(anomaly_pattern, source), \
-        'Anomaly path: case dict must contain "case_id": f"AN{i:03d}", "finding_key": f"anomaly::{_canon(f.stage)}::{_canon(f.title)}"'
+    # There must remain exactly ONE case-building path. The local-LLM anomaly
+    # pass was a second one, and it was removed; if it (or anything like it)
+    # returns, this fires and whoever re-adds it has to give it a finding_key
+    # too — otherwise a partially-keyed export silently re-enables the
+    # rank-order fallback in actions/build.py.
+    assert '"type": "anomaly"' not in source, \
+        "a second case-building path reappeared — give it a finding_key"
