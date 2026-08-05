@@ -42,10 +42,15 @@ def _item(action_id="ACT-TST-0001", **kw) -> ActionItem:
 
 
 def _snapshot(metrics: dict, *, snapshot_id="SNAP-A", present=None,
-              taken_at="2026-07-01") -> AnalysisSnapshot:
+              taken_at="2026-07-01", source_drive="") -> AnalysisSnapshot:
+    # `source_drive=""` (explicit, not the model default) — these fixtures
+    # stand in for a plain, clean ingest unless a test says otherwise. The
+    # model's bare default is now `None` (UNKNOWN provenance, refused by both
+    # `approve` and `review` — see actions/execute.py), which would make every
+    # unrelated test below that never mentions provenance fail closed too.
     return AnalysisSnapshot(
         snapshot_id=snapshot_id, profile="foyle", taken_at=taken_at,
-        metrics=metrics,
+        source_drive=source_drive, metrics=metrics,
         present_keys=list(metrics) if present is None else present)
 
 
@@ -259,6 +264,103 @@ def test_approve_accepts_a_baseline_explicitly_from_the_profiles_own_default(
     intervention, _ = approve("foyle", item, snapshot=snapshot,
                               runner=runner, path=path)
     assert intervention.baseline_value == 14.0
+
+
+def test_approve_accepts_a_baseline_from_a_relative_spelling_of_the_default(
+        tmp_path) -> None:
+    """The mechanical fix: `--drive data/synthetic/messy_foyle` (relative,
+    from the repo root) names exactly foyle's default drive, just spelled
+    differently from the resolved absolute path `_default_drive` returns.
+    Before the fix this compared unequal and was wrongly refused."""
+    runner = _Runner()
+    path = tmp_path / "interventions.json"
+    item = _item(action_category="case_action", owner="Ciara")
+    snapshot = _snapshot({item.finding_key: 14.0})
+    snapshot.source_drive = "data/synthetic/messy_foyle"  # relative, same dir
+
+    intervention, _ = approve("foyle", item, snapshot=snapshot,
+                              runner=runner, path=path)
+    assert intervention.baseline_value == 14.0
+
+
+def test_approve_refuses_a_baseline_of_unknown_provenance(tmp_path) -> None:
+    """Blocker 1: `source_drive is None` is what every pre-existing row in
+    outputs/snapshots_*.jsonl carries (the field did not exist when they were
+    written) — it must fail CLOSED, not read as the clean default. Before the
+    fix `None` and `""` were the same Pydantic default and both passed."""
+    runner = _Runner()
+    path = tmp_path / "interventions.json"
+    item = _item(action_category="case_action", owner="Ciara")
+    snapshot = _snapshot({item.finding_key: 14.0})
+    snapshot.source_drive = None
+
+    with pytest.raises(ContaminatedBaselineError):
+        approve("foyle", item, snapshot=snapshot, runner=runner, path=path)
+
+    assert store.load_interventions("foyle", path) == [], (
+        "a refused approval must not persist an intervention")
+
+
+def test_approve_allows_a_baseline_with_no_snapshot_at_all(tmp_path) -> None:
+    """`snapshot is None` (nothing to compare against yet) is a different
+    situation from unknown provenance and must not be refused — approving
+    without a baseline has always been allowed; the intervention just has no
+    `baseline_snapshot_id` to point at (its baseline value, if any, falls
+    back to the item's own metric_value rather than a snapshot lookup)."""
+    runner = _Runner()
+    path = tmp_path / "interventions.json"
+    item = _item(action_category="case_action", owner="Ciara")
+
+    intervention, _ = approve("foyle", item, snapshot=None,
+                              runner=runner, path=path)
+    assert intervention.baseline_snapshot_id is None
+
+
+# ── Observation-drive guard (behavioural correction #2's completion — see
+#    actions/outcome.py::review, which now runs the identical check on the
+#    LATER snapshot before measuring anything) ───────────────────────────────
+
+def test_review_refuses_a_contaminated_observation(tmp_path) -> None:
+    """A simulated/alternate-drive snapshot must not be able to produce an
+    effectiveness verdict either — only the baseline side was guarded before
+    this fix. Nothing may be measured, so no intervention may change state."""
+    path = tmp_path / "interventions.json"
+    item = _item()
+    baseline = _snapshot({item.finding_key: 14.0})
+    intervention = create_intervention(item, snapshot=baseline)
+    for status in ("assigned", "in_progress", "completed"):
+        lifecycle.transition(intervention, status)
+    store.save_interventions("foyle", [intervention], path)
+
+    later = _snapshot({}, snapshot_id="SNAP-SIM", present=[])
+    later.source_drive = "data/sim/foyle/drive"
+
+    with pytest.raises(ContaminatedBaselineError):
+        review("foyle", later, path=path)
+
+    stored = store.load_interventions("foyle", path)[0]
+    assert stored.status == "completed", (
+        "a refused review must not move the intervention or attach an "
+        "outcome")
+    assert stored.outcome is None
+
+
+def test_review_refuses_an_observation_of_unknown_provenance(tmp_path) -> None:
+    path = tmp_path / "interventions.json"
+    item = _item()
+    baseline = _snapshot({item.finding_key: 14.0})
+    intervention = create_intervention(item, snapshot=baseline)
+    for status in ("assigned", "in_progress", "completed"):
+        lifecycle.transition(intervention, status)
+    store.save_interventions("foyle", [intervention], path)
+
+    later = _snapshot({}, snapshot_id="SNAP-LEGACY", present=[])
+    later.source_drive = None
+
+    with pytest.raises(ContaminatedBaselineError):
+        review("foyle", later, path=path)
+
+    assert store.load_interventions("foyle", path)[0].outcome is None
 
 
 # ── Lifecycle + outcome gating (behavioural correction #2) ───────────────────

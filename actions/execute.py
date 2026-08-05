@@ -43,28 +43,93 @@ def _now() -> str:
 
 
 class ContaminatedBaselineError(RuntimeError):
-    """Refuse to baseline an intervention on a snapshot from a non-default
-    drive — a simulated demo week, or an explicit re-analysis of an alternate
-    snapshot. Approving stamps `baseline_snapshot_id`/`baseline_value` into
-    the intervention, and `outcome.py::review` later compares that baseline
-    against a REAL snapshot to decide whether the fix worked — the only route
-    to `validated`, which promotes a fix into trusted RAG knowledge. Left
-    unguarded, a demo run left last would let a simulated number become
-    guidance without anyone approving that on purpose."""
+    """Refuse to use a snapshot from a non-default drive — or of unknown
+    provenance — as evidence for a real intervention. Guards BOTH doors:
+
+        approve()             stamps `baseline_snapshot_id`/`baseline_value`
+                              from a snapshot (the BASELINE side).
+        outcome.py::review()  compares that baseline against a LATER
+                              snapshot (the OBSERVATION side) to decide
+                              whether the fix worked.
+
+    Either side can be contaminated by a simulated demo week; a comparison
+    built from either is the only route to `validated`, which promotes a fix
+    into trusted RAG knowledge. Left unguarded, a demo run left last would
+    let a simulated number become guidance without anyone approving that on
+    purpose. See `_snapshot_is_contaminated` / `_assert_snapshot_is_clean`."""
+
+
+def _resolve_drive(path_like) -> str:
+    """Absolute, filesystem-normalised form of a drive path.
+
+    A relative `--drive` argument (e.g. `data/synthetic/messy_advisory`,
+    typed from the repo root) must compare EQUAL to the profile's resolved
+    default even though the two strings differ — `ingest.py` stamps whatever
+    was typed verbatim (`Path(drive).as_posix()`, unresolved, by design —
+    see `ingest.py::_write_event_log_owner`), so the burden of normalising
+    is on the comparison, not the write. Relative paths resolve against the
+    repo root (`config.ROOT`), where every documented invocation runs from —
+    not the process's current CWD — so the comparison is stable regardless
+    of where a caller happens to be standing."""
+    p = Path(path_like)
+    if not p.is_absolute():
+        p = config.ROOT / p
+    return p.resolve().as_posix()
 
 
 def _default_drive(profile: str) -> str:
-    return config.MESSY_PROFILES[profile]["dir"].as_posix()
+    return _resolve_drive(config.MESSY_PROFILES[profile]["dir"])
 
 
 def _snapshot_is_contaminated(profile: str,
                               snapshot: AnalysisSnapshot | None) -> bool:
-    """True when `snapshot` was built from a drive other than the profile's
-    own default static folder. An empty `source_drive` (the normal, plain
-    ingest case) is never contaminated."""
-    if snapshot is None or not snapshot.source_drive:
+    """True when `snapshot` must not be trusted as a baseline or observation
+    for a real intervention.
+
+    `snapshot is None` (no snapshot at all) is a different situation, left to
+    the caller — it is not itself contamination. Given an actual snapshot:
+
+        source_drive is None   UNKNOWN provenance (every row written before
+                               this field existed) — FAILS CLOSED, might be
+                               simulated data and there is no way to tell.
+        source_drive == ""     the profile's own default drive — clean.
+        source_drive == other  an alternate drive — contaminated unless it
+                               happens to resolve to the same place as the
+                               profile's default (a redundant --drive)."""
+    if snapshot is None:
         return False
-    return Path(snapshot.source_drive).as_posix() != _default_drive(profile)
+    if snapshot.source_drive is None:
+        return True
+    if not snapshot.source_drive:
+        return False
+    return _resolve_drive(snapshot.source_drive) != _default_drive(profile)
+
+
+def _assert_snapshot_is_clean(profile: str, snapshot: AnalysisSnapshot | None,
+                              *, context: str) -> None:
+    """Raise ContaminatedBaselineError if `snapshot` may not be trusted as a
+    `context` ("baseline" or "observation") for a real intervention. Shared
+    by `approve` (the baseline side, below) and `actions/outcome.py::review`
+    (the observation side) so both doors enforce the identical rule."""
+    if not _snapshot_is_contaminated(profile, snapshot):
+        return
+    if snapshot.source_drive is None:
+        raise ContaminatedBaselineError(
+            f"The {context} snapshot for '{profile}' ({snapshot.snapshot_id}) "
+            f"has no recorded provenance — it predates drive-tracking, so it "
+            f"could be simulated data and there is no way to tell. Refusing "
+            f"to use it as a {context} for a real intervention. Take a fresh "
+            f"snapshot and try again:\n"
+            f"    python ingest.py --source messy --profile {profile}\n"
+            f"    python -m actions.cli queue --profile {profile}")
+    raise ContaminatedBaselineError(
+        f"The {context} snapshot for '{profile}' was built from "
+        f"'{snapshot.source_drive}', not the profile's default drive "
+        f"({_default_drive(profile)}). Using it as a {context} would let "
+        f"alternate/simulated data influence a real intervention. Re-ingest "
+        f"the default drive and rebuild the queue before continuing:\n"
+        f"    python ingest.py --source messy --profile {profile}\n"
+        f"    python -m actions.cli queue --profile {profile}")
 
 
 # ── Routing ──────────────────────────────────────────────────────────────────
@@ -216,15 +281,7 @@ def approve(profile: str, item: ActionItem, *,
             path=None, execute_machine: bool = True) -> tuple[Intervention, dict]:
     """The whole Gate-2 approval: create the intervention, persist it, and run
     only what is genuinely machine-safe."""
-    if _snapshot_is_contaminated(profile, snapshot):
-        raise ContaminatedBaselineError(
-            f"The latest analysis snapshot for '{profile}' was built from "
-            f"'{snapshot.source_drive}', not the profile's default drive "
-            f"({_default_drive(profile)}). Approving now would baseline a "
-            f"real intervention on alternate/simulated data. Re-ingest the "
-            f"default drive and rebuild the queue before approving:\n"
-            f"    python ingest.py --source messy --profile {profile}\n"
-            f"    python -m actions.cli queue --profile {profile}")
+    _assert_snapshot_is_clean(profile, snapshot, context="baseline")
     intervention = create_intervention(
         item, snapshot=snapshot, owner=owner, due_date=due_date,
         decision_id=decision_id, note=note, actor=actor)

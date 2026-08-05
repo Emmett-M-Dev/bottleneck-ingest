@@ -51,8 +51,12 @@ def _item(action_id, **kw) -> ActionItem:
 
 
 def _snapshot() -> AnalysisSnapshot:
+    # source_drive="" explicit: these fixtures stand in for a plain, clean
+    # ingest. The model's bare default is `None` (UNKNOWN provenance,
+    # actions/execute.py fails closed on it) — none of the tests below are
+    # about provenance, so they should not be caught by that guard.
     return AnalysisSnapshot(snapshot_id="SNAP-X", profile="advisory",
-                            taken_at="2026-07-20")
+                            taken_at="2026-07-20", source_drive="")
 
 
 # ── Contract ─────────────────────────────────────────────────────────────────

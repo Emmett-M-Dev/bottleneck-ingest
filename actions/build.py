@@ -373,7 +373,12 @@ def build_snapshot(profile: str, df: pd.DataFrame, items: list[ActionItem],
         profile=profile,
         taken_at=taken_at,
         label=label,
-        source_drive=drive,
+        # Always a real string ("" for the profile's own default drive),
+        # never None — None is reserved for legacy rows that predate this
+        # field and must read as UNKNOWN provenance, not as clean. `drive`
+        # is already `str` by `config.read_event_log_owner`'s contract; the
+        # `or ""` is a defensive belt for that contract, not a workaround.
+        source_drive=drive or "",
         case_count=int(df["case_id"].nunique()) if not df.empty else 0,
         event_count=int(len(df)),
         metrics={i.finding_key: float(i.metric_value)

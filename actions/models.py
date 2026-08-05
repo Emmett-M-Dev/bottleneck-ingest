@@ -294,12 +294,20 @@ class AnalysisSnapshot(BaseModel):
     taken_at: str
     label: str = ""                       # e.g. "tick_04" during replay
     # The drive part of the event-log owner stamp at the moment this snapshot
-    # was taken ("" for the profile's own default static folder). Non-empty
-    # means this run read an alternate drive — a later real snapshot, OR the
-    # demo simulator's synthetic week — see `actions/execute.py::approve`,
-    # which refuses to baseline an intervention on a non-default-drive
-    # snapshot so a simulated number can never become a real baseline.
-    source_drive: str = ""
+    # was taken. Tri-state, and the states are NOT interchangeable:
+    #   None  UNKNOWN provenance — every row written before this field
+    #         existed (Pydantic supplies this for a missing key). Might be
+    #         simulated data; there is no way to tell. FAILS CLOSED.
+    #   ""    the profile's own default static folder (clean). What
+    #         `build_snapshot` always stamps for a plain ingest.
+    #   other an alternate drive was read — a later real snapshot, OR the
+    #         demo simulator's synthetic week.
+    # See `actions/execute.py::_snapshot_is_contaminated` /
+    # `_assert_snapshot_is_clean`, which refuse to baseline (approve) or
+    # measure (outcome.py::review) a real intervention against anything but
+    # a "" snapshot, so a simulated or unknown-provenance number can never
+    # become real evidence.
+    source_drive: Optional[str] = None
     case_count: int = 0
     event_count: int = 0
     metrics: dict[str, float] = Field(default_factory=dict)
