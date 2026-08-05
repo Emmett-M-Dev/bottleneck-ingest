@@ -104,14 +104,16 @@ def _write_records(records: list[NormalisedRecord]) -> int:
     return len(records)
 
 
-def event_log_owner_path():
-    """Which profile/source the current event log belongs to.
-
-    `outputs/event_log.parquet` is a single global file that every profile
-    overwrites in turn. Anything reading it downstream needs to know whose data
-    it is currently holding — without this marker a consumer happily builds a
-    joinery action queue out of advisory events."""
-    return config.OUTPUTS / "event_log_profile.txt"
+# Re-exported from config.py, which owns the actual definitions. Anything
+# reading `outputs/event_log_profile.txt` downstream needs to know whose data
+# `outputs/event_log.parquet` currently holds — without this marker a
+# consumer happily builds a joinery action queue out of advisory events. The
+# read side lives in config.py (dependency-free) rather than here so that
+# actions/build.py can read the marker without importing this module's
+# embedding/chroma stack; kept as attributes on `ingest` too so existing
+# callers (and this module's own write path below) are unaffected.
+event_log_owner_path = config.event_log_owner_path
+read_event_log_owner = config.read_event_log_owner
 
 
 def _write_event_log_owner(source: str, profile: str | None,

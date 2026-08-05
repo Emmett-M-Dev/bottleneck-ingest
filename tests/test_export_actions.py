@@ -70,6 +70,22 @@ def test_ui_contract_top_level_keys(isolated_outputs) -> None:
         "cases_affected", "by_category", "data_quality_confidence"}
 
 
+def test_ui_payload_carries_the_snapshots_source_drive(isolated_outputs) -> None:
+    """TodayTab's alternate-drive banner reads this straight off the payload —
+    empty for the profile's own default drive, the drive path otherwise."""
+    default_ui = build_ui_actions("advisory", [_item("A")], snapshot=_snapshot())
+    assert default_ui["source_drive"] == ""
+
+    sim_snapshot = AnalysisSnapshot(snapshot_id="SNAP-Y", profile="advisory",
+                                    taken_at="2026-07-20",
+                                    source_drive="data/sim/advisory/drive")
+    sim_ui = build_ui_actions("advisory", [_item("A")], snapshot=sim_snapshot)
+    assert sim_ui["source_drive"] == "data/sim/advisory/drive"
+
+    no_snapshot_ui = build_ui_actions("advisory", [_item("A")], snapshot=None)
+    assert no_snapshot_ui["source_drive"] == ""
+
+
 def test_every_item_declares_whether_approving_touches_files(isolated_outputs) -> None:
     items = [
         _item("CASE", action_category="case_action"),
@@ -103,9 +119,11 @@ def test_every_item_declares_what_was_sent_to_a_model(isolated_outputs) -> None:
 
 
 def test_retrieved_resolutions_survive_the_export(isolated_outputs) -> None:
-    """The RAG grounding is the evidence for the recommendation, and once the
-    Bottlenecks tab is folded away the exported action item is the only place
-    a worker sees it — the export must carry the contents, not just the key."""
+    """The RAG grounding is the evidence for the recommendation. Now that the
+    Bottlenecks tab is folded away, the exported action item (ActionCard.jsx)
+    is the PRIMARY place a worker sees it — HITLCard.jsx (Fixes tab) also
+    renders `retrieved_resolutions` and always has — so the export must carry
+    the contents, not just the key."""
     resolutions = [
         {"resolution_id": "RES-001", "similarity_score": 0.82,
          "text": "we added an SLA"},

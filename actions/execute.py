@@ -30,6 +30,7 @@ import os
 import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 import config
 from actions import lifecycle, store, templates
@@ -39,6 +40,31 @@ from actions.models import (ActionItem, AnalysisSnapshot, Intervention,
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+class ContaminatedBaselineError(RuntimeError):
+    """Refuse to baseline an intervention on a snapshot from a non-default
+    drive — a simulated demo week, or an explicit re-analysis of an alternate
+    snapshot. Approving stamps `baseline_snapshot_id`/`baseline_value` into
+    the intervention, and `outcome.py::review` later compares that baseline
+    against a REAL snapshot to decide whether the fix worked — the only route
+    to `validated`, which promotes a fix into trusted RAG knowledge. Left
+    unguarded, a demo run left last would let a simulated number become
+    guidance without anyone approving that on purpose."""
+
+
+def _default_drive(profile: str) -> str:
+    return config.MESSY_PROFILES[profile]["dir"].as_posix()
+
+
+def _snapshot_is_contaminated(profile: str,
+                              snapshot: AnalysisSnapshot | None) -> bool:
+    """True when `snapshot` was built from a drive other than the profile's
+    own default static folder. An empty `source_drive` (the normal, plain
+    ingest case) is never contaminated."""
+    if snapshot is None or not snapshot.source_drive:
+        return False
+    return Path(snapshot.source_drive).as_posix() != _default_drive(profile)
 
 
 # ── Routing ──────────────────────────────────────────────────────────────────
@@ -190,6 +216,15 @@ def approve(profile: str, item: ActionItem, *,
             path=None, execute_machine: bool = True) -> tuple[Intervention, dict]:
     """The whole Gate-2 approval: create the intervention, persist it, and run
     only what is genuinely machine-safe."""
+    if _snapshot_is_contaminated(profile, snapshot):
+        raise ContaminatedBaselineError(
+            f"The latest analysis snapshot for '{profile}' was built from "
+            f"'{snapshot.source_drive}', not the profile's default drive "
+            f"({_default_drive(profile)}). Approving now would baseline a "
+            f"real intervention on alternate/simulated data. Re-ingest the "
+            f"default drive and rebuild the queue before approving:\n"
+            f"    python ingest.py --source messy --profile {profile}\n"
+            f"    python -m actions.cli queue --profile {profile}")
     intervention = create_intervention(
         item, snapshot=snapshot, owner=owner, due_date=due_date,
         decision_id=decision_id, note=note, actor=actor)

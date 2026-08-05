@@ -41,6 +41,38 @@ EVENT_LOG_PATH = OUTPUTS / "event_log.parquet"
 RECORDS_PATH   = OUTPUTS / "records.jsonl"
 CHROMA_COLLECTION = "sme_ops"
 
+
+# ── Event-log owner stamp (read-side; kept dependency-free) ──────────────────
+# `outputs/event_log.parquet` is a single global file every profile overwrites
+# in turn; `outputs/event_log_profile.txt` stamps whose data it currently
+# holds. The WRITE side lives in `ingest.py::_write_event_log_owner` (only
+# ingestion ever writes it). These READ-side helpers live here — not in
+# ingest.py — on purpose: `ingest.py` imports the embedding/chroma stack at
+# module scope, and `actions/` (the action layer, incl. `actions/build.py`'s
+# per-run AnalysisSnapshot) is deliberately kept free of chromadb/pyarrow/
+# torch so it can run in the light processes (CLAUDE.md §6). Importing
+# `ingest` merely to read a marker file would drag that whole stack into any
+# process — or test — that touches `actions/build.py::build_snapshot`.
+# `ingest.py` re-exports both names so existing callers of
+# `ingest.event_log_owner_path` / `ingest.read_event_log_owner` are unaffected.
+
+def event_log_owner_path() -> Path:
+    return OUTPUTS / "event_log_profile.txt"
+
+
+def read_event_log_owner() -> tuple[str, str]:
+    """(profile, drive) parsed from the owner stamp — `("", "")` if the event
+    log has no owner recorded yet. `drive` is `""` for a plain profile ingest
+    and the drive path when `--drive` pointed somewhere other than the
+    profile's configured folder (see `ingest.py::_write_event_log_owner`)."""
+    marker = event_log_owner_path()
+    owner = marker.read_text(encoding="utf-8").strip() if marker.exists() else ""
+    if not owner:
+        return "", ""
+    profile, _, drive = owner.partition("@")
+    return profile, drive
+
+
 # ── Detection ────────────────────────────────────────────────────────────────
 # Marker stages for the three bottleneck patterns (matched case-insensitively).
 # Domain: Foyle International student-placement workflow (host families / CVs /

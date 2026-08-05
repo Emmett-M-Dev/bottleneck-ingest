@@ -2,10 +2,14 @@
 ingest from the profile's default static drive, so a later run can tell
 whose data `outputs/event_log.parquet` (the one global file) actually holds.
 
-`ingest` is imported lazily inside each test, matching the existing
-lazy-import convention at its only other call site
-(`bridge/export_actions.py::_assert_event_log_belongs_to`) rather than at
-module scope, since `ingest.py` pulls in the embedding/chroma stack.
+`ingest` is imported lazily inside each test (rather than at module scope)
+because `ingest.py` pulls in the embedding/chroma stack, purely to exercise
+`_write_event_log_owner` — the write side, which only ingestion needs. The
+read side (`event_log_owner_path` / `read_event_log_owner`) lives in
+config.py and is dependency-free; `ingest` re-exports both names, which is
+what these tests call through, but `actions/build.py` and
+`bridge/export_actions.py::_assert_event_log_belongs_to` read straight off
+`config` and no longer import `ingest` at all.
 """
 
 from __future__ import annotations
@@ -48,3 +52,22 @@ def test_owner_stamp_falls_back_to_source_when_no_profile(tmp_path, monkeypatch)
     monkeypatch.setattr(config, "OUTPUTS", tmp_path)
     ingest._write_event_log_owner("local", None, drive=None)
     assert ingest.event_log_owner_path().read_text(encoding="utf-8") == "local"
+
+
+def test_read_event_log_owner_splits_profile_and_drive(tmp_path, monkeypatch):
+    """The reader `actions/build.py::build_snapshot` uses to stamp
+    `AnalysisSnapshot.source_drive` — must round-trip what the writer wrote."""
+    import config
+    import ingest
+
+    monkeypatch.setattr(config, "OUTPUTS", tmp_path)
+    assert ingest.read_event_log_owner() == ("", "")  # no marker yet
+
+    ingest._write_event_log_owner("messy", "advisory", drive=None)
+    assert ingest.read_event_log_owner() == ("advisory", "")
+
+    ingest._write_event_log_owner(
+        "messy", "advisory", drive=Path("data/sim/advisory/drive"))
+    profile, drive = ingest.read_event_log_owner()
+    assert profile == "advisory"
+    assert drive == "data/sim/advisory/drive"

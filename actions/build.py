@@ -363,12 +363,17 @@ def build_snapshot(profile: str, df: pd.DataFrame, items: list[ActionItem],
                    *, label: str = "", as_of=None) -> AnalysisSnapshot:
     """The measurable state of this run, keyed by finding_key so a later run
     can compare like with like."""
+    # config.read_event_log_owner, NOT ingest.read_event_log_owner — importing
+    # ingest.py drags in its module-scope embedding/chroma stack, which
+    # actions/build.py must stay free of (CLAUDE.md §6 process-isolation rule).
     taken_at = _as_of_date(df, as_of).isoformat()
+    _, drive = config.read_event_log_owner()
     return AnalysisSnapshot(
         snapshot_id=make_snapshot_id(profile, taken_at),
         profile=profile,
         taken_at=taken_at,
         label=label,
+        source_drive=drive,
         case_count=int(df["case_id"].nunique()) if not df.empty else 0,
         event_count=int(len(df)),
         metrics={i.finding_key: float(i.metric_value)

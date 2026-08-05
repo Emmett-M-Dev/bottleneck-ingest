@@ -293,6 +293,13 @@ class AnalysisSnapshot(BaseModel):
     profile: str
     taken_at: str
     label: str = ""                       # e.g. "tick_04" during replay
+    # The drive part of the event-log owner stamp at the moment this snapshot
+    # was taken ("" for the profile's own default static folder). Non-empty
+    # means this run read an alternate drive — a later real snapshot, OR the
+    # demo simulator's synthetic week — see `actions/execute.py::approve`,
+    # which refuses to baseline an intervention on a non-default-drive
+    # snapshot so a simulated number can never become a real baseline.
+    source_drive: str = ""
     case_count: int = 0
     event_count: int = 0
     metrics: dict[str, float] = Field(default_factory=dict)

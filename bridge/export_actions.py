@@ -130,6 +130,12 @@ def build_ui_actions(profile: str, items: list[ActionItem],
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "analysis_date": _analysis_date(items),
         "snapshot_id": snapshot.snapshot_id if snapshot else None,
+        # "" for the profile's own default drive; non-empty means this queue
+        # was built from an alternate drive (a later real snapshot, or the
+        # demo simulator's synthetic week) — the dashboard's TodayTab shows an
+        # amber strip naming it, so a simulated queue is never mistaken for
+        # the SME's live spreadsheets. See CLAUDE.md §4b / actions/execute.py.
+        "source_drive": snapshot.source_drive if snapshot else "",
         "totals": {
             "open_items": len(live),
             "revenue_at_risk": round(sum(i.impact.revenue_at_risk or 0
@@ -177,14 +183,15 @@ def _assert_event_log_belongs_to(profile: str) -> None:
     of the SAME profile is a documented, legitimate workflow (CLAUDE.md §4b —
     it's what makes `validated` outcomes reachable at all), not a cross-profile
     mismatch. We still warn on the alternate-drive case so a user building a
-    queue off non-default data notices, but we never block it."""
-    from ingest import event_log_owner_path
+    queue off non-default data notices, but we never block it.
 
-    marker = event_log_owner_path()
-    owner = marker.read_text(encoding="utf-8").strip() if marker.exists() else None
-    if not owner:
+    Reads via `config.read_event_log_owner` (not `ingest`'s own copy) so this
+    check never drags ingest.py's embedding/chroma stack into a build() call
+    that would otherwise stay light until diagnosis actually needs it."""
+    owner_profile, drive = config.read_event_log_owner()
+    if not owner_profile:
         return
-    owner_profile, _, drive = owner.partition("@")
+    owner = f"{owner_profile}@{drive}" if drive else owner_profile
     if owner_profile != profile:
         raise WrongProfileError(
             f"The event log currently holds '{owner}' data, not '{profile}'. "

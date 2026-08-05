@@ -15,7 +15,8 @@ import config
 from actions import lifecycle, store
 from actions.build import (build_action_items, build_snapshot,
                            data_quality_confidence)
-from actions.execute import approve, create_intervention, execute, route
+from actions.execute import (ContaminatedBaselineError, approve,
+                             create_intervention, execute, route)
 from actions.impact import build_impact
 from actions.models import (ActionItem, AnalysisSnapshot, BusinessImpact,
                             EvidenceReference, make_action_id)
@@ -209,6 +210,55 @@ def test_approval_of_a_case_action_still_creates_a_tracked_intervention(tmp_path
     assert intervention.status == "assigned"   # an owner was supplied
     assert item.intervention_id == intervention.intervention_id
     assert store.load_interventions("foyle", path)[0].baseline_value == 14.0
+
+
+# ── Baseline-drive guard (a simulated snapshot must never baseline a real
+#    intervention — see actions/execute.py::_snapshot_is_contaminated) ───────
+
+def test_approve_refuses_a_baseline_from_a_non_default_drive(tmp_path) -> None:
+    runner = _Runner()
+    path = tmp_path / "interventions.json"
+    item = _item(action_category="case_action", owner="Ciara")
+    snapshot = _snapshot({item.finding_key: 14.0})
+    snapshot.source_drive = "data/sim/foyle/drive"  # not foyle's default dir
+
+    with pytest.raises(ContaminatedBaselineError):
+        approve("foyle", item, snapshot=snapshot, runner=runner, path=path)
+
+    assert store.load_interventions("foyle", path) == [], (
+        "a refused approval must not persist an intervention")
+
+
+def test_approve_accepts_a_baseline_from_the_default_drive(tmp_path) -> None:
+    """The normal path: `source_drive` empty (a plain ingest) is never
+    contaminated, and approval proceeds exactly as before."""
+    runner = _Runner()
+    path = tmp_path / "interventions.json"
+    item = _item(action_category="case_action", owner="Ciara")
+    snapshot = _snapshot({item.finding_key: 14.0})
+    assert snapshot.source_drive == ""
+
+    intervention, outcome = approve("foyle", item, snapshot=snapshot,
+                                    runner=runner, path=path)
+    assert intervention.baseline_value == 14.0
+    assert intervention.baseline_snapshot_id == snapshot.snapshot_id
+    assert outcome["mode"] == "tracked"
+
+
+def test_approve_accepts_a_baseline_explicitly_from_the_profiles_own_default(
+        tmp_path) -> None:
+    """A snapshot whose `source_drive` happens to equal the profile's own
+    default folder (an explicit but redundant --drive) is not contaminated
+    either — only a genuinely alternate drive is refused."""
+    runner = _Runner()
+    path = tmp_path / "interventions.json"
+    item = _item(action_category="case_action", owner="Ciara")
+    snapshot = _snapshot({item.finding_key: 14.0})
+    snapshot.source_drive = config.MESSY_PROFILES["foyle"]["dir"].as_posix()
+
+    intervention, _ = approve("foyle", item, snapshot=snapshot,
+                              runner=runner, path=path)
+    assert intervention.baseline_value == 14.0
 
 
 # ── Lifecycle + outcome gating (behavioural correction #2) ───────────────────
