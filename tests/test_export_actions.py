@@ -102,6 +102,24 @@ def test_every_item_declares_what_was_sent_to_a_model(isolated_outputs) -> None:
     assert flat["B"]["sent_to_llm"]["payload"]["bottleneck"]["stage"] == "Proposal"
 
 
+def test_retrieved_resolutions_survive_the_export(isolated_outputs) -> None:
+    """The RAG grounding is the evidence for the recommendation, and once the
+    Bottlenecks tab is folded away the exported action item is the only place
+    a worker sees it — the export must carry the contents, not just the key."""
+    resolutions = [
+        {"resolution_id": "RES-001", "similarity_score": 0.82,
+         "text": "we added an SLA"},
+    ]
+    grounded = _item("G", retrieved_resolutions=resolutions)
+    ungrounded = _item("U")
+    ui = build_ui_actions("advisory", [grounded, ungrounded], snapshot=_snapshot())
+    flat = {i["action_id"]: i for section in ui["sections"].values()
+            for i in section}
+
+    assert flat["G"]["retrieved_resolutions"] == resolutions
+    assert flat["U"]["retrieved_resolutions"] == []
+
+
 def test_an_item_appears_in_exactly_one_section(isolated_outputs) -> None:
     """A finding with both revenue and delivery risk must not be counted
     twice — a worker reading down the page would act on it twice."""
