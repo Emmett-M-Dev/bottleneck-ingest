@@ -156,6 +156,10 @@ class ActionItem(BaseModel):
     stage: str = ""
     affected_case_ids: list[str] = Field(default_factory=list)
     evidence: list[EvidenceReference] = Field(default_factory=list)
+    # The RAG grounding behind this recommendation: past resolutions the
+    # diagnosis agent retrieved, with similarity scores. Empty when the item
+    # came from a case rule or the diagnosis was offline.
+    retrieved_resolutions: list[dict] = Field(default_factory=list)
     metric_label: Optional[str] = None
     metric_value: Optional[float] = None
     detection_confidence: Optional[float] = None   # how sure the detector is

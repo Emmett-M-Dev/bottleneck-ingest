@@ -378,3 +378,55 @@ def test_every_profile_can_build_a_queue_from_the_same_code(profile: str) -> Non
     ranked = rank(items, today=date(2026, 3, 1))
     assert all(i.profile == profile for i in ranked)
     assert all(i.workflow for i in ranked)
+
+
+def test_structural_items_carry_the_retrieved_resolutions():
+    """The RAG grounding must reach the action item — it is the evidence for
+    the recommendation, and Today is the only place a worker sees it."""
+    import pandas as pd
+    from actions.build import build_action_items
+
+    rows = []
+    for n in range(1, 4):
+        cid = f"NA-{n}"
+        rows += [
+            (cid, "Lead", pd.Timestamp("2026-01-01"), "R", "done", "x.xlsx:1", 1000),
+            (cid, "Qualification", pd.Timestamp("2026-01-03"), "R", "done", "x.xlsx:2", 1000),
+            (cid, "Proposal", pd.Timestamp("2026-01-28"), "R", "done", "x.xlsx:3", 1000),
+        ]
+    for n in range(4, 9):                      # background so the gap is an outlier
+        cid = f"NA-{n}"
+        rows += [
+            (cid, "Lead", pd.Timestamp("2026-01-01"), "R", "done", "x.xlsx:4", 1000),
+            (cid, "Qualification", pd.Timestamp("2026-01-03"), "R", "done", "x.xlsx:5", 1000),
+            (cid, "Proposal", pd.Timestamp("2026-01-05"), "R", "done", "x.xlsx:6", 1000),
+        ]
+    df = pd.DataFrame(rows, columns=["case_id", "stage", "ts", "actor",
+                                     "status", "source_ref", "value"])
+
+    cases = [{
+        "case_id": "BN001",
+        "finding_key": "delay::proposal::avg_delay_days",
+        "type": "delay",
+        "title": "Proposals waiting",
+        "description": "they sit",
+        "retrieved_resolutions": [
+            {"resolution_id": "RES-001", "similarity_score": 0.82,
+             "text": "we added an SLA"},
+        ],
+    }]
+
+    items = build_action_items("advisory", df, cases=cases)
+    delays = [i for i in items if i.finding_type == "delay"]
+    assert delays, "expected a delay finding"
+    assert delays[0].retrieved_resolutions[0]["resolution_id"] == "RES-001"
+
+
+def test_items_without_a_diagnosis_have_no_resolutions():
+    """Absent RAG grounding the field is empty, never None — the UI maps over it."""
+    import pandas as pd
+    from actions.models import ActionItem
+
+    item = ActionItem(action_id="A", profile="advisory", finding_key="k",
+                      finding_type="delay", title="t")
+    assert item.retrieved_resolutions == []

@@ -60,6 +60,7 @@ def _ui_item(item: ActionItem) -> dict:
     click approve, whether approving changes a file or creates a task. A system
     that can edit spreadsheets should never leave that ambiguous."""
     payload = item.model_dump()
+    payload["retrieved_resolutions"] = item.retrieved_resolutions
     payload["execution"] = {
         "route": route(item),
         "will_modify_files": item.is_machine_executable,

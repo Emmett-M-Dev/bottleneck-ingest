@@ -137,6 +137,7 @@ def _make_item(profile: str, *, finding_key: str, finding_type: str,
                source_records: list[str] | None = None,
                generated_by: str = "detector",
                llm_payload: dict | None = None,
+               retrieved_resolutions: list[dict] | None = None,
                impact=None) -> ActionItem:
     tpl = templates.template_for(profile, finding_type)
     category = tpl["category"]
@@ -177,6 +178,7 @@ def _make_item(profile: str, *, finding_key: str, finding_type: str,
         source_records=source_records or [],
         generated_by=generated_by,
         llm_payload=llm_payload,
+        retrieved_resolutions=retrieved_resolutions or [],
     )
 
 
@@ -209,7 +211,8 @@ def _structural_items(profile: str, df: pd.DataFrame, as_of: date,
             case_details=case_details, as_of=as_of, dq_confidence=dq,
             confidence=diag.get("confidence"),
             source_records=list(bn.example_refs),
-            llm_payload=diag.get("llm_payload"))
+            llm_payload=diag.get("llm_payload"),
+            retrieved_resolutions=diag.get("retrieved_resolutions") or [])
         # A diagnosis that came back from the RAG agent replaces the authored
         # wording, but never the category — routing is the system's decision.
         fix = diag.get("suggested_fix") or {}
