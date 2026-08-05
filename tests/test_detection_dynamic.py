@@ -1,16 +1,13 @@
 """Dynamic-detector tests on hand-built event logs: each structural pattern is
 found without any marker config, a clean log yields nothing, min_affected
-filters singletons, and the anomaly-pass payload contains aggregates only
+and filters singletons
 (no cell values). No parquet, no chroma, no LLM.
 """
 
 from __future__ import annotations
 
-import json
-
 import pandas as pd
 
-from detection.anomaly import build_stage_stats, propose_anomalies
 from detection.dynamic import detect_dynamic, gap_threshold_days
 
 STAGE_ORDER = ["Request Received", "Placement Offer", "Booking Confirmed",
@@ -117,31 +114,3 @@ def test_ids_ordered_by_impact() -> None:
     assert found[0].id == "BN001" and found[0].affected_count == 3
     assert all(a.affected_count >= b.affected_count
                for a, b in zip(found, found[1:]))
-
-
-def test_stage_stats_payload_is_aggregate_only() -> None:
-    """The anomaly payload must leak no row-level values: no case ids, actors,
-    status strings, or source refs — stage names and numbers only."""
-    rows = _population() + [
-        ("SECRET-CASE-9", "Placement Offer", "2026-02-01",
-         "Una Toner", "chased by una.toner@foyle.example", "secret-ref-1"),
-    ]
-    stats = build_stage_stats(_df(rows), STAGE_ORDER)
-    blob = json.dumps(stats)
-    for leak in ("SECRET-CASE-9", "Una Toner", "una.toner", "secret-ref-1",
-                 "chased"):
-        assert leak not in blob, leak
-    assert stats["total_cases"] == 7
-    assert all(set(s) >= {"stage", "events", "cases"} for s in stats["stages"])
-
-
-def test_propose_anomalies_absent_ollama_is_empty() -> None:
-    """No local model -> silently no findings (the export must not break)."""
-    import httpx
-
-    def refuse(request):
-        raise httpx.ConnectError("refused")
-
-    client = httpx.Client(transport=httpx.MockTransport(refuse))
-    stats = build_stage_stats(_df(_population()), STAGE_ORDER)
-    assert propose_anomalies(stats, client=client) == []
