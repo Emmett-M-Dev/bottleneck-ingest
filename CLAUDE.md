@@ -4,6 +4,12 @@ Context file for AI coding assistants working on this project. Read this first, 
 
 > **Companion docs:** `HANDOVER.md` (current build state + how to run) and
 > `TASKLIST.md` (what's done, what's next). This file is the *why*; HANDOVER.md is the *what/how now*.
+>
+> **Most recent session:** `docs/SESSION-REPORT-2026-08-06.md` — the simulator,
+> demo mode, the five-tabs-to-three fold, and ~2,100 lines removed. Read it
+> before touching the dashboard or the evaluation artefacts: it lists several
+> things that were believed true and were not, and two items to do before
+> demoing.
 
 ---
 
