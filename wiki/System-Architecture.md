@@ -20,7 +20,7 @@ flowchart TD
     G1 --> L[("Canonical event log<br/>case_id, activity, timestamp,<br/>actor, status, source_ref")]
 
     subgraph CORE["FIXED PIPELINE CORE — identical for every firm"]
-        D["Detection<br/>structural scan + case rules<br/>+ local anomaly pass"]
+        D["Detection<br/>structural scan + case rules"]
         R["RAG diagnosis<br/>over past resolutions"]
         S["Fix suggestion<br/>+ cost model"]
         D --> R --> S
@@ -112,6 +112,31 @@ The system keeps two stores apart. Do not merge them.
 
 A graph runs the steps in order: detect, retrieve, diagnose, gate, execute. The gate is a stop point. A fresh run pauses at the gate and writes its state to a file. After a human decides in the dashboard, a resume run reads the decision and carries on from the gate. This is a two-phase run with no hidden state. The run-state file is the audit record.
 
+## Provenance: knowing which drive an answer came from
+
+Outcome measurement compares two analyses. If one of them came from a different
+drive, the comparison is meaningless — and once the [Live Simulator](Live-Simulator)
+exists, a simulated week can look identical in shape to a real one.
+
+So every `AnalysisSnapshot` records the drive it was built from, and the outcome
+review **fails closed**: it refuses a snapshot whose origin is simulated, and it
+refuses a snapshot whose origin is unknown. A snapshot written before the field
+existed counts as unknown. Refusing is the correct behaviour; guessing is not.
+
+The dashboard surfaces the same fact — an amber strip on the Today tab names the
+drive whenever the queue was built from an alternate one.
+
+## Only two ingest sources
+
+`ingest.py` takes `--source messy` (a per-firm messy drive) or `--source local`.
+Six earlier sources built for the original Foyle model — including the Google
+Sheets paths — were removed once the messy-drive flow replaced them. `--drive
+<path>` re-analyses a later snapshot of an already-mapped drive without a second
+trip through Gate 1.
+
 ## What stays fixed when a firm is added
 
 Three firms now run through this core. Adding the second and the third each needed a config block, a synthetic drive, and one approved mapping. Each needed **zero** new reader code, zero new detector code, and zero new action code. That result is the proof behind the generalisability claim.
+
+The claim is about the **product**. It does not yet hold for the simulator, whose
+renderer still hard-codes advisory filenames. See [Live Simulator](Live-Simulator).

@@ -8,8 +8,6 @@ Plain definitions for the terms used across this wiki.
 
 **Adapter layer.** The thin, per-firm part of the system. It maps a firm's messy columns to the fixed schema. It is the only part that changes per firm.
 
-**Anomaly pass.** An optional, advisory scan on a local model. It adds "AI-spotted" cards. It is not scored against ground truth.
-
 **Bottleneck.** A stage in a workflow where work gets stuck. This project detects three types: delay, repetition, and rework.
 
 **Canonical schema.** The one clean data shape for all firms. Every row becomes an `Event` with a case id, an activity, a timestamp, an actor, a status, and a source reference.
@@ -28,7 +26,11 @@ Plain definitions for the terms used across this wiki.
 
 **Effective.** The verdict on whether an intervention worked. It is tri-state: yes, no, or `None` for "not enough evidence yet".
 
+**Effect probability.** The chance that an approved action actually works inside the [Live Simulator](Live-Simulator). Deliberately below 1.0, so the simulated world cannot flatter the product.
+
 **Event log.** The canonical data store. The clean, normalised record of what happened.
+
+**Finding key.** A finding's stable content identity — `type :: stage :: metric_label`. Used to match a finding across two analyses. The finding's *id* cannot be, because ids are assigned by rank order.
 
 **Gate 1, Mapping Review.** The first human gate. A person confirms the schema mapping before the system trusts the data.
 
@@ -48,17 +50,19 @@ Plain definitions for the terms used across this wiki.
 
 **Machine-executable.** The single predicate that authorises a file write. Only data-quality templates on the machine-safe list pass it — currently just `normalise_status_values`.
 
-**Mapping drift.** The hazard where approving in the browser overwrites the committed approved mapping and moves the eval numbers. Fixed with `git checkout mappings/approved_*.json`.
+**Mapping drift.** The hazard where approving in the browser overwrites the committed approved mapping and moves the eval numbers. **Do not** recover with `git checkout mappings/approved_*.json` — a drifted mapping was itself committed once, so that restores the drift. Recover from a known-good commit: `git checkout <commit> -- mappings/approved_<profile>.json`.
 
 **Mapping-inference agent.** The agent that reads messy files and proposes how each column maps to the schema.
 
 **Observation.** A real measurement taken from an analysis snapshot. The opposite of a projection, and kept in a separate field from one.
 
-**Ollama.** The tool that runs a local model on the machine, used for the anomaly pass.
+**Ollama.** A tool for running a model locally. Trialled during development for an exploratory anomaly pass, found too compute-heavy on the build machine, and removed. Written up as a finding in the past tense, not a component. See [Tech Stack](Tech-Stack).
 
 **Oracle approver.** The simulated Gate-2 approver used in the longitudinal replay, so the learning loop can run end to end. It is not a person, and the write-up says so.
 
 **Projection.** An estimate made up front from the firm's cost assumptions. Labelled as such everywhere, and never used to decide whether a fix worked.
+
+**Provenance guard.** The control that records which drive each analysis came from and refuses to measure an outcome against a snapshot that is simulated or of unknown origin. It fails closed.
 
 **RAG (retrieval-augmented generation).** The method of grounding a model's answer in retrieved evidence. Here, past resolutions.
 
@@ -72,6 +76,8 @@ Plain definitions for the terms used across this wiki.
 
 **Scrub.** The step that replaces personal data with placeholders before any payload leaves the machine.
 
+**Simulator.** The second system: a simulated firm that advances a day at a time, renders a messy drive, and lets approved actions change what happens next. Not part of the product. See [Live Simulator](Live-Simulator).
+
 **SME.** A small or medium enterprise. The kind of firm this project serves.
 
 **Synthetic data.** Made-up data, built on purpose for testing. All data in this repo is synthetic.
@@ -81,3 +87,5 @@ Plain definitions for the terms used across this wiki.
 **Trusted knowledge.** A fix that reached `validated`, showed a measured improvement against a later analysis, and had a human confirm the reading. Only these become retrievable advice.
 
 **Validated.** The lifecycle status for an intervention whose outcome was measured and confirmed. Distinct from `approved`, which is only a decision.
+
+**Wired finding type.** A finding type the simulator models a worker response for — the six case rules. Anything else is reported as `unwired` rather than silently ignored, so coverage can be stated honestly.

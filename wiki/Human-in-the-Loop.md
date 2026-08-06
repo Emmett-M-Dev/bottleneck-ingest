@@ -57,17 +57,29 @@ An approval does **not** on its own become retrievable advice. Only a measured, 
 
 ## The dashboard
 
-A React dashboard drives both gates. Its primary view is **Today** — the action queue. Everything else is supporting evidence.
+A React dashboard drives both gates. It has **three tabs**:
 
-- **Today.** The ranked queue, with expandable evidence, owner and due date, progress controls, and outcome review.
+- **Today.** The product. The ranked queue, with expandable evidence, the RAG
+  grounding behind the diagnosis, owner and due date, progress controls, and
+  outcome review.
 - **Mapping Review.** Gate 1.
-- **Pipeline stepper** and a workflow diagram.
-- **Bottlenecks.** The structural findings, the anomaly cards, and the RAG evidence.
-- **Fixes** and the remediation diff.
-- A human-in-the-loop metrics strip and an impact panel with history.
-- **"What was sent to the AI"** — the exact scrubbed payload the model saw.
+- **Demo.** The [Live Simulator](Live-Simulator) running. Only shown for a firm
+  that has a simulator configured.
 
-A FastAPI backend acts as a thin bridge. It shells out to the pipeline and returns plain JSON. The dashboard holds no heavy libraries.
+Plus the pipeline stepper, the Fixes view with the remediation diff, the firm
+switcher, and **"See exactly what was sent to the AI"** — the literal scrubbed
+payload the model saw.
+
+It used to have five. A workflow DAG, a Bottlenecks tab, case-aging buckets, a
+"cases clean" donut, and impact-history sparklines were removed. The reasoning is
+in [Introduction](Introduction): charts and aggregate summaries are supporting
+evidence for the queue, not the product, and the UI had been giving them equal
+billing. The RAG grounding those tabs carried was moved onto the action card
+first, so no contribution was lost — but the **trend view is genuinely gone**, and
+nothing should claim otherwise. `GET /api/history` and `outputs/history_<p>.jsonl`
+still exist, so it is restorable.
+
+A FastAPI backend acts as a thin bridge. It shells out to the pipeline's venv and returns plain JSON. The dashboard holds no heavy libraries. It lives in a sibling repo, `../hitl-react`. See [Tech Stack](Tech-Stack).
 
 ## How the gate pauses the run
 

@@ -50,6 +50,13 @@ Every evidence excerpt passes through the scrub step first. No raw personal data
 
 There is a template fallback. If there is no API key or the call fails, the system produces a plain diagnosis from the detection numbers and the top retrieved fix. The pipeline never stalls.
 
+> **One gotcha worth knowing.** The retrieved resolutions are recorded on the
+> action item only when the diagnosis runs **online**. Offline, the field is
+> initialised empty and never filled, so an offline export produces
+> grounding-free data that looks identical in shape to a grounded one. If the
+> dashboard shows no "grounded in N past resolutions" block, check whether the
+> export was offline before assuming retrieval failed.
+
 ## The learning loop — approval is not proof
 
 The system learns from its own fixes. But an approval is a decision, not a result. A manager approving a fix is evidence that it sounded sensible, not evidence that it worked.
@@ -86,7 +93,16 @@ python -m pipeline.learn --profile <p> --migrate-legacy
 
 That has already been run for foyle: three entries demoted.
 
-This is what makes the system dynamic. It gets better as the firm uses it — but only on the fixes that actually worked. The [Evaluation](Evaluation) page shows the learned-fix retrieval curve.
+This is what makes the system dynamic in principle. It gets better as the firm uses it — but only on the fixes that actually worked.
+
+**In practice, nothing has passed that bar yet.** Across the nine-week replay, for
+both firms, `validated` stayed at 0 while approvals climbed to 3. Nothing was
+promoted into the resolution store. The [Evaluation](Evaluation) page reports why:
+in a pre-recorded stream, a measured improvement is structurally out of reach. The
+[Live Simulator](Live-Simulator) exists to remove that limitation.
+
+A flat learning curve is the honest reading of an outcome-gated loop that has not
+yet been given a world it can improve.
 
 ## The cost model
 

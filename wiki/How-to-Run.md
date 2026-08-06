@@ -6,7 +6,6 @@ This page shows how to run the pipeline and the dashboard. The commands target W
 
 - Python, with the pinned requirements installed in a venv at `.venv`.
 - Optional: an Anthropic API key in a local `.env` file, for the agent steps. Without it, use the offline flags.
-- Optional: Ollama with a local model, for the anomaly pass. Without it, the pass skips.
 
 On Windows, call the venv Python by its full path. The bare `python` command hits a Store stub. Set the output encoding first, because some status values use characters that the default code page rejects.
 
@@ -97,17 +96,38 @@ Only a measured improvement that a person confirms becomes trusted knowledge. Se
 
 Run the backend and the UI in two terminals.
 
+The dashboard is a **sibling repo**, `../hitl-react`, not a subdirectory of this one. Run the backend and the UI in two terminals.
+
 ```
-# terminal 1 — backend
-cd hitl-react/api
-.venv/Scripts/python.exe -m uvicorn main:app --reload --port 8000
+# terminal 1 — backend. Port 8010: vite proxies /api to 127.0.0.1:8010.
+cd ../hitl-react/api
+.venv/Scripts/python.exe -m uvicorn main:app --port 8010
 
 # terminal 2 — UI
-cd hitl-react
+cd ../hitl-react
 npm run dev
 ```
 
 The UI serves at `http://localhost:5173`. Once each firm has been built once, the dashboard switches between them at once.
+
+> **Run only one dashboard at a time.** There is no lock on `outputs/event_log.parquet`. A second tab or a profile switch during an in-flight analysis puts two `ingest.py` processes on the same write.
+
+## The demo
+
+The **Demo** tab drives the [Live Simulator](Live-Simulator) from the browser. The same world is scriptable:
+
+```
+.venv/Scripts/python.exe -m simulator.cli --profile advisory --reset
+.venv/Scripts/python.exe -m simulator.cli --profile advisory --advance 7
+```
+
+Press **"Reset to day 0" before "Run demo"** — the clock does not backfill message history, so starting on an already-advanced world shows a high day count beside an empty inbox.
+
+**After any demo, restore the static drive before re-running an evaluation.** Demo mode leaves simulated data in the shared event log and the action store:
+
+```
+.venv/Scripts/python.exe ingest.py --source messy --profile advisory
+```
 
 ## The longitudinal replay
 
@@ -123,8 +143,9 @@ This writes nine weekly snapshots, replays them, and draws the result curves int
 
 ## If something breaks
 
-- **Eval numbers move without reason.** An approval in the browser overwrote the approved mapping. Restore it: `git checkout mappings/approved_*.json`.
+- **Eval numbers move without reason.** An approval in the browser overwrote `mappings/approved_<profile>.json`. **Do not run `git checkout mappings/approved_*.json`** — the drifted foyle mapping was itself committed, so that command restores the drift rather than the fix. Recover from the last known-good commit instead: `git checkout <good-commit> -- mappings/approved_<profile>.json`. Foyle's known-good mapping is in `a8e3437`.
 - **A status value crashes the console.** Set the UTF-8 encoding shown at the top.
 - **Ingest refuses to run.** There is no approved mapping for that profile. That is Gate 1 working.
-- **The anomaly pass produces nothing.** No local model is running. The pass skips by design; nothing else is affected.
-- **The 7B local model will not load.** It needs about 6 GB of RAM. Use `OLLAMA_MODEL=qwen2.5:1.5b` on a smaller machine.
+- **The approve or review button refuses.** The queue was built from a snapshot whose origin is simulated or unknown. That is the provenance guard failing closed, by design. Re-ingest that firm from its static drive.
+- **The Demo tab is missing.** That firm has no simulator configured. Only advisory does.
+- **The demo's day counter freezes for about 50 seconds.** That is the week boundary running a real ingest and detection pass. It stalls on purpose so the counter never runs ahead of the data.

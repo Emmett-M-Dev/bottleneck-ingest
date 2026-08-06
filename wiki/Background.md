@@ -8,7 +8,7 @@ The cause is not skill or ambition. It is resources. Small firms hit three walls
 
 ```mermaid
 flowchart LR
-    W1["Unclear returns<br/>cannot risk a big spend"] --> D1["Runs on one laptop<br/>local model where it can"]
+    W1["Unclear returns<br/>cannot risk a big spend"] --> D1["Runs on one laptop<br/>CPU only, no GPU"]
     W2["No AI-ready data<br/>everything is spreadsheets"] --> D2["Adapter layer<br/>ingests the mess as-is"]
     W3["Skills gaps<br/>no data team"] --> D3["Two review gates<br/>no tuning required"]
 

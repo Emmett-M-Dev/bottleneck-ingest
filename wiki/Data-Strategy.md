@@ -15,6 +15,10 @@ There is one messy drive per firm:
 
 Each drive is a folder of deliberately messy spreadsheets. Column names drift. Statuses are free text. Files repeat data. This is on purpose. It mirrors how small firms really store data.
 
+A fourth path now sits alongside these: `data/sim/<profile>/drive`, written by the
+[Live Simulator](Live-Simulator) a day at a time. Unlike the four above, it is not
+a fixture — it responds to what the product recommends.
+
 The advisory drive is the commercially recognisable one — money, capacity, and delivery risk are all explicit in the data. The other two are the contrasting evidence that the same core works on very different workflows.
 
 ## Ground truth by design
@@ -55,7 +59,12 @@ flowchart LR
 
 Note that no arrow runs from the ground truth into the detector. The two code paths are kept apart. The detector scans for structure, not for planted labels. So a correct detection is a real result, not a leak.
 
-The same guard applies to the case rules. The advisory generator records only *where it parked* each engagement; the rules decide independently whether that breaches an SLA. They flag strictly fewer engagements than were parked, and a test asserts it. See [Action Layer](Action-Layer).
+The same guard applies to the case rules. Each generator records only *where it
+parked* a case — stalled at a stage, left unowned, piled onto one owner. The rules
+decide independently whether that breaches an SLA, and they flag strictly fewer
+cases than were parked. A test asserts it. All three drives carry parked cases, so
+all three produce a real worker-facing queue rather than a thin structural one.
+See [Action Layer](Action-Layer).
 
 ## Three contrasting firms
 
@@ -91,5 +100,11 @@ The replay is outcome-gated like the real loop: the oracle approves, "does" the 
 
 1. The stream is a *recording*, not a counterfactual. An intervention approved at tick *t* cannot change what tick *t+1* contains. A validated outcome there evidences the **measurement machinery**, not causation.
 2. Each tick record carries both curves — what the outcome-gated loop trusts, and what the older approval-gated loop would have trusted by the same tick — so the behaviour change is a reported result, not a silent regression.
+
+Note 1 is not a small caveat. It is the limitation that motivated the
+[Live Simulator](Live-Simulator), and it is why the learning curve in
+[Evaluation](Evaluation) stays flat at zero: in a recording, affected-case counts
+only grow as more of it is revealed, so a measured improvement is structurally
+out of reach.
 
 The [Evaluation](Evaluation) page reports the curves.

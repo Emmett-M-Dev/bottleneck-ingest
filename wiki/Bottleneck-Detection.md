@@ -2,23 +2,19 @@
 
 This is the first step of the fixed pipeline core.
 
-## Three detectors, one event log
+## Two detectors, one event log
 
 ```mermaid
 flowchart LR
     L[("Event log")] --> DY["Structural scan<br/>every stage, 0..N findings"]
     L --> CR["Case rules<br/>which cases need attention"]
-    L --> AN["Anomaly pass<br/>local model, aggregates only"]
     DY --> Q["Findings"]
     CR --> Q
-    AN -. "advisory,<br/>not scored" .-> Q
 
     classDef store fill:#bbf7d0,stroke:#15803d,color:#111827
     classDef core fill:#c7d2fe,stroke:#4338ca,color:#111827
-    classDef soft fill:#e5e7eb,stroke:#6b7280,color:#111827
     class L store
     class DY,CR,Q core
-    class AN soft
 ```
 
 The structural scan answers the analyst's question — *which stage is broken*. The case rules answer the worker's — *which jobs need me*. See [Action Layer](Action-Layer) for the rules.
@@ -61,11 +57,30 @@ The project also runs a simple baseline for contrast. The baseline checks whethe
 
 The gap between the baseline and the dynamic detector is the argument for statistical detection. The [Evaluation](Evaluation) page shows the numbers.
 
-## The anomaly pass
+## A finding's identity is its content, not its rank
 
-On top of the main detector, there is an optional anomaly pass. It runs on a local model through Ollama. It looks at aggregate stats only and adds "AI-spotted" cards.
+This is a small detail with a large consequence. A finding's id — `BN001`,
+`BN002` — is assigned by **rank order**. Rank order changes when the data
+changes. So an id is not a safe way to match a finding in one analysis against
+the same finding in a later one.
 
-This pass is advisory. It is not scored against ground truth. It costs nothing to run, because the model is local. The data never leaves the machine. If no local model is running, the pass skips and nothing breaks.
+`detection/detect.py::finding_key` derives a stable content key instead:
+
+```
+type :: stage :: metric_label
+```
+
+The action layer joins diagnosis prose to findings on that key, and falls back to
+the positional id only for an export written before the key existed. Two analyses
+of the same drive can therefore be compared, which is what outcome measurement
+needs. See [Action Layer](Action-Layer).
+
+## An earlier local-model pass, removed
+
+An earlier build ran an extra exploratory pass on a local model through Ollama,
+producing advisory "AI-spotted" cards that were never scored against ground
+truth. It was withdrawn during development, and the code was removed. See
+[Tech Stack](Tech-Stack) for why, and what the write-up makes of it.
 
 ## Why this is the core, not the adapter
 

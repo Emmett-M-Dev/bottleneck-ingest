@@ -72,11 +72,12 @@ Use the sidebar. The pages follow the project from start to finish:
 
 1. Start with the [Introduction](Introduction) for the problem and the aim.
 2. [Background](Background) covers the SME context and the research gap.
-3. [System Architecture](System-Architecture) is the core design.
+3. [System Architecture](System-Architecture) is the core design, and [Data Strategy](Data-Strategy) covers the data it runs on.
 4. The pipeline pages walk through each stage: [Ingestion and Mapping](Ingestion-and-Mapping), [Bottleneck Detection](Bottleneck-Detection), [RAG Diagnosis](RAG-Diagnosis), [Action Layer](Action-Layer), [Human-in-the-Loop](Human-in-the-Loop), and [Remediation](Remediation).
-5. [Evaluation](Evaluation) reports the results.
-6. [Privacy and Ethics](Privacy-and-Ethics), [Tech Stack](Tech-Stack), and [How to Run](How-to-Run) cover the practical side.
-7. The [Glossary](Glossary) defines the terms.
+5. [Live Simulator](Live-Simulator) is the *second* system — a simulated firm that reacts to what the product recommends. It is what makes an approved fix measurable.
+6. [Evaluation](Evaluation) reports the results.
+7. [Privacy and Ethics](Privacy-and-Ethics), [Tech Stack](Tech-Stack), and [How to Run](How-to-Run) cover the practical side.
+8. The [Glossary](Glossary) defines the terms.
 
 ## Status
 

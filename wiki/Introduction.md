@@ -44,6 +44,6 @@ It is easy to mistake this for a dashboard of charts. It is not. The charts and 
 
 ## Why "agentic"
 
-The system uses AI agents for two precise jobs: reading messy files and diagnosing bottlenecks. A third, local model runs an optional exploratory pass. A graph runs the steps in order and pauses at the approval gate.
+The system uses AI agents for two precise jobs: reading messy files and diagnosing bottlenecks. A graph runs the steps in order and pauses at the approval gate. Everything else — the detection, the ranking, the cost figures, the outcome verdict — is ordinary deterministic code. That is a design decision, not a shortcut: a worker can argue with arithmetic.
 
 Each agent proposes; a human disposes. The design keeps the human in charge of every choice that matters — and keeps an approval from being mistaken for proof that a fix worked.

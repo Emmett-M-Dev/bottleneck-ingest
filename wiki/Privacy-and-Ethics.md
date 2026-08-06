@@ -10,13 +10,11 @@ flowchart LR
         F["Messy spreadsheets<br/>names, dates, money"]
         L[("Event log")]
         V[("Vector store")]
-        O["Ollama<br/>anomaly pass"]
         SC["Scrub<br/>names → placeholders"]
         F --> L --> V
-        L --> O
         L --> SC
     end
-    SC -->|"placeholders only"| API["Claude API<br/>mapping + diagnosis"]
+    SC -->|"placeholders only"| API["Claude API<br/>mapping, diagnosis,<br/>status clean-up"]
     API -->|"structured result"| L
 
     classDef inp fill:#fde68a,stroke:#b45309,color:#111827
@@ -27,7 +25,6 @@ flowchart LR
     class L,V store
     class SC guard
     class API ext
-    class O store
 ```
 
 Only one arrow crosses the boundary, and the scrub sits on it.
@@ -38,15 +35,11 @@ The system suggests. A person decides. This holds at both gates. No mapping is t
 
 ## Zero raw personal data to the cloud
 
-The system calls the Claude API for two jobs: mapping inference and diagnosis. Both calls could carry personal data from the spreadsheets. So both scrub the data first.
+The system calls the Claude API for three jobs: mapping inference, diagnosis, and the status clean-up proposal. All three could carry personal data from the spreadsheets. So all three scrub the data first.
 
 Every sample cell in the mapping payload passes through the scrub step. Every evidence excerpt in the diagnosis payload does too. The scrub replaces names and other personal data with placeholders. A test asserts that only placeholders reach the payload.
 
-So no raw personal data leaves the machine. This is the implemented privacy control, not a promise.
-
-## Local model for exploratory work
-
-The anomaly pass runs on a local model through Ollama. It sees aggregate stats only. Its data never leaves the machine. This splits the work by privacy need: local inference for exploratory analysis, cloud plus scrub for the two precise tasks.
+So no raw personal data leaves the machine. **This is the one implemented privacy control** — not a promise, and not one of two. An earlier design claimed a local model as a second control; that model was withdrawn, and the claim went with it. See [Tech Stack](Tech-Stack).
 
 ## Test environment only
 

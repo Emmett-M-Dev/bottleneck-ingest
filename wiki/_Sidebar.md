@@ -9,6 +9,7 @@
 **Design**
 - [System Architecture](System-Architecture)
 - [Data Strategy](Data-Strategy)
+- [Live Simulator](Live-Simulator)
 
 **The Pipeline**
 - [Ingestion and Mapping](Ingestion-and-Mapping)
