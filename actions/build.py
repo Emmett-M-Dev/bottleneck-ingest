@@ -137,6 +137,7 @@ def _make_item(profile: str, *, finding_key: str, finding_type: str,
                source_records: list[str] | None = None,
                generated_by: str = "detector",
                llm_payload: dict | None = None,
+               retrieved_resolutions: list[dict] | None = None,
                impact=None) -> ActionItem:
     tpl = templates.template_for(profile, finding_type)
     category = tpl["category"]
@@ -177,6 +178,7 @@ def _make_item(profile: str, *, finding_key: str, finding_type: str,
         source_records=source_records or [],
         generated_by=generated_by,
         llm_payload=llm_payload,
+        retrieved_resolutions=retrieved_resolutions or [],
     )
 
 
@@ -209,7 +211,8 @@ def _structural_items(profile: str, df: pd.DataFrame, as_of: date,
             case_details=case_details, as_of=as_of, dq_confidence=dq,
             confidence=diag.get("confidence"),
             source_records=list(bn.example_refs),
-            llm_payload=diag.get("llm_payload"))
+            llm_payload=diag.get("llm_payload"),
+            retrieved_resolutions=diag.get("retrieved_resolutions") or [])
         # A diagnosis that came back from the RAG agent replaces the authored
         # wording, but never the category — routing is the system's decision.
         fix = diag.get("suggested_fix") or {}
@@ -360,12 +363,22 @@ def build_snapshot(profile: str, df: pd.DataFrame, items: list[ActionItem],
                    *, label: str = "", as_of=None) -> AnalysisSnapshot:
     """The measurable state of this run, keyed by finding_key so a later run
     can compare like with like."""
+    # config.read_event_log_owner, NOT ingest.read_event_log_owner — importing
+    # ingest.py drags in its module-scope embedding/chroma stack, which
+    # actions/build.py must stay free of (CLAUDE.md §6 process-isolation rule).
     taken_at = _as_of_date(df, as_of).isoformat()
+    _, drive = config.read_event_log_owner()
     return AnalysisSnapshot(
         snapshot_id=make_snapshot_id(profile, taken_at),
         profile=profile,
         taken_at=taken_at,
         label=label,
+        # Always a real string ("" for the profile's own default drive),
+        # never None — None is reserved for legacy rows that predate this
+        # field and must read as UNKNOWN provenance, not as clean. `drive`
+        # is already `str` by `config.read_event_log_owner`'s contract; the
+        # `or ""` is a defensive belt for that contract, not a workaround.
+        source_drive=drive or "",
         case_count=int(df["case_id"].nunique()) if not df.empty else 0,
         event_count=int(len(df)),
         metrics={i.finding_key: float(i.metric_value)

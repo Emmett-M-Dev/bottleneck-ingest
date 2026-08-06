@@ -51,8 +51,12 @@ def _item(action_id, **kw) -> ActionItem:
 
 
 def _snapshot() -> AnalysisSnapshot:
+    # source_drive="" explicit: these fixtures stand in for a plain, clean
+    # ingest. The model's bare default is `None` (UNKNOWN provenance,
+    # actions/execute.py fails closed on it) — none of the tests below are
+    # about provenance, so they should not be caught by that guard.
     return AnalysisSnapshot(snapshot_id="SNAP-X", profile="advisory",
-                            taken_at="2026-07-20")
+                            taken_at="2026-07-20", source_drive="")
 
 
 # ── Contract ─────────────────────────────────────────────────────────────────
@@ -68,6 +72,22 @@ def test_ui_contract_top_level_keys(isolated_outputs) -> None:
     assert set(ui["totals"]) >= {
         "open_items", "revenue_at_risk", "cost_incurred", "hours_at_risk",
         "cases_affected", "by_category", "data_quality_confidence"}
+
+
+def test_ui_payload_carries_the_snapshots_source_drive(isolated_outputs) -> None:
+    """TodayTab's alternate-drive banner reads this straight off the payload —
+    empty for the profile's own default drive, the drive path otherwise."""
+    default_ui = build_ui_actions("advisory", [_item("A")], snapshot=_snapshot())
+    assert default_ui["source_drive"] == ""
+
+    sim_snapshot = AnalysisSnapshot(snapshot_id="SNAP-Y", profile="advisory",
+                                    taken_at="2026-07-20",
+                                    source_drive="data/sim/advisory/drive")
+    sim_ui = build_ui_actions("advisory", [_item("A")], snapshot=sim_snapshot)
+    assert sim_ui["source_drive"] == "data/sim/advisory/drive"
+
+    no_snapshot_ui = build_ui_actions("advisory", [_item("A")], snapshot=None)
+    assert no_snapshot_ui["source_drive"] == ""
 
 
 def test_every_item_declares_whether_approving_touches_files(isolated_outputs) -> None:
@@ -100,6 +120,26 @@ def test_every_item_declares_what_was_sent_to_a_model(isolated_outputs) -> None:
     assert "Nothing" in flat["A"]["sent_to_llm"]["note"]
     assert flat["B"]["sent_to_llm"]["used_llm"] is True
     assert flat["B"]["sent_to_llm"]["payload"]["bottleneck"]["stage"] == "Proposal"
+
+
+def test_retrieved_resolutions_survive_the_export(isolated_outputs) -> None:
+    """The RAG grounding is the evidence for the recommendation. Now that the
+    Bottlenecks tab is folded away, the exported action item (ActionCard.jsx)
+    is the PRIMARY place a worker sees it — HITLCard.jsx (Fixes tab) also
+    renders `retrieved_resolutions` and always has — so the export must carry
+    the contents, not just the key."""
+    resolutions = [
+        {"resolution_id": "RES-001", "similarity_score": 0.82,
+         "text": "we added an SLA"},
+    ]
+    grounded = _item("G", retrieved_resolutions=resolutions)
+    ungrounded = _item("U")
+    ui = build_ui_actions("advisory", [grounded, ungrounded], snapshot=_snapshot())
+    flat = {i["action_id"]: i for section in ui["sections"].values()
+            for i in section}
+
+    assert flat["G"]["retrieved_resolutions"] == resolutions
+    assert flat["U"]["retrieved_resolutions"] == []
 
 
 def test_an_item_appears_in_exactly_one_section(isolated_outputs) -> None:
@@ -238,3 +278,27 @@ def test_read_model_builds_for_every_profile(profile: str, isolated_outputs) -> 
                           snapshot=_snapshot())
     assert ui["case_noun"] and ui["workflow"]
     assert ui["ui"]["brand"]
+
+
+def test_unknown_provenance_is_surfaced_not_serialised_as_null():
+    """A snapshot predating provenance tracking must NOT reach the UI as null.
+
+    null is falsy in JS, so the dashboard's alternate-drive banner would treat
+    an unknown-provenance queue as clean while approve and review refuse it at
+    the button — the worst combination. Surface it as a visible string."""
+    from actions.models import AnalysisSnapshot
+    from bridge.export_actions import UNKNOWN_SOURCE_DRIVE, _ui_source_drive
+
+    legacy = AnalysisSnapshot(snapshot_id="S1", profile="advisory",
+                              taken_at="2026-07-20", source_drive=None)
+    default = AnalysisSnapshot(snapshot_id="S2", profile="advisory",
+                               taken_at="2026-07-20", source_drive="")
+    alt = AnalysisSnapshot(snapshot_id="S3", profile="advisory",
+                           taken_at="2026-07-20",
+                           source_drive="data/sim/advisory/drive")
+
+    assert _ui_source_drive(legacy) == UNKNOWN_SOURCE_DRIVE
+    assert _ui_source_drive(legacy)          # truthy, so the banner shows
+    assert _ui_source_drive(default) == ""   # falsy, so it does not
+    assert _ui_source_drive(alt) == "data/sim/advisory/drive"
+    assert _ui_source_drive(None) == ""

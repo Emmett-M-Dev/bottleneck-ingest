@@ -27,6 +27,7 @@ from datetime import datetime, timezone
 import config
 from actions import execute as ax
 from actions import lifecycle, store
+from actions.execute import ContaminatedBaselineError
 from actions.models import ActionItem
 from actions.outcome import review as review_outcomes
 from actions.outcome import summarise, validate
@@ -166,7 +167,7 @@ def cmd_validate(args) -> None:
            "summary": summarise(args.profile)})
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Action-queue operations")
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -207,8 +208,19 @@ def main() -> None:
     v.add_argument("--note", default=None)
     v.set_defaults(func=cmd_validate)
 
-    args = parser.parse_args()
-    args.func(args)
+    args = parser.parse_args(argv)
+    try:
+        args.func(args)
+    except ContaminatedBaselineError as exc:
+        # Caught here, not per-subcommand: every subcommand that can reach a
+        # baseline (`decide`) or an observation (`review`, and `queue
+        # --review`, which calls review() through build()) shares this one
+        # refusal. Without this the exception would propagate as a Python
+        # traceback — exit 1 with EMPTY stdout, breaking this module's own
+        # documented contract ("Errors exit non-zero with `{"error": ...}`")
+        # and, downstream, the dashboard's `_run_actions_cli`, which parses
+        # stdout as JSON and would otherwise surface a raw HTTP 500.
+        _fail(str(exc))
 
 
 if __name__ == "__main__":

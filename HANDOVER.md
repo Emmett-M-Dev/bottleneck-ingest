@@ -125,7 +125,7 @@ generalisability argument.
   explicit so it never moves under a worker mid-decision.
 - `src/App.jsx` — top-level state; `approvedMap` keyed by proposal `generated_at` (fresh audit reopens the gate).
 - `src/components/mapping/` — MappingTab, MappingCard (gate #2 editor).
-- `src/components/dashboard/WorkflowDAG.jsx` — hover a stage → source sheet(s).
+- `src/components/demo/` — DemoTab, DemoBar, InboxSidebar, SheetGrid (the simulator).
 - `src/components/fixes/` — FixesTab, HITLCard (gate #1), RemediationPanel.
 - `src/components/layout/ProfileSwitcher.jsx` — click the SME brand to switch.
 
@@ -294,11 +294,26 @@ State lives in `data/sim/advisory/`: `state.json` (world + day + params),
 16. **FIXED — `actions/build.py::_structural_items` used to join diagnosis prose onto findings by `bn.id`, which `detection/dynamic.py` assigns by RANK ORDER, not content.** It only lined up correctly because no reseed so far had reordered the three structural pattern types (delay/repetition/rework stayed BN001/BN002/BN003 for both foyle and joinery through the 2026-08-01 reseed). A future reseed that *did* reorder them would have silently mis-attributed one bottleneck's diagnosis text to another — confirmed as a live risk, not a hypothetical, when a stale `ui_cases_<profile>.json` cache was caught doing exactly this position-keyed join during the action-queue rebuild. Fixed in `1167a6e` ("Key diagnosis prose to findings by content, not rank order"): `detection/detect.py::finding_key(bn)` returns a content-based key `f"{bn.type}::{stage}::{bn.metric_label}"`, stable across two analyses of different data (unlike `bn.id`), and the join in `actions/build.py` plus both exporters now key on it instead of `bn.id`.
 17. **`DIAGNOSE_OFFLINE` only reaches `bridge.export_messy`; `bridge.export_actions` never reads it and has no live-diagnosis path of its own.** The structural (delay/repetition/rework) items in an action queue get their diagnosis prose entirely from whichever `outputs/ui_cases_<profile>.json` cache already exists on disk — real LLM prose if that cache was last populated by an *online* `export_messy` run, template prose if it wasn't — regardless of how `export_actions` itself is invoked. Setting `DIAGNOSE_OFFLINE=1` before running `export_actions` has zero effect on it; if the queue needs to be guaranteed template-only, `export_messy --offline` (or with `DIAGNOSE_OFFLINE=1`) must be re-run first to refresh that cache.
 
+### Two things the 2026-08-05 work leaves you
+
+- **foyle and joinery need a re-ingest before their approve/review buttons
+  work.** Provenance tracking now fails closed: a snapshot written before
+  `source_drive` existed counts as unknown origin and is refused, so a
+  simulated week can never become the baseline or the observation for a real
+  intervention. Every foyle and joinery snapshot on disk predates the field.
+  `python ingest.py --source messy --profile foyle` then
+  `python -m actions.cli queue --profile foyle` clears it, same for joinery.
+  Advisory is already done.
+- **There is no lock on `outputs/event_log.parquet`.** The demo serialises its
+  own week-boundary analyse call, but a profile switch or a second browser tab
+  during an in-flight analyse still puts two `ingest.py` processes on the same
+  bare `df.to_parquet`. Fine for a supervised demo; do not run two dashboards.
+
 ## 9. What's next (candidates, none blocking)
 
 - **Write-up** — system is feature-complete; the honest default is to pivot to the dissertation.
 - **Deliberate 3rd foyle fork** — if a richer demo is wanted, add it *properly* in `generate_messy_foyle.py` + ground truth (not as leftover test files).
-- **Bespoke Mapping / Bottlenecks tab layouts** — currently token-reskin only.
+- **Bespoke Mapping tab layout** — currently token-reskin only. (The Bottlenecks and Workflow tabs were deleted in the 2026-08-05 fold, so their layout items are moot.)
 - **Post-freeze stretch** — Drive-listing wrapper for `audit/scan.py` (real SharePoint/Drive crawl); LLM-proposed freetext status value-maps.
 
 Cut order if time is short: Drive wrapper → value-maps → model sweep. Non-cuttable

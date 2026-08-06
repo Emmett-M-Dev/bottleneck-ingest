@@ -28,6 +28,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from actions import lifecycle, store
+from actions.execute import _assert_snapshot_is_clean
 from actions.models import AnalysisSnapshot, Intervention, InterventionOutcome
 
 # How much a metric must move before the change counts as more than noise.
@@ -118,7 +119,15 @@ def review(profile: str, snapshot: AnalysisSnapshot, *,
 
     Only interventions a human has marked `completed` (or already in review)
     are measured — measuring work nobody has done yet would be scoring the
-    weather. Nothing here validates anything; that needs a person."""
+    weather. Nothing here validates anything; that needs a person.
+
+    `snapshot` is the OBSERVATION half of the comparison (the baseline half
+    is guarded in `actions/execute.py::approve`) — it must come from the
+    profile's own default drive, or every completed intervention on the
+    books could be measured against a demo/simulated week and read as
+    effective. Raises `ContaminatedBaselineError` (from `actions.execute`,
+    shared with the baseline guard) before touching anything if it is not."""
+    _assert_snapshot_is_clean(profile, snapshot, context="observation")
     items = interventions if interventions is not None \
         else store.load_interventions(profile, path)
     changed: list[Intervention] = []

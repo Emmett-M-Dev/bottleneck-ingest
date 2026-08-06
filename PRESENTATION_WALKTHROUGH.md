@@ -16,7 +16,6 @@ the rest of this document is just applying them.
 | Tag | Meaning | Where it lives |
 |---|---|---|
 | **[CLAUDE]** | A call to the Anthropic API, model `claude-opus-4-8` | 3 call sites only (§2) |
-| **[LOCAL]** | A call to a local Ollama model, `qwen2.5:7b` | 1 call site only (§2) |
 | **[COMPUTED]** | Deterministic Python/pandas over the event log. Same input → byte-identical output | `detection/`, `actions/` |
 | **[CONFIG]** | A number Emmett typed into `config.py` for that SME | `MESSY_PROFILES[<p>]` |
 | **[TEMPLATE]** | An English sentence hand-written in Python, with numbers interpolated | `actions/templates.py`, `bridge/export_messy.py` |
@@ -71,17 +70,17 @@ outputs/ui_actions_advisory.json     ← THE ACTION QUEUE (the "Today" tab)
 
 ---
 
-## 2. The four LLM call sites — and nothing else is AI
+## 2. The three LLM call sites — and nothing else is AI
 
 This is the slide that answers "how much of this is actually AI?". There are
-**exactly four** places in the entire codebase where a language model is called.
+**exactly three** places in the entire codebase where a language model is called.
+All three are Claude; there is no local model in the delivered artifact.
 
 | # | What | Model | File | Fires when | Fires from the dashboard? |
 |---|---|---|---|---|---|
 | 1 | **Mapping inference** — reads headers + 5 scrubbed sample rows per sheet, proposes role + column→field mapping + a cross-file "mess report" | `claude-opus-4-8` | [audit/infer.py](audit/infer.py) | `python -m audit.run --profile X` **without** `--offline` | **No.** Terminal only. |
 | 2 | **RAG diagnosis** — per detected bottleneck: retrieve nearest past resolutions from ChromaDB, ask for diagnosis + root cause + fix + confidence | `claude-opus-4-8` | [pipeline/diagnose.py](pipeline/diagnose.py) | inside `bridge.export_messy` when neither `--offline` nor `DIAGNOSE_OFFLINE=1` | **Yes** — a profile switch runs `export_messy`. This is why gotcha #12 says set `DIAGNOSE_OFFLINE=1` for demos. |
 | 3 | **Status value-map** — maps freetext status values to `{Complete, Open, N/A}` | `claude-opus-4-8` | [remediate/propose.py:51](remediate/propose.py#L51) | `python -m remediate.run --profile X --llm` | **No.** The API never passes `--llm`, so the Fixes tab always shows the **rule-based** map. |
-| 4 | **Anomaly pass** — reads per-stage aggregate statistics, proposes patterns the three structural detectors don't look for | `qwen2.5:7b` via Ollama, local | [detection/anomaly.py](detection/anomaly.py) | inside `bridge.export_messy` when not offline **and** Ollama is running | Yes, same trigger as #2. Silently returns `[]` if Ollama is absent. |
 
 **Everything else is deterministic code.** Detection, ranking, impact
 arithmetic, the lifecycle state machine, the outcome verdict — none of them call
@@ -134,12 +133,12 @@ $env:PYTHONIOENCODING = "utf-8"        # status values contain ✔; cp1252 canno
 $PY = ".venv/Scripts/python.exe"
 ```
 
-**Decide one thing first: do you want live Claude diagnoses in the Bottlenecks
+**Decide one thing first: do you want live Claude diagnoses in the Today card
 tab?** They cost one API call per bottleneck and take 30–90 s each.
 
 ```powershell
 # YES — bake them in beforehand, so the demo is instant AND shows real AI text:
-$PY -m bridge.export_messy --profile advisory        # runs Claude + Ollama
+$PY -m bridge.export_messy --profile advisory        # runs Claude
 Copy-Item outputs/ui_cases.json outputs/ui_cases_advisory.json -Force
 Copy-Item outputs/ui_workflow.json outputs/ui_workflow_advisory.json -Force
 ```
@@ -244,7 +243,7 @@ API calls ([PipelineStepper.jsx](../hitl-react/src/components/layout/PipelineSte
 > **Honesty flag to volunteer before you are asked:** "RAG Diagnose" going green
 > means cases exist, **not** that Claude was called. When `DIAGNOSE_OFFLINE=1`
 > the cases are template-built and the step still turns green. The place that
-> tells the truth is the Bottlenecks card's confidence bar and the "what the AI
+> tells the truth is the action card's confidence bar and the "what the AI
 > saw" modal.
 
 ---
@@ -514,66 +513,52 @@ column mapping was corrected. That is a real finding about Gate 1, not a defect.
 
 ---
 
-### 4.5 Tab: **Workflow** (Operations Overview)
+### 4.5 Tab: **Demo** — the world simulator
 
-Three columns. This is **supporting evidence**, not the product — say that.
+> **The Workflow and Bottlenecks tabs described in earlier drafts no longer
+> exist.** They were deleted on 2026-08-05 in a deliberate simplification: §1
+> calls charts and aggregate summaries "supporting evidence for that queue, not
+> the product", and five tabs gave three of them equal billing. The RAG
+> grounding the Bottlenecks cards carried was moved onto the Today action card
+> BEFORE the deletion, so that contribution is still on screen — expand any
+> structural item to show it. The workflow DAG and the impact sparklines are
+> genuinely gone; do not claim them.
 
-**Left — Cases.** One row per detected bottleneck from `ui_cases.json`.
-> **Honesty flag:** the `12h` / `3d` age on the right of each row is
-> `Date.now() − detected_at`, i.e. **time since the export ran**, not since the
-> business problem began. On a fresh run everything reads a few hours old.
+Three tabs now: **Today** (the product), **Mapping Review** (Gate 1), **Demo**.
 
-**Middle — the workflow DAG** (`@xyflow/react`).
-
-| Element | Source |
-|---|---|
-| The nodes | **[COMPUTED]** stages actually present in the log, ordered by **[CONFIG]** `stage_order` |
-| Red/amber glow on a node + `● delay · 5 cases` | **[COMPUTED]** `detect_dynamic` output; when several bottlenecks share a stage the node shows the biggest |
-| Edge thickness / animation / count label | **[COMPUTED]** real transition counts between stages |
-| Node positions | **[UI]** client-side topological auto-layout — no meaning beyond readability |
-| **Hover a node** → tooltip *"fed by 2 sheets: • proposals 2026.xlsx • delivery log.xlsx"* | **[COMPUTED]** from the file part of each `source_ref`. Nice payoff for the messy-drive story: it shows which spreadsheet feeds which stage |
-
-**Right — Aging & Insights.**
+**You click:** **Reset to day 0**, then **▶ Run demo**.
 
 | Element | Source |
 |---|---|
-| Outstanding / Avg age / Oldest | **[COMPUTED]**, but again against `detected_at` — same caveat as the case list |
-| The `<7 / 7–14 / 14–21 / >21 days` bars | bucket edges **hardcoded** in [AgingQueue.jsx:3](../hitl-react/src/components/dashboard/AgingQueue.jsx#L3); on a fresh export they all pile into one bucket |
-| **"Cases clean" donut** | **[COMPUTED]** `1 − cases_affected / cases` from the KPI block |
-| "Needs Attention" rows | first 4 bottleneck cases, **[COMPUTED]** |
+| Day counter + date, advancing every few seconds | **[COMPUTED]** `simulator/step.py::advance` — one sim day per tick, committed atomically |
+| Client emails arriving in the sidebar, striking through | **[TEMPLATE + CLAUDE]** the deterministic sim decides WHICH case and WHAT happens; an LLM fills only names and figures, cached per (seed, day, message) so a replay is free and offline. Strike-through means the simulated staff have typed it into the sheet |
+| Rows flashing emerald in the sheet grid | **[COMPUTED]** the rendered drive, re-read each day. Note the messy stage spellings (`lead`, `PROPOSAL`, `Won `) and the renamed-header fork — that is the ingest problem, live |
+| The counter **stalling ~50s at day 7** | the product re-ingesting and re-detecting. Say this out loud: the clock pauses because the product is thinking. A counter that kept ticking would be racing ahead of the data it claims to reflect |
+| The vitals strip changing after that stall | **[COMPUTED]** by the PRODUCT, not the simulator — the same `ImpactStrip` the Today tab renders, from the same action queue. A simulator reporting its own health would prove nothing |
 
-**Bottom — Impact over time (sparklines).**
+**The point to land:** approve something in **Today**, come back, keep running.
+The approved action changes what the simulated staff do next, and its affected
+cases start clearing. That is the loop — evidence → action → measured outcome —
+closing on screen.
 
-- Four series: estimated cost exposure, cases affected, open bottlenecks, messy
-  status cells. Each point is **one real pipeline run**, read from
-  `outputs/history_<profile>.jsonl` — appended by `export_messy` and by a
-  remediation apply. Fewer than two runs → it says *"needs 2+ runs"* rather than
-  drawing a fake line.
-- The dashed **"Projection"** strip at the bottom is explicitly labelled and
-  ends with *"Arithmetic on the cost model, not a forecast."* **[CONFIG ×
-  COMPUTED]**.
+> **Volunteer this before you are asked.** The world's responsiveness is
+> *authored*: `effect_prob` is a config constant, and effects are deliberately
+> probabilistic below 1.0 so some approved actions fail. What this demonstrates
+> is that the **measurement machinery** can now observe an improvement — which
+> the earlier pre-baked stream structurally could not. It is not evidence that
+> approvals help real SMEs.
+
+> **The amber banner.** While demo mode is running, the shared event log holds
+> simulated data, and the Today tab shows an amber strip saying so and naming
+> the drive. Restore with `ingest.py --source messy --profile advisory` before
+> re-running any evaluation.
 
 ---
 
-### 4.6 Tab: **Bottlenecks**
+### 4.6 The detection eval — evidence without a screen
 
-Two-column card grid over the same `ui_cases.json`. This is where you show what
-the AI wrote — **if** it was run online.
-
-| Element | Source |
-|---|---|
-| Card title + description | **[CLAUDE]** `"{diagnosis} Root cause: {root_cause}"` when online; **[TEMPLATE]** `_TYPE_FALLBACKS` when offline (*"Cases stall entering Proposal — 5 cases waited an average of 14 days…"*) |
-| **HIGH / MEDIUM / LOW** badge | **[COMPUTED]** with hardcoded thresholds in [export_messy.py:106](bridge/export_messy.py#L106): delay is high if ≥25% of cases or the metric ≥12 days |
-| `📊 avg_delay_days = 14.0` | **[COMPUTED]** detector metric |
-| `💰 ≈ £8,400 · 5 cases × 14 days × £120/day` | **[CONFIG × COMPUTED]** — the cost model with its basis spelled out |
-| **"🧠 Diagnosis grounded in 3 past resolutions"** (expandable) | **[COMPUTED]** ChromaDB vector retrieval. `similarity_score = 1 − L2distance/2` over normalised sentence-transformer embeddings ([diagnose.py:116](pipeline/diagnose.py#L116)) |
-| Purple **"Learned"** badge on a retrieved row | that resolution came from **this system's own validated history**, not the seeded corpus |
-| **"AI confidence 84%"** bar | **[CLAUDE]** `result.confidence` when online. **When offline it is a flat hardcoded `0.8` for every card** ([export_messy.py:192](bridge/export_messy.py#L192)) — volunteer this |
-| Purple **"🤖 AI-SPOTTED · UNVERIFIED"** card, no confidence bar, *"advisory — no confidence stated"* | **[LOCAL]** Ollama. Payload is **stage names and aggregate numbers only** — no cell values, no case ids, no actors, no status strings. There is a test asserting exactly that. Never evaluated against ground truth, never gates anything |
-| **"🔍 what the AI saw"** | PayloadModal again — and note the payload is built **even offline**, so you can show it without spending an API call |
-
-**The detection eval this screen sits on** (`outputs/eval_detection_*.json`),
-macro-F1 against seeded ground truth:
+This used to sit under the Bottlenecks tab. That tab is gone; the evaluation is
+not. `outputs/eval_detection_*.json`, macro-F1 against seeded ground truth:
 
 | Profile | marker baseline | dynamic detector |
 |---|---|---|
@@ -599,6 +584,9 @@ to. Same recall, up to 10× the precision.
 > cleanly separated. The detector has no access to the injection rules — it
 > derives its own outlier threshold from the log's own gap distribution
 > (Q3 + 1.5×IQR).
+
+To show it live, run `python -m eval.score_detection --profile advisory` in a
+terminal rather than looking for a screen.
 
 ---
 
@@ -629,7 +617,7 @@ before→after diff table. **Originals are never touched** — show the folder.
 
 | Element | Source |
 |---|---|
-| **"AI Suggestion"** badge + confidence | same source as the Bottlenecks card |
+| **"AI Suggestion"** badge + confidence | same source as the Today action card |
 | **Editable steps textarea** | pre-filled with **[CLAUDE]** or **[TEMPLATE]** steps. Edit one → an amber *"● modified"* appears and the recorded action becomes `modify` instead of `approve`. That distinction is a dissertation metric |
 | **Retrieved context** table (source / excerpt / match %) | **[COMPUTED]** ChromaDB, with the purple *Learned* badge where applicable |
 | **✅ Approve & record / ✖ Reject** | `POST /api/decisions` → appends `decisions.jsonl` → fires `pipeline.learn --decision-json` in its own process → writes **only** to `pending_resolutions_<p>.json`. **Never embedded.** |
@@ -661,9 +649,9 @@ Twelve minutes, no dead air.
 8. **Mapping Review, on joinery.** The 🤖 badge, the mess report, the per-column
    confidences. Then flip to foyle and show the 📐 badge with an empty mess
    report — the baseline→LLM gap, visible rather than asserted.
-9. **Bottlenecks.** Expand *"Diagnosis grounded in 3 past resolutions."* Point at
-   a **Learned** badge if one is present. Show a purple AI-SPOTTED card and say
-   plainly that it is unverified and runs on a local model at zero cost.
+9. **Demo tab.** Reset to day 0, press ▶. Mail arrives, rows flash, the counter
+   stalls ~50s at day 7 while the product re-ingests — say that out loud — then
+   the vitals move. Deliver the authored-response caveat before you are asked.
 10. **Fixes & Cleanup.** The value map, then **Approve & clean** → the
     before→after diff. Open `messy_advisory_cleaned/` next to the original folder.
 11. **Terminal.** `python -m pipeline.agent --profile foyle --offline`, then open
@@ -715,7 +703,7 @@ Volunteering these reads as rigour. Being caught on them reads as the opposite.
 
 | Question | Answer | Open this |
 |---|---|---|
-| "How much of this is actually AI?" | Four call sites — three Claude, one local Ollama. Detection, ranking, impact and the outcome verdict are deterministic code. That is a design claim: a worker can argue with arithmetic. | §2 above |
+| "How much of this is actually AI?" | Three call sites, all Claude. Detection, ranking, impact and the outcome verdict are deterministic code. That is a design claim: a worker can argue with arithmetic. | §2 above |
 | "Isn't the bottleneck count just configured?" | No. `detect_dynamic` returns 0..N findings from a statistical scan of every stage; the threshold is the log's own Q3+1.5×IQR. `markers` in config are **eval-only**, used to score the baseline it beats. | [detection/dynamic.py](detection/dynamic.py) |
 | "How do you know detection isn't circular?" | Generator and detector are separate modules; the detector never reads the injection rules. The advisory generator records only *where it parked* each engagement — the rules decide independently whether that breaches an SLA, and flag strictly fewer than were parked. There is a test asserting that. | [tests/test_case_rules.py](tests/test_case_rules.py) |
 | "What stops it emailing a client by mistake?" | Nothing is executed except one template on `MACHINE_EXECUTABLE_TEMPLATES`, and even that writes copies. `ActionItem.is_machine_executable` is the single predicate; nothing else may authorise a write. | [actions/execute.py:46](actions/execute.py#L46) |

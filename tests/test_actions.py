@@ -15,7 +15,8 @@ import config
 from actions import lifecycle, store
 from actions.build import (build_action_items, build_snapshot,
                            data_quality_confidence)
-from actions.execute import approve, create_intervention, execute, route
+from actions.execute import (ContaminatedBaselineError, approve,
+                             create_intervention, execute, route)
 from actions.impact import build_impact
 from actions.models import (ActionItem, AnalysisSnapshot, BusinessImpact,
                             EvidenceReference, make_action_id)
@@ -41,10 +42,15 @@ def _item(action_id="ACT-TST-0001", **kw) -> ActionItem:
 
 
 def _snapshot(metrics: dict, *, snapshot_id="SNAP-A", present=None,
-              taken_at="2026-07-01") -> AnalysisSnapshot:
+              taken_at="2026-07-01", source_drive="") -> AnalysisSnapshot:
+    # `source_drive=""` (explicit, not the model default) — these fixtures
+    # stand in for a plain, clean ingest unless a test says otherwise. The
+    # model's bare default is now `None` (UNKNOWN provenance, refused by both
+    # `approve` and `review` — see actions/execute.py), which would make every
+    # unrelated test below that never mentions provenance fail closed too.
     return AnalysisSnapshot(
         snapshot_id=snapshot_id, profile="foyle", taken_at=taken_at,
-        metrics=metrics,
+        source_drive=source_drive, metrics=metrics,
         present_keys=list(metrics) if present is None else present)
 
 
@@ -209,6 +215,152 @@ def test_approval_of_a_case_action_still_creates_a_tracked_intervention(tmp_path
     assert intervention.status == "assigned"   # an owner was supplied
     assert item.intervention_id == intervention.intervention_id
     assert store.load_interventions("foyle", path)[0].baseline_value == 14.0
+
+
+# ── Baseline-drive guard (a simulated snapshot must never baseline a real
+#    intervention — see actions/execute.py::_snapshot_is_contaminated) ───────
+
+def test_approve_refuses_a_baseline_from_a_non_default_drive(tmp_path) -> None:
+    runner = _Runner()
+    path = tmp_path / "interventions.json"
+    item = _item(action_category="case_action", owner="Ciara")
+    snapshot = _snapshot({item.finding_key: 14.0})
+    snapshot.source_drive = "data/sim/foyle/drive"  # not foyle's default dir
+
+    with pytest.raises(ContaminatedBaselineError):
+        approve("foyle", item, snapshot=snapshot, runner=runner, path=path)
+
+    assert store.load_interventions("foyle", path) == [], (
+        "a refused approval must not persist an intervention")
+
+
+def test_approve_accepts_a_baseline_from_the_default_drive(tmp_path) -> None:
+    """The normal path: `source_drive` empty (a plain ingest) is never
+    contaminated, and approval proceeds exactly as before."""
+    runner = _Runner()
+    path = tmp_path / "interventions.json"
+    item = _item(action_category="case_action", owner="Ciara")
+    snapshot = _snapshot({item.finding_key: 14.0})
+    assert snapshot.source_drive == ""
+
+    intervention, outcome = approve("foyle", item, snapshot=snapshot,
+                                    runner=runner, path=path)
+    assert intervention.baseline_value == 14.0
+    assert intervention.baseline_snapshot_id == snapshot.snapshot_id
+    assert outcome["mode"] == "tracked"
+
+
+def test_approve_accepts_a_baseline_explicitly_from_the_profiles_own_default(
+        tmp_path) -> None:
+    """A snapshot whose `source_drive` happens to equal the profile's own
+    default folder (an explicit but redundant --drive) is not contaminated
+    either — only a genuinely alternate drive is refused."""
+    runner = _Runner()
+    path = tmp_path / "interventions.json"
+    item = _item(action_category="case_action", owner="Ciara")
+    snapshot = _snapshot({item.finding_key: 14.0})
+    snapshot.source_drive = config.MESSY_PROFILES["foyle"]["dir"].as_posix()
+
+    intervention, _ = approve("foyle", item, snapshot=snapshot,
+                              runner=runner, path=path)
+    assert intervention.baseline_value == 14.0
+
+
+def test_approve_accepts_a_baseline_from_a_relative_spelling_of_the_default(
+        tmp_path) -> None:
+    """The mechanical fix: `--drive data/synthetic/messy_foyle` (relative,
+    from the repo root) names exactly foyle's default drive, just spelled
+    differently from the resolved absolute path `_default_drive` returns.
+    Before the fix this compared unequal and was wrongly refused."""
+    runner = _Runner()
+    path = tmp_path / "interventions.json"
+    item = _item(action_category="case_action", owner="Ciara")
+    snapshot = _snapshot({item.finding_key: 14.0})
+    snapshot.source_drive = "data/synthetic/messy_foyle"  # relative, same dir
+
+    intervention, _ = approve("foyle", item, snapshot=snapshot,
+                              runner=runner, path=path)
+    assert intervention.baseline_value == 14.0
+
+
+def test_approve_refuses_a_baseline_of_unknown_provenance(tmp_path) -> None:
+    """Blocker 1: `source_drive is None` is what every pre-existing row in
+    outputs/snapshots_*.jsonl carries (the field did not exist when they were
+    written) — it must fail CLOSED, not read as the clean default. Before the
+    fix `None` and `""` were the same Pydantic default and both passed."""
+    runner = _Runner()
+    path = tmp_path / "interventions.json"
+    item = _item(action_category="case_action", owner="Ciara")
+    snapshot = _snapshot({item.finding_key: 14.0})
+    snapshot.source_drive = None
+
+    with pytest.raises(ContaminatedBaselineError):
+        approve("foyle", item, snapshot=snapshot, runner=runner, path=path)
+
+    assert store.load_interventions("foyle", path) == [], (
+        "a refused approval must not persist an intervention")
+
+
+def test_approve_allows_a_baseline_with_no_snapshot_at_all(tmp_path) -> None:
+    """`snapshot is None` (nothing to compare against yet) is a different
+    situation from unknown provenance and must not be refused — approving
+    without a baseline has always been allowed; the intervention just has no
+    `baseline_snapshot_id` to point at (its baseline value, if any, falls
+    back to the item's own metric_value rather than a snapshot lookup)."""
+    runner = _Runner()
+    path = tmp_path / "interventions.json"
+    item = _item(action_category="case_action", owner="Ciara")
+
+    intervention, _ = approve("foyle", item, snapshot=None,
+                              runner=runner, path=path)
+    assert intervention.baseline_snapshot_id is None
+
+
+# ── Observation-drive guard (behavioural correction #2's completion — see
+#    actions/outcome.py::review, which now runs the identical check on the
+#    LATER snapshot before measuring anything) ───────────────────────────────
+
+def test_review_refuses_a_contaminated_observation(tmp_path) -> None:
+    """A simulated/alternate-drive snapshot must not be able to produce an
+    effectiveness verdict either — only the baseline side was guarded before
+    this fix. Nothing may be measured, so no intervention may change state."""
+    path = tmp_path / "interventions.json"
+    item = _item()
+    baseline = _snapshot({item.finding_key: 14.0})
+    intervention = create_intervention(item, snapshot=baseline)
+    for status in ("assigned", "in_progress", "completed"):
+        lifecycle.transition(intervention, status)
+    store.save_interventions("foyle", [intervention], path)
+
+    later = _snapshot({}, snapshot_id="SNAP-SIM", present=[])
+    later.source_drive = "data/sim/foyle/drive"
+
+    with pytest.raises(ContaminatedBaselineError):
+        review("foyle", later, path=path)
+
+    stored = store.load_interventions("foyle", path)[0]
+    assert stored.status == "completed", (
+        "a refused review must not move the intervention or attach an "
+        "outcome")
+    assert stored.outcome is None
+
+
+def test_review_refuses_an_observation_of_unknown_provenance(tmp_path) -> None:
+    path = tmp_path / "interventions.json"
+    item = _item()
+    baseline = _snapshot({item.finding_key: 14.0})
+    intervention = create_intervention(item, snapshot=baseline)
+    for status in ("assigned", "in_progress", "completed"):
+        lifecycle.transition(intervention, status)
+    store.save_interventions("foyle", [intervention], path)
+
+    later = _snapshot({}, snapshot_id="SNAP-LEGACY", present=[])
+    later.source_drive = None
+
+    with pytest.raises(ContaminatedBaselineError):
+        review("foyle", later, path=path)
+
+    assert store.load_interventions("foyle", path)[0].outcome is None
 
 
 # ── Lifecycle + outcome gating (behavioural correction #2) ───────────────────
@@ -378,3 +530,55 @@ def test_every_profile_can_build_a_queue_from_the_same_code(profile: str) -> Non
     ranked = rank(items, today=date(2026, 3, 1))
     assert all(i.profile == profile for i in ranked)
     assert all(i.workflow for i in ranked)
+
+
+def test_structural_items_carry_the_retrieved_resolutions():
+    """The RAG grounding must reach the action item — it is the evidence for
+    the recommendation, and Today is the only place a worker sees it."""
+    import pandas as pd
+    from actions.build import build_action_items
+
+    rows = []
+    for n in range(1, 4):
+        cid = f"NA-{n}"
+        rows += [
+            (cid, "Lead", pd.Timestamp("2026-01-01"), "R", "done", "x.xlsx:1", 1000),
+            (cid, "Qualification", pd.Timestamp("2026-01-03"), "R", "done", "x.xlsx:2", 1000),
+            (cid, "Proposal", pd.Timestamp("2026-01-28"), "R", "done", "x.xlsx:3", 1000),
+        ]
+    for n in range(4, 9):                      # background so the gap is an outlier
+        cid = f"NA-{n}"
+        rows += [
+            (cid, "Lead", pd.Timestamp("2026-01-01"), "R", "done", "x.xlsx:4", 1000),
+            (cid, "Qualification", pd.Timestamp("2026-01-03"), "R", "done", "x.xlsx:5", 1000),
+            (cid, "Proposal", pd.Timestamp("2026-01-05"), "R", "done", "x.xlsx:6", 1000),
+        ]
+    df = pd.DataFrame(rows, columns=["case_id", "stage", "ts", "actor",
+                                     "status", "source_ref", "value"])
+
+    cases = [{
+        "case_id": "BN001",
+        "finding_key": "delay::proposal::avg_delay_days",
+        "type": "delay",
+        "title": "Proposals waiting",
+        "description": "they sit",
+        "retrieved_resolutions": [
+            {"resolution_id": "RES-001", "similarity_score": 0.82,
+             "text": "we added an SLA"},
+        ],
+    }]
+
+    items = build_action_items("advisory", df, cases=cases)
+    delays = [i for i in items if i.finding_type == "delay"]
+    assert delays, "expected a delay finding"
+    assert delays[0].retrieved_resolutions[0]["resolution_id"] == "RES-001"
+
+
+def test_items_without_a_diagnosis_have_no_resolutions():
+    """Absent RAG grounding the field is empty, never None — the UI maps over it."""
+    import pandas as pd
+    from actions.models import ActionItem
+
+    item = ActionItem(action_id="A", profile="advisory", finding_key="k",
+                      finding_type="delay", title="t")
+    assert item.retrieved_resolutions == []

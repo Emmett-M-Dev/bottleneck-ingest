@@ -63,8 +63,13 @@ def _item() -> ActionItem:
 
 
 def _snapshot(metrics: dict, snapshot_id="SNAP-A", present=None) -> AnalysisSnapshot:
+    # source_drive="" explicit — these fixtures stand in for a plain, clean
+    # ingest, and several of them are passed straight into
+    # actions.outcome.review(), which now refuses an unknown-provenance
+    # snapshot (the model's bare default is `None`, not "").
     return AnalysisSnapshot(
         snapshot_id=snapshot_id, profile="foyle", taken_at="2026-07-10",
+        source_drive="",
         metrics=metrics, present_keys=list(metrics) if present is None else present)
 
 

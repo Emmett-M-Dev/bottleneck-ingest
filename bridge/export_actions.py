@@ -31,7 +31,7 @@ from datetime import date, datetime, timezone
 import config
 from actions import store
 from actions.build import build_action_items, build_snapshot, data_quality_confidence
-from actions.execute import execution_reason, route
+from actions.execute import _assert_snapshot_is_clean, execution_reason, route
 from actions.models import ActionItem
 from actions.outcome import review as review_outcomes
 from actions.outcome import summarise
@@ -60,6 +60,7 @@ def _ui_item(item: ActionItem) -> dict:
     click approve, whether approving changes a file or creates a task. A system
     that can edit spreadsheets should never leave that ambiguous."""
     payload = item.model_dump()
+    payload["retrieved_resolutions"] = item.retrieved_resolutions
     payload["execution"] = {
         "route": route(item),
         "will_modify_files": item.is_machine_executable,
@@ -74,6 +75,21 @@ def _ui_item(item: ActionItem) -> dict:
                  "Nothing about this item was sent to a language model."),
     }
     return payload
+
+
+# Provenance has three states and the UI must be able to tell them apart:
+#   ""        the profile's own default drive — trusted, no banner
+#   "<path>"  an alternate drive — banner names it
+#   unknown   a snapshot written before provenance was recorded. approve and
+#             review refuse it (actions/execute.py fails closed), so the UI has
+#             to warn rather than render it as clean.
+UNKNOWN_SOURCE_DRIVE = "unknown (snapshot predates provenance tracking)"
+
+
+def _ui_source_drive(snapshot) -> str:
+    if snapshot is None:
+        return ""
+    return UNKNOWN_SOURCE_DRIVE if snapshot.source_drive is None else snapshot.source_drive
 
 
 def build_ui_actions(profile: str, items: list[ActionItem],
@@ -129,6 +145,18 @@ def build_ui_actions(profile: str, items: list[ActionItem],
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "analysis_date": _analysis_date(items),
         "snapshot_id": snapshot.snapshot_id if snapshot else None,
+        # "" for the profile's own default drive; non-empty means this queue
+        # was built from an alternate drive (a later real snapshot, or the
+        # demo simulator's synthetic week) — the dashboard's TodayTab shows an
+        # amber strip naming it, so a simulated queue is never mistaken for
+        # the SME's live spreadsheets. See CLAUDE.md §4b / actions/execute.py.
+        #
+        # A snapshot predating source_drive carries None, meaning provenance is
+        # UNKNOWN. That must not serialise as null: null is falsy in JS, so the
+        # banner would render the queue as clean while approve/review refuse it
+        # at the button — the worst combination. Surface it as a string the
+        # banner will show, matching the fail-closed rule on the Python side.
+        "source_drive": _ui_source_drive(snapshot),
         "totals": {
             "open_items": len(live),
             "revenue_at_risk": round(sum(i.impact.revenue_at_risk or 0
@@ -176,14 +204,15 @@ def _assert_event_log_belongs_to(profile: str) -> None:
     of the SAME profile is a documented, legitimate workflow (CLAUDE.md §4b —
     it's what makes `validated` outcomes reachable at all), not a cross-profile
     mismatch. We still warn on the alternate-drive case so a user building a
-    queue off non-default data notices, but we never block it."""
-    from ingest import event_log_owner_path
+    queue off non-default data notices, but we never block it.
 
-    marker = event_log_owner_path()
-    owner = marker.read_text(encoding="utf-8").strip() if marker.exists() else None
-    if not owner:
+    Reads via `config.read_event_log_owner` (not `ingest`'s own copy) so this
+    check never drags ingest.py's embedding/chroma stack into a build() call
+    that would otherwise stay light until diagnosis actually needs it."""
+    owner_profile, drive = config.read_event_log_owner()
+    if not owner_profile:
         return
-    owner_profile, _, drive = owner.partition("@")
+    owner = f"{owner_profile}@{drive}" if drive else owner_profile
     if owner_profile != profile:
         raise WrongProfileError(
             f"The event log currently holds '{owner}' data, not '{profile}'. "
@@ -217,9 +246,17 @@ def build(profile: str, *, cases: list[dict] | None = None,
     fresh = build_action_items(profile, df, cases=cases, as_of=as_of)
     merged = store.merge_actions(store.load_actions(profile), fresh)
     ranked = rank(merged, today=date.fromisoformat(_analysis_date(merged)[:10]))
-    store.save_actions(profile, ranked)
-
     snapshot = build_snapshot(profile, df, fresh, as_of=as_of)
+
+    # Check provenance BEFORE anything is written. review_outcomes refuses a
+    # snapshot of unknown or alternate-drive origin, and until this check moved
+    # up here that refusal landed mid-build: the action store and the snapshot
+    # log were already updated while ui_actions_<p>.json was not, so the
+    # dashboard showed a stale queue over a newer store.
+    if do_review:
+        _assert_snapshot_is_clean(profile, snapshot, context="observation")
+
+    store.save_actions(profile, ranked)
     store.append_snapshot(profile, snapshot)
 
     if do_review:

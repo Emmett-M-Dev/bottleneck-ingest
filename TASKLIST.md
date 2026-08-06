@@ -24,7 +24,7 @@ This file tells an agent **exactly** what is done, what is next, and in what ord
 - [x] **Detection eval** — `eval/score_detection.py`. Marker baseline vs dynamic, P/R/F1 per type vs seeded ground truth. Results (after foyle/joinery were reseeded with parked operational cases, P0 item 4 below): baseline macro-F1 0.486 (foyle, was 0.524) / 0.487 (joinery, was 0.523) / 0.471 (advisory, untouched) — presence-based markers collapse further on structural patterns once parked cases pass through the same marker-named stages — vs dynamic **1.000 / 1.000 / 1.000** (unchanged; recall stayed 1.0 for every type throughout, only baseline precision moved).
 - [x] **Cost model** — `MESSY_PROFILES[p]["costs"]` → per-case `estimated_cost` with the basis spelled out ("5 cases × 15 days × £35/day"); total in the workflow KPIs.
 - [x] **Learning loop** — `pipeline/learn.py`. Approved/modified Gate-2 fixes append to `data/learned/learned_resolutions_<p>.json` (RES-LRN-…, source="learned") and upsert into `sme_resolutions` — the next diagnosis retrieves the SME's own approved fixes. Fired by the API on POST /api/decisions (own process). Idempotent on decision_id.
-- [x] **Impact history** — every export appends a snapshot to `outputs/history_<p>.jsonl`; a remediation apply appends one too (messy_cells → 0). Served by GET /api/history/{p}; Dashboard ImpactPanel sparklines + a badged PROJECTION line.
+- [~] **Impact history** — every export still appends a snapshot to `outputs/history_<p>.jsonl` and `GET /api/history/{p}` still serves it, but the **ImpactPanel sparklines and the badged PROJECTION line were DELETED** in the 2026-08-05 dashboard fold. The data and endpoint survive; nothing renders them. Do not claim a trend view.
 - [x] **Zero-PII payload viewer** — every case carries `llm_payload` (the exact scrubbed diagnosis payload, built even offline); the dashboard's "what the AI saw" modal highlights the anonymisation placeholders.
 - [x] **Export** — `bridge/export_messy.py`. Writes `ui_cases.json` + `ui_workflow.json`. Nodes carry `sources` (which sheets feed each stage).
 - [x] **Remediation executor (`remediate/`)** — status freetext → `{Complete, Open, N/A}`. Cleaned copies to `messy_<profile>_cleaned/` (originals untouched). CLI: `python -m remediate.run --profile <p> [--apply]`.
@@ -83,8 +83,8 @@ This file tells an agent **exactly** what is done, what is next, and in what ord
 - [x] **React UI** — Vite + Tailwind + @xyflow/react. `http://localhost:5173`.
 - [x] **FastAPI backend** — `hitl-react/api/main.py`. Thin orchestrator, shells out to pipeline venv.
 - [x] **Mapping Review tab (Gate 1)** — human edits roles/columns, approves, triggers re-ingest.
-- [x] **Workflow DAG** — @xyflow/react. Hover stage → source sheets. Bottleneck stages flagged.
-- [x] **Bottlenecks tab** — 3 bottleneck cards (delay/repetition/rework).
+- [~] **Workflow DAG** — @xyflow/react. Hover stage → source sheets. **DELETED in the 2026-08-05 fold**; the source-sheet hover went with it.
+- [~] **Bottlenecks tab** — **DELETED in the 2026-08-05 fold.** Its RAG-grounding block was moved onto the Today action card first, so that contribution survives; the standalone cards do not.
 - [x] **Fixes tab (Gate 2)** — HITL approve/reject per bottleneck. RemediationPanel for data cleanup.
 - [x] **Profile switcher** — click SME brand in header → dropdown → instant switch.
 - [x] **Approval tracking** — `approvedMap` keyed by `proposal.generated_at` (fresh audit reopens gate).
@@ -222,7 +222,7 @@ Work through these **top to bottom**. Do not skip ahead. Mark [x] as you go.
 - [ ] **Bespoke Mapping tab layout** — currently token-reskin only (same card grid). Could show
   the mess report more prominently, add a visual column-mapping flow.
 
-- [ ] **Bespoke Bottlenecks tab layout** — currently simple cards. Could show affected-case timeline,
+- [x] ~~**Bespoke Bottlenecks tab layout**~~ — moot: the tab was deleted in the 2026-08-05 fold. Original note: could show affected-case timeline,
   severity heat-map.
 
 - [ ] **Third foyle seasonal fork** — if the viva demo needs a richer "operator adds a messy sheet"

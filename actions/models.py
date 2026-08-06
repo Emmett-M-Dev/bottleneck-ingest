@@ -156,6 +156,10 @@ class ActionItem(BaseModel):
     stage: str = ""
     affected_case_ids: list[str] = Field(default_factory=list)
     evidence: list[EvidenceReference] = Field(default_factory=list)
+    # The RAG grounding behind this recommendation: past resolutions the
+    # diagnosis agent retrieved, with similarity scores. Empty when the item
+    # came from a case rule or the diagnosis was offline.
+    retrieved_resolutions: list[dict] = Field(default_factory=list)
     metric_label: Optional[str] = None
     metric_value: Optional[float] = None
     detection_confidence: Optional[float] = None   # how sure the detector is
@@ -289,6 +293,21 @@ class AnalysisSnapshot(BaseModel):
     profile: str
     taken_at: str
     label: str = ""                       # e.g. "tick_04" during replay
+    # The drive part of the event-log owner stamp at the moment this snapshot
+    # was taken. Tri-state, and the states are NOT interchangeable:
+    #   None  UNKNOWN provenance — every row written before this field
+    #         existed (Pydantic supplies this for a missing key). Might be
+    #         simulated data; there is no way to tell. FAILS CLOSED.
+    #   ""    the profile's own default static folder (clean). What
+    #         `build_snapshot` always stamps for a plain ingest.
+    #   other an alternate drive was read — a later real snapshot, OR the
+    #         demo simulator's synthetic week.
+    # See `actions/execute.py::_snapshot_is_contaminated` /
+    # `_assert_snapshot_is_clean`, which refuse to baseline (approve) or
+    # measure (outcome.py::review) a real intervention against anything but
+    # a "" snapshot, so a simulated or unknown-provenance number can never
+    # become real evidence.
+    source_drive: Optional[str] = None
     case_count: int = 0
     event_count: int = 0
     metrics: dict[str, float] = Field(default_factory=dict)
