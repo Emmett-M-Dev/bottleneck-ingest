@@ -428,8 +428,8 @@ approach and was then superseded, not a component of the delivered system.
 
 - **Re-architecture milestones M0–M6 all shipped**, plus the product-grade upgrade:
   RAG diagnosis agent, LangGraph loop, **dynamic detection** (statistical, 0..N
-  findings, no markers), learning loop, cost
-  model, impact history + sparklines, zero-PII payload viewer.
+  findings, no markers), learning loop, cost model, zero-PII payload viewer.
+  (Impact-history sparklines were removed with the dashboard fold — see below.)
 - **Action layer shipped (2026-07-23)** — `actions/`: ActionItem / Intervention /
   InterventionOutcome / BusinessImpact / EvidenceReference / AnalysisSnapshot,
   a shared lifecycle, deterministic explainable ranking, JSON persistence, and
@@ -454,10 +454,20 @@ approach and was then superseded, not a component of the delivered system.
   profiles, now measured against foyle/joinery's reseeded drives (§7); the
   longitudinal replay curves under outcome gating, measured for both profiles (§7).
 - **§6a** — LangGraph is in the artifact. Ollama was trialled and withdrawn.
-- **React dashboard (hitl-react) live** — **Today** (action queue, expandable
-  evidence, owner/due-date, progress + outcome-review controls, "what was sent
-  to the AI"), Mapping Review (Gate 1), pipeline stepper, workflow DAG,
-  Bottlenecks, Fixes + remediation diff, SME switch, payload modal.
+- **React dashboard (`../hitl-react`) — simplified to THREE tabs (2026-08-05).**
+  **Today** (the product: action queue, expandable evidence, RAG grounding,
+  owner/due-date, progress + outcome-review controls, "what was sent to the
+  AI"), **Mapping Review** (Gate 1), **Demo** (the world simulator running).
+  Plus the pipeline stepper, Fixes + remediation diff, SME switch, payload modal.
+
+  **Deleted in that fold, and NOT to be claimed:** the workflow DAG, the
+  Bottlenecks tab, the case-aging buckets, the "cases clean" donut, and the
+  **impact-history sparklines**. §1 calls charts and aggregate summaries
+  "supporting evidence for that queue, not the product", and the UI had been
+  giving them equal billing. The RAG grounding those tabs carried was moved
+  onto the action card first, so no contribution was lost — but the sparklines
+  had no replacement and the trend view is genuinely gone. `GET /api/history`
+  and `outputs/history_<p>.jsonl` still exist, so it can be restored.
 - Tests green: **284 passed** (`pytest -q`).
 - **World simulator shipped (P1)** — `simulator/`: a per-SME world that advances
   a day at a time, renders the messy drive the product ingests through its
